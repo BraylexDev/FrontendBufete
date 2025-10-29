@@ -1,0 +1,16 @@
+[
+    {
+        "id": "1",
+        "nombre": "Lucas",
+        "apellido": "Perez",
+        "email": "lucas@gmail.com",
+        "contraseña": "admin",
+        "rol": {
+            "id": 1,
+            "nombre": "Administrador",
+            "permisos": [
+                {}
+            ]
+        }
+    }
+]

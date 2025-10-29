@@ -1,0 +1,69 @@
+@import "../node_modules/angular-calendar/css/angular-calendar.css";
+
+// Theme Font
+@import 'scss/themes/font/theme-font';
+
+// main framework
+@import '../node_modules/bootstrap/scss/functions';
+@import '../node_modules/bootstrap/scss/variables';
+@import 'scss/settings/custom-variables';
+@import 'scss/settings/theme-variables';
+
+// bootstrap
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import '../node_modules/bootstrap/scss/mixins';
+@import '../node_modules/bootstrap/scss/utilities';
+@import '../node_modules/bootstrap/scss/utilities/api';
+@import '../node_modules/bootstrap/dist/css/bootstrap.css';
+@import 'scss/themes/general';
+@import 'scss/themes/generic';
+@import 'scss/themes/minixs/function';
+
+// icon
+@import 'scss/themes/font/datta-icon';
+@import 'scss/themes/font/feather';
+@import 'scss/themes/font/fontawesome';
+@import 'scss/themes/font/flaticon';
+
+// component
+@import 'scss/themes/component/component';
+
+// theme layouts
+@import 'scss/themes/layouts/menu-lite';
+@import 'scss/themes/layouts/menu-ng';
+
+// dashboard
+@import 'scss/themes/pages/dashboard.scss';
+@import 'scss/themes/pages/authentication';
+
+@import 'scss/themes/chat/chat';
+
+// custom
+@import 'scss/themes/custom';
+
+// Estilos globales
+html,
+body {
+    height: 100%;
+    margin: 0;
+    /* font-family: Roboto, "Helvetica Neue", sans-serif; */
+    font-family: Verdana, sans-serif;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.text-center {
+    text-align: center;
+}
+
+// Responsive breakpoints
+$mobile: 768px;
+$tablet: 1024px;
+
+@media (max-width: #{$mobile}) {
+    .hide-mobile {
+        display: none !important;
+    }
+}

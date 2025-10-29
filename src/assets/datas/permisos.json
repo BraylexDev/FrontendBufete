@@ -1,0 +1,37 @@
+[
+    {
+        "id":  1,
+        "nombre": "gestion_plantillas",
+        "descripcion": "Gestión de Plantillas"
+    },
+    {
+        "id": 2,
+        "nombre": "gestion_usuarios",
+        "descripcion": "Gestión de Usuarios"
+    },
+    {
+        "id":  3,
+        "nombre": "gestion_casos",
+        "descripcion": "Gestión de Casos"
+    },
+    {
+        "id": 4,
+        "nombre": "registrar_clientes",
+        "descripcion": "Registro de Clientes"
+    },
+    {
+        "id": 5,
+        "nombre": "subir_documentos",
+        "descripcion": "Cargar Documentos"
+    },
+    {
+        "id": 6,
+        "nombre": "ver_plantillas",
+        "descripcion": "Ver Plantillas"
+    },
+    {
+        "id": 7,
+        "nombre": "ver_facturas",
+        "descripcion": "Ver Facturas"
+    }
+]

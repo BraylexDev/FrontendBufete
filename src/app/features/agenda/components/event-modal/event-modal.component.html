@@ -1,0 +1,40 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{ modalTitle }}</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('cancel')"></button>
+</div>
+<div class="modal-body">
+    <form>
+        <div class="mb-3">
+            <select class="form-select" aria-label="Default select example" [(ngModel)]="dataEvento.evento.procesoId" name="expediente">
+                <option value= '' selected disabled hidden>Seleccionar Proceso</option>
+                <option *ngFor="let p of procesos" [value]="p.id">{{p.nombre}}</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="title" class="form-label">Título</label>
+            <input type="text" class="form-control" id="title" [(ngModel)]="dataEvento.evento.titulo" name="title">
+        </div>
+
+        <div class="mb-3">
+            <select class="form-select" aria-label="Default select example" name="termino"
+                [(value)]="selectedTermino">
+                <option selected disabled hidden>Seleccionar Termino</option>
+                <option *ngFor="let p of terminos" [value]="p.id">{{p.name}}</option>
+            </select>
+        </div>
+        <!-- <div class="mb-3">
+            <label for="start" class="form-label">Fecha inicio</label>
+            <input type="datetime-local" class="form-control" id="start" [ngModel]="event.infoCalendar.start | date: 'yyyy-MM-dd'"
+                (ngModelChange)="event.infoCalendar.start=$event" name="start" [min]="event.infoCalendar.start | date: 'yyyy-MM-dd'">
+        </div> -->
+        <!-- <div class="mb-3">
+            <label for="end" class="form-label">Fecha Fin</label>
+            <input type="datetime-local" class="form-control" id="end" [ngModel]="event.start | date: 'yyyy-MM-ddTHH:mm'" (ngModelChange)="event.end=$event" name="end">
+        </div> -->
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('cancel')">Cancelar</button>
+    <button type="button" class="btn btn-primary" (click)="saveEvent()">Guardar</button>
+</div>

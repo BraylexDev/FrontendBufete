@@ -1,0 +1,207 @@
+<p style="text-align: center">
+  Esta pantalla permite realizar la gestión de las plantillas jurídicas
+</p>
+<hr />
+
+<form>
+  <div class="mb-3 row">
+    <label
+      for="categoria-select"
+      class="col-xs-3 col-sm-auto col-form-label"
+      >Categoría:</label
+    >
+    <div class="col-xs-3 col-sm-auto">
+      <select 
+        id="categoria-select"
+        class="form-select" 
+        [(ngModel)]="categoriaSeleccionada"
+        name="categoriaSeleccionada"
+        (change)="page = 1"
+      >
+        <option value="">Todas las Categorías</option>
+        <option *ngFor="let categoria of categorias" [value]="categoria.nombre">
+          {{ categoria.nombre }}
+        </option>
+      </select>
+    </div>
+    
+    <!-- Botón para limpiar filtros -->
+    <div class="col-xs-3 col-sm-auto" *ngIf="categoriaSeleccionada || filtroBusqueda">
+      <button 
+        type="button" 
+        class="btn btn-outline-secondary"
+        (click)="limpiarFiltros()"
+        title="Limpiar filtros"
+      >
+        <i class="feather icon-x"></i> Limpiar
+      </button>
+    </div>
+  </div>
+  
+  <div class="mb-3 row">
+    <div class="col-sm-8">
+      <div class="input-group w-50">
+        <span class="input-group-text" id="icon-search">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="search"
+          class="form-control"
+          placeholder="Buscar..."
+          aria-label="Buscar"
+          aria-describedby="icon-search"
+          [(ngModel)]="filtroBusqueda"
+          name="filtroBusqueda"
+          (ngModelChange)="page = 1"
+        />
+      </div>
+    </div>
+    
+    <div class="col-sm-4" style="display: flex; justify-content: end">
+      <button
+        type="button"
+        (click)="openModal()"
+        class="btn btn-secondary"
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border-color: transparent;
+        "
+      >
+        <i
+          class="feather icon-plus-circle"
+          style="font-size: 20px; padding-right: 8px"
+        ></i>
+        Crear Plantilla
+      </button>
+    </div>
+  </div>
+</form>
+
+<div class="container">
+  <div class="row">
+    <!-- Mensaje cuando no hay plantillas -->
+    <app-card
+      [hidHeader]="true"
+      [options]="false"
+      *ngIf="plantillas.length === 0"
+    >
+      <div class="empty-state">
+        <h3>No Hay Plantillas Registradas</h3>
+        <p>Comienza creando una plantilla</p>
+      </div>
+    </app-card>
+    
+    <!-- Mensaje cuando hay plantillas pero ninguna coincide con los filtros -->
+    <app-card
+      [hidHeader]="true"
+      [options]="false"
+      *ngIf="plantillas.length > 0 && plantillasfiltradas.length === 0"
+    >
+      <div class="empty-state">
+        <h3>No se encontraron plantillas</h3>
+        <p>No hay plantillas que coincidan con los filtros aplicados</p>
+        <button 
+          type="button" 
+          class="btn btn-primary mt-3"
+          (click)="limpiarFiltros()"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+    </app-card>
+    
+    <!-- Tabla de plantillas -->
+    <div class="col" *ngIf="plantillasfiltradas.length > 0">
+      <!-- Contador de resultados -->
+       <!--
+      <div class="mb-2">
+        <small class="text-muted">
+          Mostrando {{ (page - 1) * pageSize + 1 }} - 
+          {{ (page * pageSize > collectionSize) ? collectionSize : page * pageSize }} 
+          de {{ collectionSize }} plantillas
+          <span *ngIf="filtroBusqueda || categoriaSeleccionada"> (filtradas)</span>
+        </small>
+      </div>-->
+      
+      <div class="table-outer">
+        <table
+          class="table table-bordered"
+          style="text-align: center; cursor: default"
+        >
+          <thead>
+            <tr class="table-primary">
+              <th scope="col">Nombre de Plantilla</th>
+              <th scope="col">Categoría</th>
+              <th scope="col">Fecha de Subida</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="table align-middle">
+            @for (plantilla of plantillasPaginadas; track plantilla.id) {
+            <tr>
+              <td (dblclick)="onNodeDoubleClick(plantilla.id)" class="urlDoc">
+                {{ plantilla.nombre }}
+              </td>
+              <td>
+                {{ plantilla.categoria }}
+              </td>
+              <td>
+                {{ plantilla.fecha | date : "yyyy/MM/dd" }}
+              </td>
+              <td>
+                <div
+                  class="btn-group"
+                  role="group"
+                  aria-label="Basic outlined example"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-md btn-outline-danger"
+                    title="Eliminar"
+                  >
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-md btn-outline-success"
+                    title="Descargar"
+                    (click)="downloadFile(plantilla.id)"
+                  >
+                    <i class="feather icon-download"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between p-2">
+        <ngb-pagination
+          [collectionSize]="collectionSize"
+          [(page)]="page"
+          [pageSize]="pageSize"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+        >
+        </ngb-pagination>
+
+        <select
+          class="form-select"
+          style="width: auto"
+          [(ngModel)]="pageSize"
+          name="pageSize"
+          (ngModelChange)="page = 1"
+        >
+          <option [ngValue]="10">10 items</option>
+          <option [ngValue]="20">20 items</option>
+          <option [ngValue]="50">50 items</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

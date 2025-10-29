@@ -1,0 +1,27 @@
+<div class="row">
+    <!-- order-card start -->
+    @for (card of cards; track card) {
+    <div class="col-md-6 col-xl-4">
+        <app-card [hidHeader]="true" footerClass="border border-top-0 p-0 overflow-hidden" [isCardFooter]="true">
+            <h6 class="text-center">{{ card.title }}</h6>
+            <h2 class="text-center">
+                <!-- <i class="feather {{ card.icon }} float-start"></i> -->
+                <span>{{ card.number }}</span>
+            </h2>
+            <!-- <p class="m-b-0">
+                {{ card.text }}
+                <span class="float-end">{{ card.no }}</span>
+            </p> -->
+        </app-card>
+    </div>
+    }
+
+    <div class="col-md-6">
+        <app-card cardTitle="Bar chart stacked" [options]="false">
+            <apx-chart [dataLabels]="bar2CAC.dataLabels!" [chart]="bar2CAC.chart!" [plotOptions]="bar2CAC.plotOptions!"
+                [responsive]="bar2CAC.responsive!" [colors]="bar2CAC.colors!" [series]="bar2CAC.series!"
+                [legend]="bar2CAC.legend!" [xaxis]="bar2CAC.xaxis!" [fill]="bar2CAC.fill!"></apx-chart>
+        </app-card>
+    </div>
+
+</div>

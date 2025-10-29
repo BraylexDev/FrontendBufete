@@ -1,0 +1,141 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "nombre": "Lucas",
+            "apellido": "Perez",
+            "email": "lucas@gmail.com",
+            "contraseña": "admin",
+            "rol": "Administrador"
+        },
+        {
+            "id": "2",
+            "nombre": "Juan David",
+            "apellido": "Ramirez",
+            "email": "juan@gmail.com",
+            "contraseña": "admin",
+            "rol": "Administrador"
+        }
+    ],
+    "permisos": [
+        {
+            "id":  "1",
+            "nombre": "gestion_plantillas",
+            "descripcion": "Gestión de Plantillas"
+        },
+        {
+            "id":  "2",
+            "nombre": "gestion_usuarios",
+            "descripcion": "Gestión de Usuarios"
+        },
+        {
+            "id":  "3",
+            "nombre": "gestion_casos",
+            "descripcion": "Gestión de Casos"
+        },
+        {
+            "id":  "4",
+            "nombre": "registrar_clientes",
+            "descripcion": "Registro de Clientes"
+        },
+        {
+            "id":  "5",
+            "nombre": "subir_documentos",
+            "descripcion": "Cargar Documentos"
+        },
+        {
+            "id":  "6",
+            "nombre": "ver_plantillas",
+            "descripcion": "Ver Plantillas"
+        },
+        {
+            "id":  "7",
+            "nombre": "ver_facturas",
+            "descripcion": "Ver Facturas"
+        }
+    ],
+    "procesos": [
+        {
+            "id": "1",
+            "nombre": "Divorcio Juan Pérez",
+            "categoria": "Familia",
+            "fecha_creacion": "2025-01-14",
+            "descripcion": "",
+            "url": ""
+        },
+        {
+            "id": "2",
+            "nombre": "Derecho de Peticion",
+            "categoria": "Civil",
+            "fecha_creacion": "2025-01-27",
+            "descripcion": "",
+            "url": ""
+        },
+        {
+            "id": "3",
+            "nombre": "Divorcio Mutuo Acuerdo",
+            "categoria": "Civil",
+            "fecha_creacion": "2025-03-30",
+            "descripcion": "",
+            "url": ""
+        }
+    ],
+    "plantillas": [
+        {
+            "id": "1",
+            "nombre": "Demanda por Alimentos",
+            "categoria": "Familia",
+            "fecha_creacion": "2025-01-14",
+            "descripcion": "",
+            "url": ""
+        },
+        {
+            "id": "2",
+            "nombre": "Derecho de Peticion",
+            "categoria": "Civil",
+            "fecha_creacion": "2025-01-27",
+            "descripcion": "",
+            "url": ""
+        },
+        {
+            "id": "3",
+            "nombre": "Divorcio Mutuo Acuerdo",
+            "categoria": "Civil",
+            "fecha_creacion": "2025-03-30",
+            "descripcion": "",
+            "url": ""
+        }
+    ],
+    "eventos": [
+        {
+            "id": "1",
+            "titulo": "primera Audiencia",
+            "tipo_evento_id": "0",
+            "fecha_inicio": "2025-06-02 11:00:00",
+            "fecha_fin": "2025-06-02 13:00:00",
+            "all_day": "false",
+            "expediente_id": "Divorcio Juan Pérez",
+            "responsable": "1"
+        },
+        {
+            "id": "2",
+            "titulo": "segunda Audiencia",
+            "tipo_evento_id": "0",
+            "fecha_inicio": "2025-06-15 09:00:00",
+            "fecha_fin": "2025-06-15 11:00:00",
+            "all_day": "false",
+            "expediente_id": "Divorcio Juan Pérez",
+            "responsable": "1"
+        },
+        {
+            "id": "3",
+            "titulo": "tercera Audiencia",
+            "tipo_evento_id": "0",
+            "fecha_inicio": "2025-06-30 14:00:00",
+            "fecha_fin": "2025-06-30 16:00:00",
+            "all_day": "false",
+            "expediente_id": "Divorcio Juan Pérez",
+            "responsable": "1"
+        }
+    ]
+}

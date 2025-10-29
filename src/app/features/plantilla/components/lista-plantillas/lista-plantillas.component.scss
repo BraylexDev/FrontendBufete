@@ -1,0 +1,31 @@
+.table-outer {
+    overflow-x: auto;
+}
+
+.urlDoc:hover{
+    color: red;
+    cursor: pointer;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+
+.empty-state .material-icons {
+    font-size: 80px;
+    color: #ddd;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #666;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}

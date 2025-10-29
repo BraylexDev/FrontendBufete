@@ -1,0 +1,71 @@
+[
+    {
+        "id": "1",
+        "titulo": "primera Audiencia",
+        "tipo_evento_id": "0",
+        "fecha_inicio": "2025-06-02 11:00:00",
+        "fecha_fin": "2025-06-02 13:00:00",
+        "all_day": "false",
+        "expediente_id": "Divorcio Juan Pérez",
+        "user": {
+            "id": "1",
+            "nombre": "Lucas",
+            "apellido": "Perez",
+            "email": "lucas@gmail.com",
+            "contraseña": "admin",
+            "rol": {
+                "id": 1,
+                "nombre": "Administrador",
+                "permisos": [
+                    {}
+                ]
+            }
+        }
+    },
+    {
+        "id": "2",
+        "titulo": "segunda Audiencia",
+        "tipo_evento_id": "0",
+        "fecha_inicio": "2025-06-15 09:00:00",
+        "fecha_fin": "2025-06-15 11:00:00",
+        "all_day": "false",
+        "expediente_id": "Divorcio Juan Pérez",
+        "user": {
+            "id": "1",
+            "nombre": "Lucas",
+            "apellido": "Perez",
+            "email": "lucas@gmail.com",
+            "contraseña": "admin",
+            "rol": {
+                "id": 1,
+                "nombre": "Administrador",
+                "permisos": [
+                    {}
+                ]
+            }
+        }
+    },
+    {
+        "id": "3",
+        "titulo": "tercera Audiencia",
+        "tipo_evento_id": "0",
+        "fecha_inicio": "2025-06-30 14:00:00",
+        "fecha_fin": "2025-06-30 16:00:00",
+        "all_day": "false",
+        "expediente_id": "Divorcio Juan Pérez",
+        "user": {
+            "id": "1",
+            "nombre": "Lucas",
+            "apellido": "Perez",
+            "email": "lucas@gmail.com",
+            "contraseña": "admin",
+            "rol": {
+                "id": 1,
+                "nombre": "Administrador",
+                "permisos": [
+                    {}
+                ]
+            }
+        }
+    }
+]

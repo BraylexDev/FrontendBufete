@@ -1,0 +1,66 @@
+<div class="col-xl-12">
+    <div class="col-md-12">
+        <app-alert></app-alert>
+    </div>
+    <app-card [hidHeader]="true" [options]="false" blockClass="table-border-style">
+        <div class="table-responsive table-outer">
+            <table class="table table-styling" *ngIf="users.length > 0;" style="text-align: center; cursor: default;">
+                <thead>
+                    <tr class="table-primary">
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table align-middle">
+                    <tr *ngFor="let p of users; let i = index">
+                        <td>{{p.nombre}}</td>
+                        <td>{{p.apellido}}</td>
+                        <td>{{p.email}}</td>
+                        <td>{{obtenerRol(p.rolId)}}</td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                <!-- <button type="button" class="btn btn-md btn-outline-primary" title="Editar"
+                                    (click)="nav(p.id)" [disabled]="p.rol.nombre === 'Administrador'">
+                                    <i class="feather icon-edit-2"></i>
+                                </button> -->
+                                <button type="button" class="btn btn-md btn-outline-primary" title="Editar"
+                                    (click)="nav(p.id)">
+                                    <i class="feather icon-edit-2"></i>
+                                </button>
+                                <button type="button" class="btn btn-md btn-outline-danger" title="Eliminar"
+                                    (click)="asignarUserToEdit(p.id)"
+                                    data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <i class="feather icon-trash-2"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <!-- <td>{{p.rol.id}}</td> -->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </app-card>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmar Eliminación</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Estas seguro de eliminar este usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" (click)="eliminar()" class="btn btn-primary"
+                    data-bs-dismiss="modal">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>

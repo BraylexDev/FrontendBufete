@@ -1,0 +1,28 @@
+<div class="auth-wrapper">
+    <div class="auth-content" style="width: 500px !important;">
+        <div class="card">
+            <div class="row align-items-center text-center">
+                <div class="col-md-12">
+                    <div class="card-body">
+                        <img src="assets/images/log.png" alt="logo" class="img-fluid mb-4"
+                            style="height: 40%; width: 40%;" />
+                        <h4 class="mb-3 f-w-400">Consultar Estado de Proceso</h4>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon2"><i class="feather icon-user"></i></span>
+                            <input type="text" class="form-control" placeholder="Cédula o NIT" aria-label="Username"
+                                aria-describedby="basic-addon2" [(ngModel)]="nit" (focus)="onFocus()"/>
+
+                        </div>
+                        <div *ngIf="isEmpty || !isValid" style="display: flex; justify-content: start; color: red">
+                            <div *ngIf="isEmpty">Ingrese la identificadión.</div>
+                            <div *ngIf="!isValid && !isEmpty">Usuario no encontrado.</div>
+                        </div>
+                        <div class="d-grid mt-3">
+                            <button class="btn btn-primary btn-block mb-4" (click)="validar(nit)">Consultar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

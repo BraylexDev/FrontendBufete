@@ -1,0 +1,538 @@
+<div class="file-explorer">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button
+        class="btn-icon"
+        (click)="goBack()"
+        [disabled]="breadcrumbs.length <= 1"
+      >
+        <span class="material-icons">arrow_back</span>
+      </button>
+
+      <!-- Breadcrumbs -->
+      <nav class="breadcrumbs">
+        <span
+          class="breadcrumb-item"
+          *ngFor="let crumb of breadcrumbs; let last = last"
+        >
+          <a (click)="goToFolder(crumb)" [class.active]="last">{{
+            crumb.name
+          }}</a>
+          <!--<span class="separator" *ngIf="!last"></span>-->
+        </span>
+      </nav>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="btn-icon" (click)="toggleViewMode()">
+        <span class="material-icons">
+          {{ viewMode === "list" ? "grid_view" : "view_list" }}
+        </span>
+      </button>
+
+      <button class="btn btn-primary" (click)="openCreateFolderModal()">
+        <span class="material-icons">create_new_folder</span>
+        Nueva Carpeta
+      </button>
+
+      <button
+        class="btn btn-success"
+        (click)="openUploadFileModal()"
+        style="background: #033857 !important"
+      >
+        <span class="material-icons">upload_file</span>
+        Subir Archivo
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert alert-error" *ngIf="error">
+    <span class="material-icons">error</span>
+    {{ error }}
+    <button class="btn-close" (click)="error = null">&times;</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && currentNodes.length === 0">
+    <span class="material-icons">folder_open</span>
+    <h3>Esta carpeta está vacía</h3>
+    <p>Comienza creando una carpeta o subiendo archivos</p>
+  </div>
+
+  <!-- File List View -->
+  <div
+    class="file-list"
+    *ngIf="!loading && currentNodes.length > 0 && viewMode === 'list'"
+  >
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Modificado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let node of currentNodes"
+          (click)="onNodeClick(node)"
+          (dblclick)="onNodeDoubleClick(node)"
+          class="file-row"
+        >
+          <td class="name-cell">
+            <span class="material-icons icon">{{ getFileIcon(node) }}</span>
+            <span class="name">{{ node.name }}</span>
+          </td>
+          <td>
+            <span class="badge">{{
+              node.type === NodeType.FOLDER ? "Carpeta" : "Archivo"
+            }}</span>
+          </td>
+          <td>{{ formatDate(node.updatedAt) }}</td>
+          <td
+            class="actions-cell"
+            (click)="$event.stopPropagation()"
+            style="display: flex; align-items: center"
+          >
+            <button
+              class="btn-icon btn-success"
+              (click)="downloadFile(node)"
+              *ngIf="node.type === 'FILE'"
+            >
+              <span class="material-icons" style="color: green">download</span>
+            </button>
+            <button
+              class="btn-icon btn-danger"
+              (click)="openDeleteConfirmModal(node)"
+              title="Eliminar"
+            >
+              <span class="material-icons" style="color: red">delete</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- File Grid View -->
+  <div
+    class="file-grid"
+    *ngIf="!loading && currentNodes.length > 0 && viewMode === 'grid'"
+  >
+    <div
+      *ngFor="let node of currentNodes"
+      class="file-card"
+      (click)="onNodeClick(node)"
+      (dblclick)="onNodeDoubleClick(node)"
+    >
+      <div class="card-icon">
+        <span class="material-icons">{{ getFileIcon(node) }}</span>
+      </div>
+      <div class="card-content">
+        <h4 class="card-title">{{ node.name }}</h4>
+        <p class="card-meta">
+          <span *ngIf="node.sizeBytes">{{
+            formatFileSize(node.sizeBytes)
+          }}</span>
+          <span
+            *ngIf="
+              node.type === NodeType.FOLDER && node.itemCount !== undefined
+            "
+          >
+            {{ node.itemCount }} elemento(s)
+          </span>
+        </p>
+      </div>
+      <div class="card-actions" (click)="$event.stopPropagation()">
+        <button class="btn-icon" (click)="openDeleteConfirmModal(node)">
+          <span class="material-icons">delete</span>
+        </button>
+        <button
+          class="btn-icon btn-success"
+          (click)="downloadFile(node)"
+          *ngIf="node.type === 'FILE'"
+        >
+          <span class="material-icons" style="color: green">download</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Crear Carpeta -->
+<div
+  *ngIf="showCreateFolderModal"
+  (click)="closeCreateFolderModal()"
+  style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div
+    (click)="$event.stopPropagation()"
+    style="
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      min-width: 400px;
+    "
+  >
+    <div class="modal-header">
+      <h2>Crear Nueva Carpeta</h2>
+      <button
+        type="button"
+        class="btn-close"
+        (click)="closeCreateFolderModal()"
+      >
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="folderName">Nombre *</label>
+        <input
+          id="folderName"
+          type="text"
+          [(ngModel)]="newFolderName"
+          placeholder="Nombre de la carpeta"
+          class="form-control"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="folderDescription">Descripción</label>
+        <textarea
+          id="folderDescription"
+          [(ngModel)]="newFolderDescription"
+          placeholder="Descripción (opcional)"
+          class="form-control"
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeCreateFolderModal()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="createFolder()"
+        [disabled]="!newFolderName.trim()"
+        style="background: #033857 !important"
+      >
+        Crear Carpeta
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Modal: Subir Archivo -->
+<div
+  *ngIf="showUploadFileModal"
+  style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  "
+  (click)="closeUploadFileModal()"
+>
+  <div
+    style="
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      min-width: 500px;
+      max-width: 600px;
+    "
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 style="margin: 0">Subir Archivo</h2>
+      <button type="button" class="btn-close" (click)="closeUploadFileModal()">
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <label
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: #333;
+        "
+      >
+        Seleccionar Archivo *
+      </label>
+      <input
+        type="file"
+        (change)="onFileSelected($event)"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 2px dashed #ddd;
+          border-radius: 4px;
+          background: #f8f9fa;
+          cursor: pointer;
+        "
+        required
+      />
+      <small
+        *ngIf="selectedFile"
+        style="
+          display: block;
+          margin-top: 8px;
+          color: #28a745;
+          font-weight: 500;
+        "
+      >
+        ✓ {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
+      </small>
+    </div>
+
+    <div class="modal-body">
+      <label
+        for="fileDescription"
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: #333;
+        "
+      >
+        Descripción
+      </label>
+      <input
+        id="fileDescription"
+        type="text"
+        [(ngModel)]="fileDescription"
+        placeholder="Descripción del archivo (opcional)"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-sizing: border-box;
+        "
+      />
+    </div>
+
+    <div class="modal-body">
+      <label
+        for="fileNote"
+        style="
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: #333;
+        "
+      >
+        Nota
+      </label>
+      <textarea
+        id="fileNote"
+        [(ngModel)]="fileNote"
+        placeholder="Nota de versión (opcional)"
+        rows="3"
+        style="
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-sizing: border-box;
+          resize: vertical;
+          font-family: inherit;
+        "
+      ></textarea>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 24px;
+      "
+    >
+      <button
+        type="button"
+        (click)="closeUploadFileModal()"
+        style="
+          padding: 10px 20px;
+          background: #6c757d;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        "
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="uploadFile()"
+        [disabled]="!selectedFile"
+        [style.opacity]="selectedFile ? '1' : '0.5'"
+        [style.cursor]="selectedFile ? 'pointer' : 'not-allowed'"
+        style="
+          padding: 10px 20px;
+          background: #033857;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+        "
+      >
+        Subir Archivo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Eliminación -->
+<div
+  *ngIf="showDeleteConfirmModal"
+  style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  "
+  (click)="closeDeleteConfirmModal()"
+>
+  <div
+    style="
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      min-width: 400px;
+      max-width: 500px;
+    "
+    (click)="$event.stopPropagation()"
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      "
+    >
+      <h4 style="margin: 0; color: #000000ff">Confirmar Eliminación</h4>
+      <button
+        type="button"
+        (click)="closeDeleteConfirmModal()"
+        style="
+          background: transparent;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          padding: 5px 10px;
+        "
+      >
+        &times;
+      </button>
+    </div>
+
+    <p style="margin: 0 0 16px 0; font-size: 15px; color: #333">
+      ¿Estás seguro de que deseas eliminar
+      <strong>{{ selectedNode?.name }}</strong
+      >?
+    </p>
+
+    <div
+      *ngIf="selectedNode?.type === NodeType.FOLDER"
+      style="
+        display: flex;
+        align-items: start;
+        gap: 10px;
+        padding: 12px;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+        margin-bottom: 20px;
+      "
+    >
+      <span style="color: #856404; font-size: 20px">⚠️</span>
+      <p style="margin: 0; color: #856404; font-size: 14px">
+        Esta acción eliminará la carpeta y todo su contenido.
+      </p>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 24px;
+      "
+    >
+      <button
+        type="button"
+        (click)="closeDeleteConfirmModal()"
+        style="
+          padding: 10px 20px;
+          background: #6c757d;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        "
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="confirmDelete()"
+        style="
+          padding: 10px 20px;
+          background: #dc3545;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        "
+      >
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>

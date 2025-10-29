@@ -1,0 +1,283 @@
+<!-- Modal Content Area -->
+<div class="p-4">
+  <!-- Modal Overlay -->
+  <div class="modal-overlay"></div>
+
+  <!-- Modal -->
+  <div class="modal-dialog-custom">
+    <div class="modal-content-custom bg-white rounded shadow-lg">
+      <!-- Modal Header -->
+      <div
+        class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom"
+      >
+        <h2 class="fs-5 fw-bold mb-0">Gestionar documento</h2>
+        <button type="button" class="btn-close-custom" aria-label="Close" (click)="activeModal.dismiss('cancel')">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4">
+          <!--
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [class.active]="activeTab === 'upload'"
+              (click)="setActiveTab('upload')"
+              href="javascript:void(0)"
+            >
+              Subir documento
+            </a>
+          </li>
+          -->
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [class.active]="activeTab === 'process'"
+              (click)="setActiveTab('process')"
+              href="javascript:void(0)"
+            >
+              Crear proceso
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [class.active]="activeTab === 'expediente'"
+              (click)="setActiveTab('expediente')"
+              href="javascript:void(0)"
+            >
+              Crear expediente
+            </a>
+          </li>
+        </ul>
+
+        <!-- Tab Content: Subir Documento -->
+        <div *ngIf="activeTab === 'upload'">
+          <h3 class="fs-6 fw-semibold mb-3">Subir documento</h3>
+
+          <form>
+            <div class="mb-3">
+              <label for="proceso" class="form-label text-muted small">
+                Proceso <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="proceso"
+                [(ngModel)]="formDataDocument.proceso"
+                name="proceso"
+              >
+                <option value="">seleccione proceso</option>
+                <option *ngFor="let proceso of procesosDef" [value]="proceso.id">
+                  {{ proceso.numeroProceso }} - {{ proceso.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="expediente" class="form-label text-muted small">
+                Expediente <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="expediente"
+                [(ngModel)]="formDataDocument.expediente"
+                name="expediente"
+              >
+                <option value="">seleccione expediente</option>
+                <option
+                  *ngFor="let exp of getExpedientesByProceso()"
+                  [value]="exp.id"
+                >
+                  {{ exp.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="descripcion" class="form-label text-muted small">
+                Descripción <span class="text-danger">*</span>
+              </label>
+              <textarea
+                class="form-control"
+                id="descripcion"
+                rows="3"
+                [(ngModel)]="formDataDocument.descripcion"
+                name="descripcion"
+                placeholder="Ingrese una descripción del documento"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-muted small">
+                Archivo <span class="text-danger">*</span>
+              </label>
+              <div class="d-flex align-items-center gap-3">
+                <label
+                  for="file-upload"
+                  class="btn btn-outline-secondary btn-sm"
+                >
+                  Elegir archivo
+                </label>
+                <input
+                  type="file"
+                  id="file-upload"
+                  class="d-none"
+                  (change)="onFileSelected($event)"
+                />
+                <span class="text-muted small">{{ fileName }}</span>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Content: Crear Proceso -->
+        <div *ngIf="activeTab === 'process'">
+          <h3 class="fs-6 fw-semibold mb-3">Crear proceso</h3>
+
+          <form>
+            <div class="mb-3">
+              <label for="numeroProceso" class="form-label text-muted small">
+                Número de Proceso <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="numeroProceso"
+                [(ngModel)]="formDataProcess.numeroProceso"
+                name="numeroProceso"
+                placeholder="Ej: 001-2024"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="nombreProceso" class="form-label text-muted small">
+                Nombre del Proceso <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombreProceso"
+                [(ngModel)]="formDataProcess.nombre"
+                name="nombreProceso"
+                placeholder="Ej: Proceso Civil por desalojo"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="clienteId" class="form-label text-muted small">
+                Identicficación Cliente <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="clienteId"
+                [(ngModel)]="formDataProcess.clienteId"
+                name="clienteId"
+                placeholder="Ej: 123456797"
+              />
+            </div>
+
+            <div class="alert alert-info d-flex align-items-start" role="alert">
+              <i class="bi bi-info-circle me-2 mt-1"></i>
+              <div class="small">
+                Un proceso agrupa todos los documentos y expedientes
+                relacionados con un caso legal específico.
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Content: Crear Expediente -->
+        <div *ngIf="activeTab === 'expediente'">
+          <h3 class="fs-6 fw-semibold mb-3">Crear expediente</h3>
+
+          <form>
+            <div class="mb-3">
+              <label for="nombreExpediente" class="form-label text-muted small">
+                Nombre del Expediente <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombreExpediente"
+                [(ngModel)]="formDataExpediente.nombre"
+                name="nombreExpediente"
+                placeholder="Ej: EXP-001-2024"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="procesoAsociado" class="form-label text-muted small">
+                Proceso Asociado <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="procesoAsociado"
+                [(ngModel)]="formDataExpediente.procesoId"
+                name="procesoAsociado"
+              >
+                <option value="">Seleccione un proceso</option>
+                <option *ngFor="let proceso of procesosDef" [value]="proceso.id">
+                  {{ proceso.numeroProceso }} - {{ proceso.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <div class="alert alert-info d-flex align-items-start" role="alert">
+              <i class="bi bi-info-circle me-2 mt-1"></i>
+              <div class="small">
+                Un expediente es una subcategoría dentro de un proceso que
+                permite organizar documentos específicos.
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer-custom bg-light p-3 rounded-bottom">
+        <button
+          type="button"
+          class="btn btn-secondary me-2"
+          (click)="onCancel(); activeModal.dismiss('cancel')"
+        >
+          Cancelar
+        </button>
+
+        <!-- Botón Guardar para Subir Documento -->
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="activeTab === 'upload'"
+          (click)="onSubmitDocument()"
+        >
+          Guardar
+        </button>
+
+        <!-- Botón Registrar para Crear Proceso -->
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="activeTab === 'process'"
+          (click)="onSubmitProcess()"
+        >
+          <i class="bi bi-plus-circle me-1"></i>
+          Registrar Proceso
+        </button>
+
+        <!-- Botón Registrar para Crear Expediente -->
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="activeTab === 'expediente'"
+          (click)="onSubmitExpediente()"
+        >
+          <i class="bi bi-plus-circle me-1"></i>
+          Registrar Expediente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

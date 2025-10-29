@@ -1,0 +1,88 @@
+<!-- <utils-calendar-header [(view)]="view" [(viewDate)]="viewDate" [locale]="locale" >
+</utils-calendar-header> -->
+<div class="col-md-12">
+    <app-alert></app-alert>
+</div>
+<div class="row text-center" style="font-size: 10px !important">
+    <div class="col-md-5">
+        <div class="btn-group">
+            <button class="btn btn-primary" (click)="decrement()" [disabled]="prevBtnDisabled">
+                Anterior
+            </button>
+            <button class="btn btn-outline-secondary" (click)="today()">Hoy</button>
+            <button class="btn btn-primary" (click)="increment()" [disabled]="nextBtnDisabled">
+                Siguiente
+            </button>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <h4>{{ viewDate | calendarDate:(view + 'ViewTitle'):'es' }}</h4>
+    </div>
+    <div class="col-md-2">
+        <div class="btn-group">
+            <div class="btn btn-primary" (click)="changeView('month')" [class.active]="view === 'month'">
+                Mes
+            </div>
+            <div class="btn btn-primary" (click)="changeView('week')" [class.active]="view === 'week'">
+                Semana
+            </div>
+            <div class="btn btn-primary" (click)="changeView('day')" [class.active]="view === 'day'">
+                Día
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<ng-template #customCellTemplate let-day="day" let-locale="locale">
+    <div class="cal-cell-top">
+        <span class="cal-day-number">{{ day.date | calendarDate:'monthViewDayNumber':locale }}</span>
+    </div>
+    <div class="cal-events" *ngIf="day.events.length > 0">
+        <div class="cal-event" *ngFor="let event of day.events" [ngStyle]="{ backgroundColor: event.color?.primary }"
+            [ngClass]="event?.cssClass" [mwlCalendarTooltip]="event.title | calendarEventTitle: 'monthTooltip':event"
+            [tooltipEvent]="event" style="width: 25px; height: 25px;">
+        </div>
+    </div>
+
+</ng-template>
+
+<div [ngSwitch]="view">
+    <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [activeDayIsOpen]="activeDayIsOpen"
+        [events]="events" [refresh]="refresh" [cellTemplate]="customCellTemplate" [locale]="locale"
+        (dayClicked)="dayClicked($event.day)" (eventClicked)="handleEvent('Clicked', $event.event)"
+        (eventTimesChanged)="eventTimesChanged($event)" (beforeViewRender)="beforeMonthViewRender($event)">
+    </mwl-calendar-month-view>
+    <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" [events]="events" [locale]="locale"
+        [events]="events" [refresh]="refresh" (eventClicked)="handleEvent('Clicked', $event.event)"
+        (eventTimesChanged)="eventTimesChanged($event)" (hourSegmentClicked)="hourSegmentClicked($event.date)">
+    </mwl-calendar-week-view>
+    <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" [events]="events" [locale]="locale"
+        (eventClicked)="handleEvent('Clicked', $event.event)" (eventTimesChanged)="eventTimesChanged($event)"
+        [refresh]="refresh" (hourSegmentClicked)="hourSegmentClicked($event.date)">
+    </mwl-calendar-day-view>
+</div>
+
+<!-- <ng-template #modalContent let-close="close">
+    <div class="modal-header">
+        <h5 class="modal-title">Event action occurred</h5>
+        <button type="button" class="close" (click)="close()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div>
+            Action:
+            <pre>{{ modalData.action }}</pre>
+        </div>
+        <div>
+            Event:
+            <pre>{{ modalData.event | json }}</pre>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="close()">
+            OK
+        </button>
+    </div>
+</ng-template> -->

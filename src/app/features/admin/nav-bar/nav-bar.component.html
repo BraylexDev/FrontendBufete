@@ -1,0 +1,34 @@
+<div class="m-header" style="justify-content: center;">
+  <a href="javascript:" class="mobile-menu" id="mobile-collapse" title="Click to Menu Collapse" (click)="navCollapse()"><span></span></a>
+  <a href="javascript:" class="header-mobile-collapse" id="mobile-collapse1" (click)="navCollapseMob()">
+    <i class="feather icon-menu"></i>
+  </a>
+  <a [routerLink]="['/admin/home']" class="b-brand" style="height: 200px; display: flex; justify-content: center;">
+    <img id="main-logo" src="assets/images/log.png" alt="logo-img" class="logo" style="width: 100%; height: 40%;  object-fit: contain;"/>
+  </a>
+  <a class="mob-toggler" [ngClass]="{ on: this.menuClass }" href="javascript:" (click)="toggleMobOption()">
+    <i class="feather icon-more-vertical"></i>
+  </a>
+</div>
+<div class="collapse navbar-collapse" [style.display]="this.collapseStyle">
+  <app-nav-right class="ms-auto" />
+</div>
+
+<ng-template #mainHeader>
+  <div class="m-header">
+    <a href="javascript:" class="mobile-menu" id="mobile-collapse" title="Click to Menu Collapse" (click)="navCollapse()"><span></span></a>
+    <a href="javascript:" class="header-mobile-collapse" id="mobile-collapse1" (click)="this.NavCollapsedMob.emit()">
+      <i class="feather icon-menu"></i>
+    </a>
+    <a [routerLink]="['/admin/home']" class="">
+      <img id="main-logo" src="assets/images/logo.png" alt="logo-img" class="logo" />
+      <img src="assets/images/logo-icon.png" alt="logo-icon-img" class="logo-thumb" />
+    </a>
+    <a class="mob-toggler" [ngClass]="{ on: this.menuClass }" href="javascript:" (click)="toggleMobOption()">
+      <i class="feather icon-more-vertical"></i>
+    </a>
+  </div>
+  <div class="collapse navbar-collapse" [style.display]="this.collapseStyle">
+    <app-nav-right class="ms-auto" />
+  </div>
+</ng-template>

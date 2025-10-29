@@ -1,0 +1,60 @@
+<div class="expediente-container">
+  <div class="expediente-header">
+    <div class="header-content">
+      <button class="btn-back" (click)="volver()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <div>
+        <h1>{{ expedienteName }}</h1>
+        <p class="subtitle">Expediente #{{ expedienteId }}</p>
+      </div>
+    </div>
+
+    <!-- Tabs opcionales -->
+     <!--
+    <div class="tabs">
+      <button
+        [class.active]="activeTab === 'info'"
+        (click)="activeTab = 'info'"
+      >
+        Información
+      </button>
+      <button
+        [class.active]="activeTab === 'archivos'"
+        (click)="activeTab = 'archivos'"
+      >
+        Archivos
+      </button>
+      <button
+        [class.active]="activeTab === 'historial'"
+        (click)="activeTab = 'historial'"
+      >
+        Historial
+      </button>
+    </div>
+    -->
+  </div>
+
+  <div class="expediente-content">
+    <!-- Contenido según tab activo -->
+    <div *ngIf="activeTab === 'info'" class="tab-content">
+      <h2>Información del Expediente</h2>
+      <p>Aquí va la información del expediente...</p>
+    </div>
+
+    <div *ngIf="activeTab === 'archivos'" class="tab-content">
+      <app-file-explorer *ngIf="rootNodeId" [rootNodeId]="rootNodeId">
+      </app-file-explorer>
+    </div>
+
+    <div *ngIf="activeTab === 'historial'" class="tab-content">
+      <h2>Historial</h2>
+      <p>Aquí va el historial...</p>
+    </div>
+
+    <div *ngIf="!rootNodeId && activeTab === 'archivos'" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando expediente...</p>
+    </div>
+  </div>
+</div>

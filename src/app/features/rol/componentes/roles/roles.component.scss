@@ -1,0 +1,17 @@
+.centro-dropdown {
+    position: relative;
+
+    .dropdown-menu {
+        left: 10% !important;
+        /* transform: translateX(-50%) !important; */
+    }
+}
+
+.item {
+    padding: 10px 25px;
+    margin: 0 20px;
+}
+
+.table-outer {
+    overflow-x: auto;
+}
