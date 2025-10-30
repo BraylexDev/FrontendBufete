@@ -1,8 +1,10 @@
 <!-- Modal Content Area -->
+ <div class="col-md-12">
+    <app-alert></app-alert>
+</div>
 <div class="p-4">
   <!-- Modal Overlay -->
   <div class="modal-overlay"></div>
-
   <!-- Modal -->
   <div class="modal-dialog-custom">
     <div class="modal-content-custom bg-white rounded shadow-lg">
@@ -11,7 +13,12 @@
         class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom"
       >
         <h2 class="fs-5 fw-bold mb-0">Gestionar documento</h2>
-        <button type="button" class="btn-close-custom" aria-label="Close" (click)="activeModal.dismiss('cancel')">
+        <button
+          type="button"
+          class="btn-close-custom"
+          aria-label="Close"
+          (click)="activeModal.dismiss('cancel')"
+        >
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -70,7 +77,10 @@
                 name="proceso"
               >
                 <option value="">seleccione proceso</option>
-                <option *ngFor="let proceso of procesosDef" [value]="proceso.id">
+                <option
+                  *ngFor="let proceso of procesosDef"
+                  [value]="proceso.id"
+                >
                   {{ proceso.numeroProceso }} - {{ proceso.nombre }}
                 </option>
               </select>
@@ -219,7 +229,10 @@
                 name="procesoAsociado"
               >
                 <option value="">Seleccione un proceso</option>
-                <option *ngFor="let proceso of procesosDef" [value]="proceso.id">
+                <option
+                  *ngFor="let proceso of procesosDef"
+                  [value]="proceso.id"
+                >
                   {{ proceso.numeroProceso }} - {{ proceso.nombre }}
                 </option>
               </select>

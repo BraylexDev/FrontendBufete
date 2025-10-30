@@ -10,7 +10,6 @@ export const environment = {
 
   /* apiUrl: 'https://docker-backend-bufete.onrender.com', */
   apiUrl: 'http://localhost:8081/api',
-  secUrl: 'http://localhost:8081',
   uploadMaxSize: 100 * 1024 * 1024, // 100MB
   supportedFileTypes: [
     'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
@@ -26,19 +25,6 @@ export const environment = {
     'video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo',
     'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3'
   ],
-  /* apiUrl: 'http://localhost:4200', */
-  
-  apiUrlEventos: 'http://localhost:4200/assets/datas/eventos.json',
-  apiUrlPermisos: 'http://localhost:4200/assets/datas/permisos.json',
-  apiUrlUser: 'http://localhost:4200/assets/datas/users.json',
-  apiUrlRoles: 'http://localhost:4200/assets/datas/roles.json',
-  
-  /* apiUrl: 'https://bufete-abogados.onrender.com', */
-  /* apiUrlEventos: 'https://bufete-abogados.onrender.com/assets/datas/eventos.json',
-  apiUrlPermisos: 'https://bufete-abogados.onrender.com/assets/datas/permisos.json',
-  apiUrlUser: 'https://bufete-abogados.onrender.com/assets/datas/users.json',
-  apiUrlRoles: 'https://bufete-abogados.onrender.com/assets/datas/roles.json'
- */
 };
 
 /*

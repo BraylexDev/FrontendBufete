@@ -20,7 +20,7 @@ const exp: Array<string> = [
 
 @Component({
   selector: 'app-plantilla-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SharedModule],
   templateUrl: './plantilla-modal.component.html',
   styleUrl: './plantilla-modal.component.scss'
 })

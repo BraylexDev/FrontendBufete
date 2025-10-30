@@ -5,6 +5,9 @@ import { Permission } from '../../models/permission.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
+interface RolUpdateDTO{
+  permisos: Set<string>;
+}
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
@@ -36,20 +39,21 @@ export class RoleService {
   
   
   crearRol(nombre: string, permisos: string[]): Observable<Role> {
-    const id= 1;
     return this.http.post<Role>(`${this.baseUrl}`, {nombre, permisos });
   }
 
   actualizarPermisos(id: number, permisos: string[]): Observable<Role> {
-
-    return this.http.put<Role>(`${this.baseUrl}/rol/${id}`, { permisos });
+    const body = { permisos };
+    console.log(permisos);
+    
+    return this.http.post<Role>(`${this.baseUrl}/${id}`,body );
   }
 
   obtenerRol(id: number): Observable<Role> {
-    return this.http.get<Role>(`${this.baseUrl}/rol/${id}`);
+    return this.http.get<Role>(`${this.baseUrl}/${id}`);
   }
 
   eliminarRole(id: number) {
-    return this.http.delete<Role>(`${this.baseUrl}/rol/${id}`);
+    return this.http.delete<Role>(`${this.baseUrl}/${id}`);
   }
 }

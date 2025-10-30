@@ -56,7 +56,10 @@ export class ListaReportesComponent {
   ) { }
 
   ngOnInit(): void {
+    this.cargarProcesos();    
+  }
 
+  cargarProcesos(){
     this.svc.listarProcesosByAbodado()
       .subscribe(
         {
@@ -69,6 +72,18 @@ export class ListaReportesComponent {
         }
       )
   }
+
+  openModal() {
+      const buttonElement = document.activeElement as HTMLElement;
+      buttonElement.blur();
+      const modalRef = this.modalService.open(ProcesoModalComponent);
+      modalRef.componentInstance.modalTitle = 'Crear Plantilla Jurídica';
+      
+      // Suscribirse al cierre del modal
+      modalRef.dismissed.subscribe(() => {
+        this.cargarProcesos();
+      });
+    }
 
   toFolder(exp: Expedienteaux){
     this.router.navigate(['/admin/expedientes', exp.id, 'archivos'], {

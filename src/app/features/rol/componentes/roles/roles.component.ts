@@ -1,28 +1,25 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { SharedModule } from '../../../../features/shared/shared.module';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterModule } from '@angular/router';
-
 import { RoleService } from '../../../../domain/services/role/role.service';
 import { Role } from '../../../../domain/models/role.model';
 import { Permission } from '../../../../domain/models/permission.model';
-import { map } from 'rxjs';
 import { AlertService, AlertType } from '../../../shared/alert/service/alert.service';
+
+declare var bootstrap: any;
 
 interface EditableRol extends Role {
   editing: boolean;
-  permisosSet: Set<string>;
+}
+
+interface PermissionsByModule {
+  [key: string]: Permission[];
 }
 
 @Component({
@@ -35,12 +32,6 @@ interface EditableRol extends Role {
     FormsModule,
     ReactiveFormsModule,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatTableModule,
-    MatCheckboxModule,
     CardComponent,
     SharedModule,
     NgbDropdownModule
@@ -48,114 +39,152 @@ interface EditableRol extends Role {
   templateUrl: './roles.component.html',
   styleUrls: ['./roles.component.scss']
 })
-export class RolesComponent {
-  /* count: number; */
+export class RolesComponent implements OnInit {
   showMessagePerms = false;
   showMessageNom = false;
-
-  idDelete: number = -1;
+  searchTerm = '';
 
   form: FormGroup;
   permisos: Permission[] = [];
   roles: EditableRol[] = [];
-
+  filteredRoles: EditableRol[] = [];
   permissions: Permission[] = [];
+  permissionsByModule: PermissionsByModule = {};
+  rolToDelete: EditableRol | null = null;
 
-  constructor(private svc: RoleService, private fb: FormBuilder, private alertService: AlertService, private changeDetectorRef: ChangeDetectorRef) {
+  constructor(
+    private svc: RoleService,
+    private fb: FormBuilder,
+    private alertService: AlertService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
     this.form = this.fb.group({
-      nombre: ['', Validators.required],
+      nombre: ['', [Validators.required, Validators.minLength(3)]],
+      descripcion: [''],
       permisos: [[], Validators.required]
     });
-
-    this.svc.getPermissions()
-      .subscribe(
-        {
-          next: data => this.permissions = data,
-          error: err => console.error('Error fetching items', err)
-        }
-      )
-    /* this.count = this.svc.ultimoRolId() + 1; */
   }
 
   get permisosControl(): FormControl<string[]> {
     return this.form.get('permisos') as FormControl<string[]>;
   }
+
   ngOnInit() {
     this.loadPermisos();
     this.loadRoles();
   }
 
   private loadPermisos() {
-    this.svc.listarPermisos().subscribe(ps => this.permisos = ps);
+    this.svc.listarPermisos().subscribe({
+      next: (ps) => {
+        this.permisos = ps;
+        this.permissions = ps;
+        this.groupPermissionsByModule(ps);
+      },
+      error: (err) => {
+        console.error('Error cargando permisos', err);
+        this.triggerAlert('Error cargando permisos', 'danger');
+      }
+    });
+  }
+
+  private groupPermissionsByModule(permisos: Permission[]) {
+    this.permissionsByModule = permisos.reduce((acc, permiso) => {
+      const modulo = 'GENERAL';
+      if (!acc[modulo]) {
+        acc[modulo] = [];
+      }
+      acc[modulo].push(permiso);
+      return acc;
+    }, {} as PermissionsByModule);
   }
 
   private loadRoles() {
-    this.svc.listarRoles().subscribe(rs => {
-      this.roles = rs.map(r => ({
+    this.svc.listarRoles().subscribe({
+      next: (rs) => {
+        this.roles = rs.map(r => ({
         ...r,
-        editing: false,
-        permisosSet: new Set(r.permisos.map(p => p.nombre))
+        editing: false
       }));
+        this.filteredRoles = [...this.roles];
+      },
+      error: (err) => {
+        console.error('Error cargando roles', err);
+        this.triggerAlert('Error cargando roles', 'danger');
+      }
     });
-
   }
 
-  eliminarRol() {
-    this.svc.eliminarRole(this.idDelete).subscribe(
-      () => {
-        this.loadRoles();
-      }
+  filterRoles() {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredRoles = this.roles.filter(rol =>
+      rol.nombre.toLowerCase().includes(term)
     );
   }
 
   onSubmit() {
-    if (this.permisosControl.value.length <= 1) {
+    this.showMessagePerms = false;
+    this.showMessageNom = false;
+
+    if (this.permisosControl.value.length < 1) {
       this.showMessagePerms = true;
-    } else {
-      this.showMessagePerms = false;
+      this.triggerAlert('Debe seleccionar al menos un permiso', 'warning');
+      return;
     }
+
     if (this.form.get('nombre')?.invalid) {
       this.showMessageNom = true;
+      this.form.get('nombre')?.markAsTouched();
+      return;
     }
-    else {
-      this.showMessageNom = false;
-    }
-    if (!this.showMessageNom && !this.showMessagePerms) {
-      /* this.crear(); */
-      this.createRole()
-    }
+
+    this.createRole();
   }
 
   createRole() {
     const { nombre, permisos } = this.form.value;
-    
-    this.svc.crearRol(nombre, permisos.map((nombre: string) => `${nombre}`))
-      .subscribe(() => {
-        this.form.reset({ nombre: '', permisos: [] });
-        this.triggerAlert('Registro Exitoso', 'success');
+
+    this.svc.crearRol(nombre, permisos).subscribe({
+      next: () => {
+        this.resetForm();
+        this.triggerAlert('Rol creado exitosamente', 'success');
         this.loadRoles();
-      });
+      },
+      error: (err) => {
+        console.error('Error creando rol', err);
+        this.triggerAlert('Error al crear el rol', 'danger');
+      }
+    });
   }
 
-  eliminar() {
-    this.svc.eliminarRole(this.idDelete);
-    this.triggerAlert('Eliminación Exitosa', 'success');
-
-    this.loadRoles();
-    this.changeDetectorRef.detectChanges();
+  resetForm() {
+    this.form.reset({
+      nombre: '',
+      descripcion: '',
+      permisos: []
+    });
+    this.showMessagePerms = false;
+    this.showMessageNom = false;
   }
 
   toggleEdit(r: EditableRol) {
     if (r.editing) {
-      const permisosArr = Array.from(r.permisosSet);
+      // Guardar cambios
+      const permisosArr = Array.from(r.permisos);
 
-      this.svc.actualizarPermisos(r.id, permisosArr).subscribe(() => {
-        r.editing = false;
-        this.loadRoles();
-        this.triggerAlert('Actualización Exitosa', 'success');
+      this.svc.actualizarPermisos(r.id, permisosArr).subscribe({
+        next: () => {
+          r.editing = false;
+          this.loadRoles();
+          this.triggerAlert('Permisos actualizados exitosamente', 'success');
+        },
+        error: (err) => {
+          console.error('Error actualizando permisos', err);
+          this.triggerAlert('Error al actualizar permisos', 'danger');
+        }
       });
-      
     } else {
+      // Activar modo edición
       r.editing = true;
     }
   }
@@ -175,10 +204,36 @@ export class RolesComponent {
 
   onPermisoRowToggle(r: EditableRol, permisoNombre: string, checked: boolean) {
     if (checked) {
-      r.permisosSet.add(permisoNombre);
+      r.permisos.push(permisoNombre);
     } else {
-      r.permisosSet.delete(permisoNombre);
+      r.permisos = r.permisos.filter(item => item !== permisoNombre)
     }
+  }
+
+  tienePermiso(permisos: string[], permiso: string): boolean{
+    return permisos.includes(permiso);
+  }
+
+  confirmarEliminacion(rol: EditableRol) {
+    this.rolToDelete = rol;
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+  }
+
+  eliminarRol() {
+    if (!this.rolToDelete) return;
+
+    this.svc.eliminarRole(this.rolToDelete.id).subscribe({
+      next: () => {
+        this.triggerAlert('Rol eliminado exitosamente', 'success');
+        this.loadRoles();
+        this.rolToDelete = null;
+      },
+      error: (err) => {
+        console.error('Error eliminando rol', err);
+        this.triggerAlert('Error al eliminar el rol', 'danger');
+      }
+    });
   }
 
   triggerAlert(message: string, type: AlertType) {
