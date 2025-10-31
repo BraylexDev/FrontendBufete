@@ -56,7 +56,7 @@
         <label for="title" class="form-label">* Fecha Evento</label>
       </div>
       <div>
-        <input type="date" id="myDate" name="myDate" [value]="defaultDate" />
+        <input type="date" id="myDate" name="myDate" [value]="defaultDate" [(ngModel)]="defaultDate"/>
       </div>
     </div>
     <div class="mb-3" style="display: flex; justify-content: space-between">
@@ -64,7 +64,7 @@
         <label for="title" class="form-label">* Hora Evento</label>
       </div>
       <div>
-        <input type="time" id="myTime" name="myTime" [value]="defaultTime" />
+        <input type="time" id="myTime" name="myTime" [value]="defaultTime" [(ngModel)]="defaultTime"/>
       </div>
     </div>
   </form>

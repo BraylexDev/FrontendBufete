@@ -139,7 +139,7 @@
         border: none;
         font-size: 13px;
         white-space: nowrap;
-
+        vertical-align: middle !important;
         i {
           margin-right: 6px;
         }
@@ -280,9 +280,12 @@
   .permission-header {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 4px;
-
+    
+    white-space: normal;      /* Permite saltos de línea */
+    word-wrap: break-word;    /* Rompe palabras largas si es necesario */
+    text-align: center;       /* Centra el texto */
+    max-width: 120px;         /* Ajusta el ancho para forzar saltos */
     small {
       display: block;
       text-align: center;

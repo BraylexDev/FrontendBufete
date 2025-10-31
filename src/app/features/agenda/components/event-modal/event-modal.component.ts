@@ -43,22 +43,24 @@ function addDays(date: Date, days: number): Date {
   templateUrl: './event-modal.component.html',
   styleUrl: './event-modal.component.scss'
 })
-export class EventModalComponent implements OnInit{
+export class EventModalComponent implements OnInit {
   @Input() procesos: ProcesoDTO[] = [];
   @Input() modalTitle: string = '';
   @Input() dataEvento: EventoData = {
     evento: {
+      procesoId: 0,
       titulo: '',
       tipoEventoId: 0,
       fechaInicio: '',
-      allDay: false
+      allDay: false,
+      descripcion: ''
     }, infoCalendar: { start: new Date(), title: '', end: new Date() }
   };
 
   @Output() eventSaved = new EventEmitter<EventoData>();
 
-  defaultDate: string ='';
-  defaultTime: string ='  ';
+  defaultDate: string = '';
+  defaultTime: string = '  ';
   terminos = TERMINOS;
   minDate = new Date();
   items: Termino[] = [];
@@ -70,15 +72,15 @@ export class EventModalComponent implements OnInit{
   constructor(public activeModal: NgbActiveModal, private processService: ProcesoService) {
 
     this.myForm = new FormGroup({
-        firstName: new FormControl('', Validators.required)
-      });
+      firstName: new FormControl('', Validators.required)
+    });
   }
 
   ngOnInit(): void {
     const now = this.dataEvento.infoCalendar.start;
 
     const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0'); 
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
     this.defaultDate = `${year}-${month}-${day}`;
 
@@ -88,21 +90,34 @@ export class EventModalComponent implements OnInit{
   }
 
   saveEvent() {
-    const procesoBuscado = this.procesos.find((proceso) => proceso.id === this.dataEvento.evento.procesoId);
-    if(procesoBuscado){
-      this.dataEvento.infoCalendar.title = procesoBuscado.nombre + " <br> " +this.dataEvento.evento.titulo ;
+    const procesoBuscado = this.procesos.find(proceso => proceso.id === Number(this.dataEvento.evento.procesoId));
+    if (procesoBuscado) {
+      this.dataEvento.infoCalendar.title = procesoBuscado.numeroProceso + " - " + procesoBuscado.nombre + " <br> " + this.dataEvento.evento.titulo;
     }
-    else{
+    else {
       this.dataEvento.infoCalendar.title = this.dataEvento.evento.titulo
     }
-    
-    console.log("title: "+this.dataEvento.infoCalendar.title)
-    console.log(this.dataEvento);
+
+    this.dataEvento.infoCalendar.start = new Date(`${this.defaultDate}T${this.defaultTime}`);
+
+    const [hours, minutes] = this.defaultTime.split(':').map(Number);
+
+    const fecha = new Date();
+    fecha.setHours(hours);
+    fecha.setMinutes(minutes);
+
+    // sumamos 1 hora
+    fecha.setHours(fecha.getHours() + 1);
+
+    // volvemos a formatear en HH:mm
+    const nuevaHora = fecha.toTimeString().slice(0, 5);
+
+    this.defaultTime = nuevaHora;
+
+    this.dataEvento.infoCalendar.end = new Date(`${this.defaultDate}T${this.defaultTime}`);
     addDays(this.dataEvento.infoCalendar.end || new Date, this.selectedTermino);
     this.eventSaved.emit(this.dataEvento);
     this.activeModal.close(this.dataEvento);
   }
 
-  buscarNombreProceso(id: number){
-  }
 }

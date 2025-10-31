@@ -132,6 +132,7 @@ export class CalendarComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadEvents();
+    
   }
 
   constructor(private modalService: NgbModal, private eventService: EventService, private processService: ProcesoService, private alertService: AlertService) {
@@ -153,10 +154,9 @@ export class CalendarComponent implements OnInit {
   loadEvents(): void {
     this.eventService.listarEventos().subscribe(
       (data) => {
-        console.log(data.data);
         this.events = data.data.map((eventData) => ({
           start: new Date(eventData.fechaInicio),
-          title: eventData.titulo,
+          title: eventData.descripcion || eventData.titulo,
           allDay: eventData.allDay,
           actions: this.actions,
           resizable: { beforeStart: true, afterEnd: true },
@@ -223,10 +223,6 @@ export class CalendarComponent implements OnInit {
 
   /* ------------------------------------------------------------------------ */
 
-  /* Modal para agregar el evento */
-  /* dayClicked({ date }: { date: Date }, all: boolean): void {
-    this.openModal(date, all);
-  } */
   dayClicked({ date, events }: { date: Date; events: CalendarEvent[] }): void {
     if (isSameMonth(date, this.viewDate)) {
       if ((isSameDay(this.viewDate, date) && this.activeDayIsOpen === true) || events.length === 0) {
@@ -266,7 +262,7 @@ export class CalendarComponent implements OnInit {
 
         let formData: CreateEventoRequest = {
           titulo: newEvent.evento.titulo,
-          descripcion: newEvent.evento.descripcion,
+          descripcion: newEvent.infoCalendar.title,
           tipoEventoId: 6,
           fechaInicio: fechaI,
           fechaFin: newEvent.evento.fechaFin,
@@ -274,12 +270,11 @@ export class CalendarComponent implements OnInit {
           procesoId: newEvent.evento.procesoId,
           expedienteId: newEvent.evento.expedienteId
         }
-
         this.eventService.crearEvento(formData).subscribe({
           next: () => {
             this.events = [...this.events, newEvent.infoCalendar];
             this.refresh.next();
-
+            this.eventService.notificarCambio();
           },
           error: (err) => {
             console.error('Error al guardar el evento', err);
@@ -288,16 +283,6 @@ export class CalendarComponent implements OnInit {
       }
     });
   }
-
-  /* encontrarIdProceso(nameProceso: string): number {
-    var numId: number = -1;
-    this.procesos.forEach(element => {
-      if (nameProceso.toString === element.nombre.toString) {
-        numId = element.id;
-      }
-    });
-    return numId;
-  } */
 
   hourSegmentClicked(date: Date) {
     this.openModal(date, false);
@@ -349,15 +334,6 @@ export class CalendarComponent implements OnInit {
       return iEvent;
     });
     this.handleEvent('2', event);
-    /*  this.eventService.actualizarEvento(event.title, event.start, event.end, all, , 5).subscribe({
-       next: () => {
-         this.events = [...this.events, event.infoCalendar];
-         this.refresh.next();
-       },
-       error: (err) => {
-         console.error('Error al guardar el evento', err);
-       }
-     }); */
   }
 
   deleteEvent(eventToDelete: CalendarEvent) {

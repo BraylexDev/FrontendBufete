@@ -26,10 +26,11 @@
               <tr>
                 <td>
                   <div>
-                    <b>{{ consguirProceso(evt.titulo) }}</b>
+                    <b>Proceso: </b>
+                    {{ consguirProceso(evt.descripcion) || evt.titulo}}
                   </div>
                   <div>
-                    <b>{{ consguirTitulo(evt.titulo) }}</b>
+                    <b>{{ evt.titulo}}</b>
                   </div>
                   <div><b>Día:</b> {{ formatFecha(evt.fechaInicio) }}</div>
                   <div><b>Hora:</b> {{ formatHora(evt.fechaInicio) }}</div>

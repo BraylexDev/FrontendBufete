@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CalendarComponent } from '../calendar/calendar.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { EventService } from '../../../../domain/services/event/event.service';
 import { EventoDto } from '../../../../domain/models/event.model';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-agenda',
@@ -14,14 +15,24 @@ import { CommonModule, DecimalPipe } from '@angular/common';
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss'
 })
-export class AgendaComponent {
+export class AgendaComponent implements OnInit, OnDestroy{
 
+  private sub!: Subscription;
   eventos: EventoDto[] = [];
 
   constructor(private eventService: EventService) {
+  }
+  ngOnInit(): void {
     this.loadEvents();
+    this.sub = this.eventService.eventosActualizados$.subscribe(() => {
+      this.loadEvents();
+    });
   }
 
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+  
   loadEvents(): void {
     this.eventService.listarEventos().subscribe(
       (data) => {
@@ -42,11 +53,17 @@ export class AgendaComponent {
     return fechaManual;
   }
 
-  consguirProceso(str: string): string{
-    return str.split('<br>')[0];
+  consguirProceso(str?: string): string{
+    if(str){
+      return str.split('<br>')[0];
+    }
+    return '';
   }
-  consguirTitulo(str: string): string{
-    return str.split('<br>')[1];
+  consguirTitulo(str?: string): string{
+    if(str){
+      return str.split('<br>')[1];
+    }
+    return '';
   }
 
   formatFecha(date: string): string{

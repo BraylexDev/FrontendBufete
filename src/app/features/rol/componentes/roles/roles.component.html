@@ -175,10 +175,10 @@
         <div class="table-responsive">
           <table class="table table-hover table-bordered modern-table">
             <thead class="table-primary">
-              <tr>
-                <th class="sticky-col" style="text-align: center">Nombre</th>
+              <tr >
+                <th class="sticky-col" style="text-align: center " >Nombre</th>
                 <th class="text-center" *ngFor="let permiso of permisos">
-                  <div class="permission-header" [title]="permiso.nombre">
+                  <div class="permission-header" [title]="permiso.nombre" >
                     <small>{{ permiso.descripcion | titlecase }}</small>
                   </div>
                 </th>

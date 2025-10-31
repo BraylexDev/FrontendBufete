@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CreateEventoRequest, EventoDto } from '../../models/event.model';
 import { ApiResponse } from '../../models/node2.model';
 
@@ -9,8 +9,14 @@ import { ApiResponse } from '../../models/node2.model';
 export class EventService {
 
   private baseUrl = environment.apiUrl + '/eventos';
+  private eventosActualizados = new BehaviorSubject<void>(undefined);
+  eventosActualizados$ = this.eventosActualizados.asObservable();
 
   constructor(private http: HttpClient) { }
+
+  notificarCambio() {
+    this.eventosActualizados.next();
+  }
 
   crearEvento(evento: CreateEventoRequest): Observable<ApiResponse<EventoDto>> {
     return this.http.post<ApiResponse<EventoDto>>(this.baseUrl, evento);
