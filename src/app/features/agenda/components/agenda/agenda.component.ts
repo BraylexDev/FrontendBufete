@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CalendarComponent } from '../calendar/calendar.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { EventService } from '../../../../domain/services/event/event.service';
-import { CalendarEvent } from 'angular-calendar';
 import { EventoDto } from '../../../../domain/models/event.model';
 import { CommonModule, DecimalPipe } from '@angular/common';
 

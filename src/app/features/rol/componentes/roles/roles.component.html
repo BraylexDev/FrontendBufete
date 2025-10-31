@@ -100,11 +100,6 @@
                           [for]="'perm-' + permiso.id"
                         >
                           <strong>{{ permiso.descripcion | titlecase }}</strong>
-                          <!--
-                          <span class="permission-description">{{
-                            permiso.nombre
-                          }}</span>
-                          -->
                         </label>
                       </div>
                     </div>
@@ -137,7 +132,9 @@
                 class="btn btn-primary"
                 (click)="onSubmit()"
                 [disabled]="form.invalid"
-                style="background: linear-gradient(135deg, #1d62c4 0%, #066ca7 100%);"
+                style="
+                  background: linear-gradient(135deg, #1d62c4 0%, #066ca7 100%);
+                "
               >
                 <i class="feather icon-save"></i> Registrar Rol
               </button>
@@ -179,22 +176,13 @@
           <table class="table table-hover table-bordered modern-table">
             <thead class="table-primary">
               <tr>
-                <th class="sticky-col" style="text-align:center">
-                  Nombre
-                </th>
+                <th class="sticky-col" style="text-align: center">Nombre</th>
                 <th class="text-center" *ngFor="let permiso of permisos">
                   <div class="permission-header" [title]="permiso.nombre">
                     <small>{{ permiso.descripcion | titlecase }}</small>
-                    <!--
-                    <i
-                      class="feather icon-info"
-                      [title]="permiso.descripcion"
-                      data-bs-toggle="tooltip"
-                    ></i>
-                  -->
                   </div>
                 </th>
-                <th class="text-center actions-col sticky-ult-col" >
+                <th class="text-center actions-col sticky-ult-col">
                   <i class="feather icon-settings"></i> Acciones
                 </th>
               </tr>
@@ -317,21 +305,39 @@
 <!-- MODAL DE CONFIRMACIÓN -->
 
 <!-- Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmar Eliminación</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Estas seguro de eliminar este ROL?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" (click)="eliminarRol()" class="btn btn-primary"
-                    data-bs-dismiss="modal">Confirmar</button>
-            </div>
-        </div>
+<div
+  class="modal fade"
+  id="deleteModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">
+          <i class="feather icon-alert-triangle"></i> Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">Estas seguro de eliminar este ROL?</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="eliminarRol()"
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+        >
+          Confirmar
+        </button>
+      </div>
     </div>
+  </div>
 </div>

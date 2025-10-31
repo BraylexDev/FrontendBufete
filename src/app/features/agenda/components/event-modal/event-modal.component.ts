@@ -5,38 +5,29 @@ import { SharedModule } from '../../../shared/shared.module';
 import { EventoData } from '../../utils/eventoData';
 import { ProcesoService } from '../../../../domain/services/proceso/proceso.service';
 import { Proceso, ProcesoDTO } from '../../../../domain/models/proceso';
-import { EventoDto } from '../../../../domain/models/event.model';
-
-const exp: Array<string> = [
-  'Caso Andres Sanchez',
-  'Caso Cristian Stuani',
-  'Caso Fernando Morales',
-  'Caso Pablo Munera',
-  'Caso Sandra Diaz',
-  'Caso Vivian Sarria',
-];
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 interface Termino {
   id: number;
   name: string;
 }
 
-const TERMINOS: Termino[] =[
+const TERMINOS: Termino[] = [
   {
     id: 5,
-    name:"5 días"
+    name: "5 días"
   },
   {
     id: 15,
-    name:"15 días"
+    name: "15 días"
   },
   {
     id: 30,
-    name:"30 días"
+    name: "30 días"
   },
   {
     id: 100,
-    name:"100 días"
+    name: "100 días"
   }
 ]
 
@@ -52,43 +43,66 @@ function addDays(date: Date, days: number): Date {
   templateUrl: './event-modal.component.html',
   styleUrl: './event-modal.component.scss'
 })
-export class EventModalComponent {
+export class EventModalComponent implements OnInit{
+  @Input() procesos: ProcesoDTO[] = [];
   @Input() modalTitle: string = '';
-  @Input() dataEvento: EventoData = { evento: {
-    titulo: '',
-    tipoEventoId: 0,
-    fechaInicio: '',
-    allDay: false
-  }, infoCalendar: { start: new Date(), title: '', end: new Date() } };
+  @Input() dataEvento: EventoData = {
+    evento: {
+      titulo: '',
+      tipoEventoId: 0,
+      fechaInicio: '',
+      allDay: false
+    }, infoCalendar: { start: new Date(), title: '', end: new Date() }
+  };
 
   @Output() eventSaved = new EventEmitter<EventoData>();
 
-  expedientes: string[] = exp;
+  defaultDate: string ='';
+  defaultTime: string ='  ';
   terminos = TERMINOS;
-
+  minDate = new Date();
   items: Termino[] = [];
   selectedTermino!: number;
-
-  procesos!: ProcesoDTO[];
   processMap = new Map<number, string>();
 
+  myForm!: FormGroup;
+
   constructor(public activeModal: NgbActiveModal, private processService: ProcesoService) {
-    this.processService.listarProcesosByAbodado()
-      .subscribe(
-        {
-          next: data => {
-            this.procesos = data.data;
-          }
-        }
-      );
-    
+
+    this.myForm = new FormGroup({
+        firstName: new FormControl('', Validators.required)
+      });
+  }
+
+  ngOnInit(): void {
+    const now = this.dataEvento.infoCalendar.start;
+
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); 
+    const day = now.getDate().toString().padStart(2, '0');
+    this.defaultDate = `${year}-${month}-${day}`;
+
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    this.defaultTime = `${hours}:${minutes}`;
   }
 
   saveEvent() {
-    this.dataEvento.infoCalendar.title = this.dataEvento.evento.procesoNombre + " <br> " + this.dataEvento.infoCalendar.title;
+    const procesoBuscado = this.procesos.find((proceso) => proceso.id === this.dataEvento.evento.procesoId);
+    if(procesoBuscado){
+      this.dataEvento.infoCalendar.title = procesoBuscado.nombre + " <br> " +this.dataEvento.evento.titulo ;
+    }
+    else{
+      this.dataEvento.infoCalendar.title = this.dataEvento.evento.titulo
+    }
     
+    console.log("title: "+this.dataEvento.infoCalendar.title)
+    console.log(this.dataEvento);
     addDays(this.dataEvento.infoCalendar.end || new Date, this.selectedTermino);
     this.eventSaved.emit(this.dataEvento);
     this.activeModal.close(this.dataEvento);
+  }
+
+  buscarNombreProceso(id: number){
   }
 }

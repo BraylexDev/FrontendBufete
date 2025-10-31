@@ -136,7 +136,10 @@ export class CalendarComponent implements OnInit {
 
   constructor(private modalService: NgbModal, private eventService: EventService, private processService: ProcesoService, private alertService: AlertService) {
     this.dateOrViewChanged();
+    this.loadProcesos();
+  }
 
+  loadProcesos(){
     this.processService.listarProcesosByAbodado()
       .subscribe(
         {
@@ -148,8 +151,6 @@ export class CalendarComponent implements OnInit {
   }
 
   loadEvents(): void {
-
-
     this.eventService.listarEventos().subscribe(
       (data) => {
         console.log(data.data);
@@ -243,6 +244,7 @@ export class CalendarComponent implements OnInit {
     const buttonElement = document.activeElement as HTMLElement;
     buttonElement.blur();
     const modalRef = this.modalService.open(EventModalComponent);
+    modalRef.componentInstance.procesos = this.procesos
     modalRef.componentInstance.modalTitle = 'Registrar Evento';
     modalRef.componentInstance.dataEvento = {
       evento: {
@@ -259,9 +261,6 @@ export class CalendarComponent implements OnInit {
     };
     modalRef.componentInstance.eventSaved.subscribe((newEvent: EventoData) => {
       if (newEvent.infoCalendar.end) {
-        const procName: string = newEvent.infoCalendar.title.split("<br>")[0];
-        /* const procId = this.processMap.get(); */
-        /* const idNum = this.encontrarIdProceso(procName); */
 
         let fechaI: string = newEvent.infoCalendar.start.toISOString();
 
@@ -272,7 +271,7 @@ export class CalendarComponent implements OnInit {
           fechaInicio: fechaI,
           fechaFin: newEvent.evento.fechaFin,
           allDay: newEvent.evento.allDay || true,
-          procesoId: 19,
+          procesoId: newEvent.evento.procesoId,
           expedienteId: newEvent.evento.expedienteId
         }
 

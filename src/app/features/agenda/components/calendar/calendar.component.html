@@ -1,5 +1,3 @@
-<!-- <utils-calendar-header [(view)]="view" [(viewDate)]="viewDate" [locale]="locale" >
-</utils-calendar-header> -->
 <div class="col-md-12">
     <app-alert></app-alert>
 </div>
@@ -62,27 +60,3 @@
         [refresh]="refresh" (hourSegmentClicked)="hourSegmentClicked($event.date)">
     </mwl-calendar-day-view>
 </div>
-
-<!-- <ng-template #modalContent let-close="close">
-    <div class="modal-header">
-        <h5 class="modal-title">Event action occurred</h5>
-        <button type="button" class="close" (click)="close()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body">
-        <div>
-            Action:
-            <pre>{{ modalData.action }}</pre>
-        </div>
-        <div>
-            Event:
-            <pre>{{ modalData.event | json }}</pre>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" (click)="close()">
-            OK
-        </button>
-    </div>
-</ng-template> -->

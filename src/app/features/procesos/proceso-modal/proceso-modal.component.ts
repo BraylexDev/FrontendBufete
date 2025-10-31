@@ -137,7 +137,6 @@ export class ProcesoModalComponent {
         /* alert('Error al crear el proceso'); */
       },
     });
-    console.log("saved : "+this.saved)
     if(this.saved){
       this.triggerAlert('Proceso registrado exitosamente', 'success');
     }
