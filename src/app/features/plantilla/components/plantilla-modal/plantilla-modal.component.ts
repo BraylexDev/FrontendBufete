@@ -72,7 +72,6 @@ export class PlantillaModalComponent {
     this.categoriaService.listarCategorias("PLANTILLA").subscribe({
       next: data => {
         this.categorias = data;
-        console.log(this.categorias);
       }
     });
   }
@@ -84,7 +83,7 @@ export class PlantillaModalComponent {
       !this.formDataPlantilla.categoria ||
       !this.selectedFile
     ) {
-      alert('Por favor complete todos los campos requeridos');
+      this.triggerAlert('Por favor complete todos los campos requeridos', 'warning');
       return;
     }
 
@@ -101,7 +100,6 @@ export class PlantillaModalComponent {
       this.formDataPlantilla.descripcion
     ).subscribe({
       next: (response) => {
-        console.log(response);
         if (response.success) {
           this.triggerAlert('Plantilla Registrada Exitosamente', 'success');
           this.cargarPlantillas();
@@ -111,7 +109,7 @@ export class PlantillaModalComponent {
       },
       error: (err) => {
         this.triggerAlert('Error al registrar la plantilla', 'danger');
-        this.activeModal.dismiss();
+        /* this.activeModal.dismiss(); */
         this.error = err.error?.message || 'Error al subir el archivo';
         this.loading = false;
       }

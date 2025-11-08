@@ -112,7 +112,11 @@ export class ListaPlantillasComponent {
   }
 
   onNodeDoubleClick(idFileBlob: string): void {
-    this.downloadFile(idFileBlob);
+    this.viewFile(idFileBlob);
+  }
+
+  viewFile(idFileBlob: string): void {
+    this.plantillaService.viewFile(idFileBlob);
   }
 
   downloadFile(idFileBlob: string): void {
@@ -133,7 +137,6 @@ export class ListaPlantillasComponent {
 
   verDocumento(url: string) {
     this.verDomuentoService.urlDocumentToConsult = url;
-    console.log("urlVErDoc: " + url);
     this.router.navigate(['/admin/ver']);
   }
 }

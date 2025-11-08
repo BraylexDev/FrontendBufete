@@ -137,13 +137,15 @@ export class RolesComponent implements OnInit {
       this.form.get('nombre')?.markAsTouched();
       return;
     }
-
     this.createRole();
   }
 
   createRole() {
     const { nombre, permisos } = this.form.value;
-
+    if(this.existRol(nombre)){
+      this.triggerAlert('Ya existe un rol con ese nombre', 'warning');
+      return;
+    }
     this.svc.crearRol(nombre, permisos).subscribe({
       next: () => {
         this.resetForm();
@@ -218,6 +220,14 @@ export class RolesComponent implements OnInit {
     this.rolToDelete = rol;
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
+  }
+
+  existRol(nombre: string): boolean{
+    const existe = this.roles.some(persona => persona.nombre === nombre);
+    if(existe){
+      return true;
+    }
+    return false;
   }
 
   eliminarRol() {

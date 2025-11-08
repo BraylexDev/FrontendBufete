@@ -18,37 +18,24 @@ import { SharedModule } from '../../shared/shared.module';
 export class ProcesoModalComponent {
   proc!: CreateProceso;
   exp!: CreateExpedienteDto;
-
-  saved: boolean = false;
-
   selectedFile: File | null = null;
-  fileName: string = 'No se eligió archivo';
   activeTab: string = 'process';
 
   procesosDef: ProcesoDTO[] = [];
   expDef: ExpedienteDTO[] = [];
 
-  expedientes = [
-    { id: 1, nombre: 'EXP-001-2024', procesoId: 1 },
-    { id: 2, nombre: 'EXP-002-2024', procesoId: 1 },
-    { id: 3, nombre: 'EXP-003-2024', procesoId: 2 },
-  ];
-
-  // Formulario para subir documento
   formDataDocument = {
     proceso: '',
     expediente: '',
     descripcion: '',
   };
 
-  // Formulario para crear proceso
   formDataProcess = {
     numeroProceso: '',
     nombre: '',
     clienteId: '',
   };
 
-  // Formulario para crear expediente
   formDataExpediente = {
     nombre: '',
     procesoId: '',
@@ -69,7 +56,6 @@ export class ProcesoModalComponent {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
-      this.fileName = file.name;
     }
   }
 
@@ -86,37 +72,14 @@ export class ProcesoModalComponent {
     });
   }
 
-  // Método para subir documento
-  onSubmitDocument(): void {
-    if (
-      !this.formDataDocument.proceso ||
-      !this.formDataDocument.expediente ||
-      !this.formDataDocument.descripcion ||
-      !this.selectedFile
-    ) {
-      alert('Por favor complete todos los campos requeridos');
-      return;
-    }
-
-    console.log('Documento enviado:', {
-      ...this.formDataDocument,
-      archivo: this.selectedFile,
-    });
-    alert('Documento subido exitosamente');
-    this.resetDocumentForm();
-  }
-
-  // Método para crear proceso
   onSubmitProcess(): void {
     const { numeroProceso, nombre, clienteId } = this.formDataProcess;
 
-    // Validación
     if (!numeroProceso || !nombre || !clienteId) {
       alert('Por favor complete todos los campos requeridos');
       return;
     }
 
-    // Crear objeto con nombres correctos
     const proceso: CreateProceso = {
       numeroProceso,
       nombre,
@@ -127,31 +90,22 @@ export class ProcesoModalComponent {
 
     this.svcProcesos.crearProceso(proceso).subscribe({
       next: (data) => {
-        this.saved = true;
-        this.triggerAlert('Proceso registrado exitosamente  223', 'success');
-        this.resetProcessForm();
-        this.cargarProcesos();
+        if (data.success) {
+          this.triggerAlert('Proceso registrado exitosamente ', 'success');
+          this.resetProcessForm();
+          this.cargarProcesos();
+        }
+
       },
       error: (err) => {
         console.error('Error al crear proceso:', err);
-        /* alert('Error al crear el proceso'); */
+        this.triggerAlert('Error al crear proceso', 'danger');
       },
     });
-    if(this.saved){
-      this.triggerAlert('Proceso registrado exitosamente', 'success');
-    }
-    else{
-      this.triggerAlert('Error al crear proceso', 'danger');
-    }
-
   }
 
-  // Método para crear expediente
   onSubmitExpediente(): void {
-
     const { nombre, procesoId } = this.formDataExpediente;
-
-
     if (!nombre || !procesoId) {
       alert('Por favor complete todos los campos requeridos');
       return;
@@ -160,31 +114,20 @@ export class ProcesoModalComponent {
 
     this.svcExpediente.crearExpediente(expediente).subscribe({
       next: (data) => {
-        console.log('Expediente creado exitosamente:', data.data);
-        alert('Expediente registrado exitosamente');
+        this.triggerAlert('Expediente registrado exitosamente ', 'success');
         this.resetProcessForm();
+        this.activeModal.dismiss();
       },
       error: (err) => {
         console.error('Error al crear Expediente:', err);
-        alert('Error al crear el Expediente');
+        this.triggerAlert('Error al crear Expediente', 'danger');
       },
     });
   }
 
   onCancel(): void {
-    this.resetDocumentForm();
     this.resetProcessForm();
     this.resetExpedienteForm();
-  }
-
-  private resetDocumentForm(): void {
-    this.formDataDocument = {
-      proceso: '',
-      expediente: '',
-      descripcion: '',
-    };
-    this.selectedFile = null;
-    this.fileName = 'No se eligió archivo';
   }
 
   private resetProcessForm(): void {
@@ -200,21 +143,6 @@ export class ProcesoModalComponent {
       nombre: '',
       procesoId: '',
     };
-  }
-
-  cargarPlantilla(): void {
-    console.log('Cargar plantilla');
-    // Aquí iría la lógica para cargar una plantilla
-  }
-
-  // Obtener expedientes filtrados por proceso seleccionado
-  getExpedientesByProceso(): any[] {
-    if (!this.formDataDocument.proceso) {
-      return this.expedientes;
-    }
-    return this.expedientes.filter(
-      (exp) => exp.procesoId === parseInt(this.formDataDocument.proceso)
-    );
   }
 
   triggerAlert(message: string, type: AlertType) {
