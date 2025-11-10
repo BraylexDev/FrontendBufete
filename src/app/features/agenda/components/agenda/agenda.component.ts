@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss'
 })
-export class AgendaComponent implements OnInit, OnDestroy{
+export class AgendaComponent implements OnInit, OnDestroy {
 
   private sub!: Subscription;
   eventos: EventoDto[] = [];
@@ -32,11 +32,12 @@ export class AgendaComponent implements OnInit, OnDestroy{
   ngOnDestroy() {
     this.sub?.unsubscribe();
   }
-  
+
   loadEvents(): void {
     this.eventService.listarEventos().subscribe(
       (data) => {
         this.eventos = data.data;
+        this.eventos.sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
       },
       (error) => {
         console.error('Error fetching events:', error);
@@ -53,32 +54,32 @@ export class AgendaComponent implements OnInit, OnDestroy{
     return fechaManual;
   }
 
-  consguirProceso(str?: string): string{
-    if(str){
+  consguirProceso(str?: string): string {
+    if (str) {
       return str.split('<br>')[0];
     }
     return '';
   }
-  consguirTitulo(str?: string): string{
-    if(str){
+  consguirTitulo(str?: string): string {
+    if (str) {
       return str.split('<br>')[1];
     }
     return '';
   }
 
-  formatFecha(date: string): string{
+  formatFecha(date: string): string {
     const fecha = new Date(date);
     let fechaFormateada: string;
     fechaFormateada = fecha.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }); 
+    });
 
     return fechaFormateada;
 
   }
-  formatHora(date: string): string{
+  formatHora(date: string): string {
     const fecha = new Date(date);
     let horaFormateada: string;
     horaFormateada = fecha.toLocaleTimeString('es-ES', {
@@ -87,6 +88,6 @@ export class AgendaComponent implements OnInit, OnDestroy{
       hour12: true
     });
     return horaFormateada;
-    
+
   }
 }

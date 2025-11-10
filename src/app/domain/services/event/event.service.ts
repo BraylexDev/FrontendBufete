@@ -30,8 +30,7 @@ export class EventService {
     return this.http.delete<EventoModel>(`${this.baseUrl}/evento/${id}`);
   } */
   eliminarEvento(id: number){
-    /* console.log(this.baseUrl+"/evento/"+title.trimEnd()); */
-    return this.http.delete<void>(`${this.baseUrl}/eventos/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
   /* eliminarUsuario(id: number) {
@@ -39,7 +38,7 @@ export class EventService {
   } */
 
   actualizarEvento(id: number, titulo: string, fecha_inicio: Date, fecha_fin: Date, all_day: boolean, proceso_id: number, responsable_id: number) {
-    return this.http.put<EventoDto>(`${this.baseUrl}/evento/${id}`, { titulo, fecha_inicio, fecha_fin, all_day, proceso_id, responsable_id });
+    return this.http.put<EventoDto>(`${this.baseUrl}/${id}`, { titulo, fecha_inicio, fecha_fin, all_day, proceso_id, responsable_id });
   }
 
   

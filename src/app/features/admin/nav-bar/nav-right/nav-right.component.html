@@ -3,50 +3,40 @@
     <div class="dropdown" ngbDropdown placement="auto">
       <a ngbDropdownToggle href="javascript:">
         <i class="icon feather icon-bell" title="Notification"></i>
-        <span class="badge bg-danger"><span class="sr-only"></span></span>
+        <span *ngIf="events24Horas()" class="badge bg-danger"><span class="sr-only"></span></span>
       </a>
       <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end notification">
         <div class="noti-head">
           <h6 class="d-inline-block m-b-0">Notificationes</h6>
           <div class="float-end">
-            <!-- <a href="javascript:" class="m-r-10">mark as read</a>
-            <a href="javascript:">clear all</a> -->
           </div>
         </div>
         <ul class="noti-body">
           <li class="n-title">
-            <p class="m-b-0">Recientes</p>
+            <p class="m-b-0">Próximos eventos</p>
           </li>
-          <li class="notification">
+          <li class="notification" *ngIf="eventos.length === 0">
             <div class="media">
-              <!-- <img class="img-radius" src="assets/images/user/avatar-1.jpg" alt="Generic placeholder image" /> -->
               <div class="media-body">
                 <p>
-                  <strong>Caso Fernando Morales</strong>
-                  <!-- <span class="n-time text-muted">
-                    <i class="icon feather icon-clock m-r-10"></i>
-                    30 min
-                  </span> -->
+                  <strong>No hay eventos en los próximos 30 días</strong>
                 </p>
-                <p>La audiencia se realizará el 15 de junio</p>
               </div>
             </div>
           </li>
-          <li class="n-title">
-            <p class="m-b-0">Anteriores</p>
-          </li>
+          @for (evt of eventos; track evt.id) {
           <li class="notification">
             <div class="media">
-              <!-- <img class="img-radius" src="assets/images/user/avatar-2.jpg" alt="Generic placeholder image" /> -->
               <div class="media-body">
                 <p>
-                  <strong>Caso Alexa Yepes</strong>
+                  <strong>{{evt.titulo}}</strong>
                 </p>
-                <p>Enviar citatorio a acusado</p>
+                <p>{{convertDateToText(evt.fechaInicio)}}
+                </p>
               </div>
             </div>
           </li>
-          
+          }
         </ul>
         <div class="noti-footer">
           <a href="/admin/agenda" routerLink="/admin/agenda">Mostrar Todos</a>
@@ -54,24 +44,32 @@
       </div>
     </div>
   </li>
-  <!-- <li (click)="this.visibleUserList = !this.visibleUserList">
-    <div class="dropdown">
-      <a href="javascript:" class="displayChatbox dropdown-toggle">
-        <i class="icon feather icon-mail" title="Mail InBox"></i>
-        <span class="badge bg-success"><span class="sr-only"></span></span>
-      </a>
-    </div>
-  </li> -->
   <li>
     <div class="dropdown drp-user" ngbDropdown placement="auto">
       <a href="javascript:" ngbDropdownToggle>
-        <img src="assets/images/default.svg" class="img-radius wid-40" alt="User-Profile-Image" />
+        <img
+          src="assets/images/default.svg"
+          class="img-radius wid-40"
+          alt="User-Profile-Image"
+        />
       </a>
-      <div class="dropdown-menu dropdown-menu-end profile-notification" ngbDropdownMenu>
+      <div
+        class="dropdown-menu dropdown-menu-end profile-notification"
+        ngbDropdownMenu
+      >
         <div class="pro-head">
-          <img src="assets/images/default.svg" class="img-radius" alt="User-Profile-Image" />
-          <span>{{nombre}}</span>
-          <a href="javascript:" class="dud-logout" title="Logout" (click)="logout()">
+          <img
+            src="assets/images/default.svg"
+            class="img-radius"
+            alt="User-Profile-Image"
+          />
+          <span>{{ nombre }}</span>
+          <a
+            href="javascript:"
+            class="dud-logout"
+            title="Logout"
+            (click)="logout()"
+          >
             <i class="feather icon-log-out"></i>
           </a>
         </div>
@@ -82,7 +80,7 @@
               Perfil
             </a>
           </li>
-          
+
           <li>
             <a href="javascript:" class="dropdown-item" (click)="logout()">
               <i class="feather icon-lock"></i>

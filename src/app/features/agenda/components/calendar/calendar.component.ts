@@ -155,6 +155,7 @@ export class CalendarComponent implements OnInit {
     this.eventService.listarEventos().subscribe(
       (data) => {
         this.events = data.data.map((eventData) => ({
+          id:eventData.id,
           start: new Date(eventData.fechaInicio),
           title: eventData.descripcion || eventData.titulo,
           allDay: eventData.allDay,
@@ -296,12 +297,14 @@ export class CalendarComponent implements OnInit {
     this.modalData = { event, action };
 
     if (action.toString() === "Deleted") {
-      console.log('deleted');
+      
       this.eventos.forEach(element => {
-        if (element.titulo.toString() === event.title.toString()) {
-          this.eventService.eliminarEvento(element.id || 0)
+        if (element.id === event.id) {
+          this.eventService.eliminarEvento(element.id || -1)
             .subscribe(
               () => {
+                this.refresh.next();
+                this.eventService.notificarCambio();
                 this.triggerAlert('Eliminación Exitosa', 'success');
               }
             );
