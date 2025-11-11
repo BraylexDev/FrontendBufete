@@ -1,9 +1,5 @@
-// angular import
 import { Component, OnInit, inject, output } from '@angular/core';
 import { Location, LocationStrategy } from '@angular/common';
-
-// project import
-//import { environment } from 'src/environments/environment';
 import { NavigationItem, NavigationItems } from '../navigation';
 
 import { NavCollapseComponent } from './nav-collapse/nav-collapse.component';
@@ -22,29 +18,21 @@ export class NavContentComponent implements OnInit {
   private location = inject(Location);
   private locationStrategy = inject(LocationStrategy);
 
-  // version
-  /* title = 'Demo application for version numbering'; */
-
-  // public pops
   navigations: NavigationItem[];
   wrapperWidth!: number;
   windowWidth: number;
 
   NavMobCollapse = output();
-  // constructor
   constructor(private authService: AuthService) {
     this.windowWidth = window.innerWidth;
     this.navigations = this.filterNavigationByRole(NavigationItems);
   }
 
-  // life cycle event
   ngOnInit() {
     if (this.windowWidth < 992) {
       document.querySelector('.pcoded-navbar')?.classList.add('menupos-static');
     }
   }
-
-  // public method
 
   navMob() {
     if (this.windowWidth < 992 && document.querySelector('app-navigation.pcoded-navbar')?.classList.contains('mob-open')) {
@@ -52,29 +40,21 @@ export class NavContentComponent implements OnInit {
     }
   }
 
-  // Método para filtrar navegación por rol
   private filterNavigationByRole(items: NavigationItem[]): NavigationItem[] {
     return items
       .map(item => {
-        // Si el item tiene roles definidos, verificar permisos
         if (item.roles && item.roles.length > 0) {
           if (!this.authService.hasRole(item.roles)) {
-            return null; // Usuario no tiene permiso
+            return null; 
           }
         }
-
-        // Si tiene hijos, filtrarlos recursivamente
         if (item.children && item.children.length > 0) {
           const filteredChildren = this.filterNavigationByRole(item.children);
-          
-          // Si todos los hijos fueron filtrados, ocultar el padre también
           if (filteredChildren.length === 0) {
             return null;
           }
-          
           return { ...item, children: filteredChildren };
         }
-
         return item;
       })
       .filter(item => item !== null) as NavigationItem[];

@@ -1,6 +1,32 @@
-.pie-pagina-absoluto {
+.pie-nav {
   position: absolute;
-  bottom: 0; /* Posiciona el elemento 0 píxeles desde el fondo del contenedor */
-  width: 100%; /* Asegura que el pie de página ocupe todo el ancho */
-  text-align: center; /* Centra el texto dentro del pie de página, opcional */
+  bottom: 0; 
+  width: 100%; 
+  text-align: center; 
 }
+
+.pie-nav > p {
+  margin-bottom: 0 !important;
+}
+
+.pie-aux {
+  position: absolute;
+  bottom: 0; 
+  width: 100%; 
+  text-align: center; 
+}
+
+.pie-aux > p {
+  margin-bottom: 0 !important;
+  padding-right: 20px;
+}
+
+ng-scrollbar[horizontalused="true"] .pie-nav {
+  display: none;
+} 
+
+ng-scrollbar[horizontalused="false"] .pie-aux {
+  display: none;
+} 
+
+
