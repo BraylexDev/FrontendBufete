@@ -8,8 +8,8 @@ export const environment = {
   appVersion: packageInfo.version,
   production: false,
 
-  /* apiUrl: 'https://docker-backend-bufete.onrender.com', */
-  apiUrl: 'http://localhost:8080/api',
+  apiUrl: 'https://backendbufete-docker.onrender.com',
+  /* apiUrl: 'https://9gk5lzt6-3331.use.devtunnels.ms', */
   uploadMaxSize: 100 * 1024 * 1024, // 100MB
   supportedFileTypes: [
     'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
