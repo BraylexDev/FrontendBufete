@@ -115,7 +115,7 @@ export const NavigationItems: NavigationItem[] = [
             url: '/admin/listaReporte',
             icon: 'feather icon-layers'
           }, */
-          {
+          /* {
             id: 'gestion-procesos-penales-civiles',
             title: 'Procesos Penales y Civiles',
             type: 'item',
@@ -129,6 +129,14 @@ export const NavigationItems: NavigationItem[] = [
             type: 'item',
             url: '/admin/gestion-procesos-administrativos',
             icon: 'feather icon-folder',
+            breadcrumbs: true
+          }, */
+          {
+            id: 'gestion-procesos-nueva',
+            title: 'Jurisdicción',
+            type: 'item',
+            url: '/admin/gestion-procesos-nueva',
+            icon: 'feather icon-plus-circle',
             breadcrumbs: true
           },
           {

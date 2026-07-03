@@ -1,0 +1,463 @@
+<div class="gestion-proceso-nueva-container">
+  <div class="header-section">
+    <div>
+      <h2 class="title">Procesos</h2>
+      <p class="subtitle">
+        Use los filtros para localizar procesos y acceder a las acciones
+        disponibles.
+      </p>
+    </div>
+  </div>
+
+  <form [formGroup]="buscadorForm" class="card shadow-sm" novalidate>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-12 col-lg-6">
+          <label class="form-label" for="jurisdiccion">Jurisdicción</label>
+          <select
+            id="jurisdiccion"
+            class="form-select"
+            formControlName="jurisdiccion"
+          >
+            <option value="">Seleccione una jurisdicción</option>
+            <option *ngFor="let item of jurisdicciones" [value]="item.value">
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <label class="form-label" for="asunto">Asunto</label>
+          <select
+            id="asunto"
+            class="form-select"
+            formControlName="asunto"
+            [disabled]="!jurisdiccionControl?.value"
+          >
+            <option value="">Seleccione un asunto</option>
+            <option *ngFor="let item of asuntosDisponibles" [value]="item">
+              {{ item }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="mt-4" *ngIf="showInfoMessage">
+    <div class="alert alert-info mb-5">
+      Por favor seleccione la jurisdiccion y asunto correspondiente
+    </div>
+  </div>
+
+  <div class="d-flex flex-column gap-3 align-items-center" *ngIf="!showInfoMessage">
+    <div class="d-flex flex-wrap gap-2">
+      
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="openActionModal('MODIFICAR_ACTUACION')"
+      >
+        MODIFICAR O ADICIONAR ACTUACION DE ASUNTO CARGADO
+      </button>
+      <button
+        type="button"
+         class="btn btn-outline-primary" 
+        (click)="openActionModal('ESTADISTICA_AREA')"
+      >
+        ESTADISTICA DE AREA
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openActionModal('ASUNTO_NUEVO')"
+      >
+        ASUNTO NUEVO
+      </button>
+    </div>
+  </div>
+  <div class="mt-4" *ngIf="hasSelection">
+    <div class="empty-state text-center" *ngIf="showEmptyState">
+      <div class="empty-state-content">
+        <i
+          class="bi bi-folder-x"
+          style="font-size: 48px; color: #ccc; margin-bottom: 16px"
+        ></i>
+        <h4>No hay procesos</h4>
+        <p class="text-muted">No hay procesos registrados en el sistema.</p>
+      </div>
+    </div>
+    
+    <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
+  <div *ngIf="!cargando && mostrarAbogado && usuarioGruposFiltrados.length > 0 && showProcesosList" class="tree-container">
+    <div class="tree-list">
+      <!-- Grupo de usuario -->
+      <div *ngFor="let grupo of usuarioGruposFiltrados" class="usuario-grupo" [class.mis-procesos]="grupo.esMisProcesos">
+        <!-- Fila del usuario -->
+        <div class="item-row usuario-row" [class.mis-procesos-row]="grupo.esMisProcesos">
+          <!-- Botón expandir/contraer -->
+          <button 
+            class="expand-btn" 
+            (click)="toggleUsuarioGrupo(grupo)"
+            [class.expanded]="grupo.expanded">
+            <i class="bi" [ngClass]="grupo.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+          </button>
+
+          <!-- Ícono y nombre del usuario -->
+          <div class="item-content usuario-content">
+            <i class="bi" [ngClass]="grupo.esMisProcesos ? 'bi-person-circle' : 'bi-person-circle'" class="usuario-icon"></i>
+            <span class="usuario-nombre">{{ grupo.usuarioNombre }}</span>
+            <span class="procesos-count">{{ grupo.procesos.length }} proceso(s)</span>
+          </div>
+        </div>
+
+        <!-- Procesos del usuario (expandible) -->
+        <div class="procesos-del-usuario-container" *ngIf="grupo.expanded">
+          <div *ngFor="let proceso of grupo.procesos" class="tree-item proceso-item">
+            <!-- Fila del proceso -->
+            <div class="item-row proceso-row">
+              <!-- Botón expandir/contraer -->
+              <button 
+                class="expand-btn" 
+                (click)="toggleExpanded(proceso)"
+                [class.expanded]="proceso.expanded">
+                <i class="bi" [ngClass]="proceso.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+              </button>
+
+              <!-- Ícono y nombre del proceso -->
+              <div class="item-content">
+                <i class="bi bi-folder-fill proceso-icon"></i>
+                <div class="proceso-info">
+                  <span class="item-name">{{ proceso.numeroProceso }}</span>
+                  <span class="proceso-description">{{ proceso.nombre }}</span>
+                </div>
+              </div>
+
+              <!-- Acciones del proceso -->
+              <div class="item-actions">
+                <button 
+                  class="btn btn-sm btn-info" 
+                  (click)="editarProceso(proceso)" 
+                  title="Editar proceso">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="eliminarProceso(proceso)" 
+                  title="Eliminar proceso">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expedientes del proceso (expandible) -->
+            <div class="expedientes-container" *ngIf="proceso.expanded" [@slideDown]>
+              <!-- Cargando expedientes -->
+              <div *ngIf="proceso.cargandoExpedientes" class="loading-expedientes">
+                <small class="text-muted">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Cargando expedientes...
+                </small>
+              </div>
+
+              <!-- Lista de expedientes -->
+              <div *ngIf="!proceso.cargandoExpedientes && proceso.expedientes && proceso.expedientes.length > 0">
+                <div *ngFor="let expediente of proceso.expedientes" class="tree-item expediente-item">
+                  <div class="item-row expediente-row">
+                    <!-- Ícono y nombre del expediente -->
+                    <div class="item-content">
+                      <i class="bi bi-file-text-fill expediente-icon"></i>
+                      <span class="item-name" (click)="toFolder(expediente)">{{ expediente.nombre }}</span>
+                    </div>
+
+                    <!-- Acciones del expediente -->
+                    <div class="item-actions">
+                      <button 
+                        class="btn btn-sm btn-info" 
+                        (click)="editarExpediente(expediente)" 
+                        title="Editar expediente">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button 
+                        class="btn btn-sm btn-danger" 
+                        (click)="eliminarExpediente(expediente, proceso)" 
+                        title="Eliminar expediente">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sin expedientes -->
+              <div *ngIf="!proceso.cargandoExpedientes && (!proceso.expedientes || proceso.expedientes.length === 0)" class="no-expedientes">
+                <small class="text-muted">Sin expedientes</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<ng-template #actionModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">{{ modalTitle }}</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="cerrarModal()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <ng-container *ngIf="modalAction === 'ASUNTO_NUEVO'">
+      <form [formGroup]="subForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
+          <select
+            id="tipoAsuntoNuevo"
+            class="form-select"
+            formControlName="tipoAsuntoNuevo"
+          >
+            <option value="">Seleccione una opción</option>
+            <option
+              *ngFor="let item of opcionesAsuntoNuevo"
+              [value]="item.value"
+            >
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="showEtapaConocimiento" class="border rounded p-3 bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Paso {{ currentStep }} de 3</h6>
+            <span class="text-muted small">Etapa de conocimiento</span>
+          </div>
+
+          <div *ngIf="currentStep === 1" class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label" for="tipoProcedimiento"
+                >Tipo de procedimiento</label
+              >
+              <select
+                id="tipoProcedimiento"
+                class="form-select"
+                formControlName="tipoProcedimiento"
+              >
+                <option value="">Seleccione un tipo</option>
+                <option
+                  *ngFor="let item of tiposProcedimiento"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
+            <h6>Formulario datos generales</h6>
+            <div>
+              <label class="form-label" for="numeroProceso"
+                >Número de proceso *</label
+              >
+              <input
+                id="numeroProceso"
+                class="form-control"
+                formControlName="numeroProceso"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="nombreProceso"
+                >Nombre del proceso *</label
+              >
+              <input
+                id="nombreProceso"
+                class="form-control"
+                formControlName="nombreProceso"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="identificacionCliente"
+                >Identificación cliente *</label
+              >
+              <input
+                id="identificacionCliente"
+                class="form-control"
+                formControlName="identificacionCliente"
+              />
+            </div>
+            <span class="text-muted small">* Datos Obligatorios</span>
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
+            <h6>Planificador de procesos</h6>
+            <div>
+              <label class="form-label" for="fechaAudiencia"
+                >Fecha de audiencia</label
+              >
+              <input
+                id="fechaAudiencia"
+                type="date"
+                class="form-control"
+                formControlName="fechaAudiencia"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="fechaPresentacionPruebas"
+                >Fecha de presentación de pruebas</label
+              >
+              <input
+                id="fechaPresentacionPruebas"
+                type="date"
+                class="form-control"
+                formControlName="fechaPresentacionPruebas"
+              />
+            </div>
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="guardarAsuntoNuevo()"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          *ngIf="showRecursoExtraordinario"
+          class="border rounded p-3 bg-light"
+        >
+          <h6 class="mb-3">Recurso extraordinario</h6>
+          <label class="form-label" for="archivoRecurso">Subir documento</label>
+          <input
+            id="archivoRecurso"
+            class="form-control"
+            type="file"
+            (change)="onFileSelected($event)"
+          />
+          <small class="text-muted d-block mt-2" *ngIf="selectedFileName"
+            >Archivo seleccionado: {{ selectedFileName }}</small
+          >
+          <div class="d-flex justify-content-end mt-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="guardarAsuntoNuevo()"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="showPenitenciario" class="border rounded p-3 bg-light">
+          <h6 class="mb-3">Ejecución de penas y medidas de seguridad</h6>
+          <div class="mb-3">
+            <label class="form-label" for="medidaEjecucion"
+              >Seleccione una opción</label
+            >
+            <select
+              id="medidaEjecucion"
+              class="form-select"
+              formControlName="medidaEjecucion"
+            >
+              <option value="">Seleccione una opción</option>
+              <option
+                *ngFor="let item of medidasEjecucion"
+                [value]="item.value"
+              >
+                {{ item.label }}
+              </option>
+            </select>
+          </div>
+
+          <label class="form-label" for="archivoPenitenciario"
+            >Subir documento</label
+          >
+          <input
+            id="archivoPenitenciario"
+            class="form-control"
+            type="file"
+            (change)="onFileSelected($event)"
+          />
+          <small class="text-muted d-block mt-2" *ngIf="selectedFileName"
+            >Archivo seleccionado: {{ selectedFileName }}</small
+          >
+          <div class="d-flex justify-content-end mt-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="guardarAsuntoNuevo()"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+      </form>
+    </ng-container>
+
+    <div
+      *ngIf="modalAction === 'MODIFICAR_ACTUACION'"
+      class="alert alert-secondary mb-0"
+    >
+      Modificaciones.
+    </div>
+
+    <div
+      *ngIf="modalAction === 'ESTADISTICA_AREA'"
+      class="alert alert-secondary mb-0"
+    >
+      Estadísticas.
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="cerrarModal()"
+    >
+      Cancelar
+    </button>
+  </div>
+</ng-template>

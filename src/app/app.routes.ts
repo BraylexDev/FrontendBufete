@@ -24,6 +24,7 @@ import { ExpedienteDetailComponent } from './features/reportes/componentes/exped
 import { GestionProcesoComponent } from './features/procesos/gestion-proceso/gestion-proceso';
 import { GestionProcesoPenalesCivilesComponent } from './features/procesos/gestion-proceso-penales-civiles/gestion-proceso-penales-civiles';
 import { GestionProcesoAdministrativosComponent } from './features/procesos/gestion-proceso-administrativos/gestion-proceso-administrativos';
+import { GestionProcesoNuevaComponent } from './features/procesos/gestion-proceso-nueva/gestion-proceso-nueva.component';
 import { GestionExpedientesComponent } from './features/expediente/gestion-expedientes/gestion-expedientes.component';
 
 export const routes: Routes = [
@@ -98,6 +99,11 @@ export const routes: Routes = [
             {
                 path: 'gestion-procesos-administrativos',
                 component: GestionProcesoAdministrativosComponent,
+                canActivate: [authGuard]
+            },
+            {
+                path: 'gestion-procesos-nueva',
+                component: GestionProcesoNuevaComponent,
                 canActivate: [authGuard]
             },
             {

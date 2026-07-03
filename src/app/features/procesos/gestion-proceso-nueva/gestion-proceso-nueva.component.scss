@@ -1,0 +1,393 @@
+.gestion-proceso-nueva-container {
+  padding: 1.5rem;
+}
+
+.header-section {
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.card {
+  border: 0;
+  border-radius: 0.75rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.form-label {
+  font-weight: 600;
+}
+
+.alert-info {
+  border-left: 4px solid #0d6efd;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+// Estilos para la vista de árbol jerárquica
+.tree-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tree-list {
+  padding: 15px;
+}
+
+.tree-item {
+  margin-bottom: 0;
+
+  &.proceso-item {
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  &.expediente-item {
+    margin-left: 40px;
+    margin-bottom: 8px;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    background-color: #fafbfc;
+    padding: 0;
+  }
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  transition: background-color 0.2s ease;
+
+  &.proceso-row {
+    background-color: #f8f9fa;
+
+    &:hover {
+      background-color: #f0f1f3;
+    }
+  }
+
+  &.expediente-row {
+    background-color: transparent;
+    padding: 10px 12px;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #033857;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.expanded {
+    color: #0d6efd;
+  }
+
+  i {
+    font-size: 18px;
+  }
+}
+
+.item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+
+  .proceso-icon {
+    font-size: 20px;
+    color: #ffc107;
+    flex-shrink: 0;
+  }
+
+  .expediente-icon {
+    font-size: 18px;
+    color: #0d6efd;
+    flex-shrink: 0;
+  }
+
+  .item-name {
+    font-weight: 500;
+    color: #033857;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .proceso-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+
+    .item-name {
+      font-weight: 600;
+      color: #033857;
+      font-size: 14px;
+    }
+
+    .proceso-description {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .abogado-info {
+      font-size: 11px;
+      color: #868e96;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      i {
+        font-size: 10px;
+      }
+    }
+  }
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  .btn {
+    padding: 4px 8px;
+    font-size: 13px;
+    border-radius: 4px;
+
+    &.btn-info {
+      background-color: #0dcaf0;
+      border-color: #0dcaf0;
+
+      &:hover {
+        background-color: #0aa2c0;
+      }
+    }
+
+    &.btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+
+      &:hover {
+        background-color: #c82333;
+      }
+    }
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+.expedientes-container {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.loading-expedientes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  .spinner-border-sm {
+    color: #033857;
+  }
+}
+
+.no-expedientes {
+  text-align: center;
+  padding: 15px;
+  color: #999;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+
+  .empty-state-content {
+    text-align: center;
+
+    i {
+      display: block;
+      margin-bottom: 15px;
+    }
+
+    h4 {
+      color: #033857;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #999;
+      margin: 0;
+    }
+  }
+}
+
+.empty-search {
+  text-align: center;
+  padding: 40px 20px;
+
+  .bi-search {
+    margin-bottom: 20px;
+  }
+
+  h5 {
+    color: #033857;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #999;
+  }
+}
+
+// Estilos para vista agrupada por usuario
+.usuario-grupo {
+  margin-bottom: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+
+  &.mis-procesos {
+    border: 2px solid #ffc107;
+    background-color: #fffbf0;
+
+    .usuario-row.mis-procesos-row {
+      background-color: #fff8e1 !important;
+      border-bottom: 1px solid #ffc107 !important;
+
+      &:hover {
+        background-color: #fffaed !important;
+      }
+    }
+
+    .procesos-del-usuario-container {
+      background-color: #fffef5;
+      border-top: 1px solid #ffc107 !important;
+    }
+  }
+}
+
+.usuario-row {
+  background-color: #e8f4f8 !important;
+  border-bottom: 1px solid #dee2e6 !important;
+  padding: 15px !important;
+
+  &:hover {
+    background-color: #d0e8f1 !important;
+  }
+
+  &.mis-procesos-row {
+    background-color: #fff8e1 !important;
+
+    &:hover {
+      background-color: #fffaed !important;
+    }
+
+    .expand-btn {
+      color: #f0ad4e !important;
+
+      &.expanded {
+        color: #ffc107 !important;
+      }
+    }
+  }
+}
+
+.usuario-content {
+  gap: 12px !important;
+
+  .usuario-icon {
+    font-size: 24px;
+    color: #033857;
+    flex-shrink: 0;
+
+    &.bi-star-fill {
+      color: #ffc107;
+    }
+  }
+
+  .usuario-nombre {
+    font-weight: 700;
+    color: #033857;
+    font-size: 15px;
+  }
+
+  .procesos-count {
+    font-size: 12px;
+    color: #868e96;
+    padding: 2px 8px;
+    background-color: rgba(3, 56, 87, 0.1);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+}
+
+.procesos-del-usuario-container {
+  padding: 0 15px;
+  background-color: #f9fafb;
+  border-top: 1px solid #e9ecef;
+
+  .tree-item {
+    &.proceso-item {
+      margin: 15px 0;
+      margin-left: 0;
+      border: 1px solid #e9ecef;
+      background-color: white;
+    }
+  }
+}
