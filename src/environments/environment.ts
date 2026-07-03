@@ -9,7 +9,7 @@ export const environment = {
   production: false,
 
   apiUrl: 'https://backendbufete-docker.onrender.com',
-  /* apiUrl: 'https://9gk5lzt6-3331.use.devtunnels.ms', */
+  /* apiUrl: 'https://backendbufete-docker.onrender.com', */
   uploadMaxSize: 100 * 1024 * 1024, // 100MB
   supportedFileTypes: [
     'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
