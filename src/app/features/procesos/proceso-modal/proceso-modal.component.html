@@ -12,7 +12,11 @@
       <div
         class="modal-header-custom d-flex justify-content-between align-items-center p-3 border-bottom"
       >
-        <h2 class="fs-5 fw-bold mb-0">Gestionar documento</h2>
+        <h2 class="fs-5 fw-bold mb-0">
+          <ng-container *ngIf="!modoEdicion">Gestionar documento</ng-container>
+          <ng-container *ngIf="modoEdicion && activeTab === 'process'">Editar Proceso</ng-container>
+          <ng-container *ngIf="modoEdicion && activeTab === 'expediente'">Editar Expediente</ng-container>
+        </h2>
         <button
           type="button"
           class="btn-close-custom"
@@ -25,8 +29,8 @@
 
       <!-- Modal Body -->
       <div class="p-4">
-        <!-- Tabs -->
-        <ul class="nav nav-tabs mb-4">
+        <!-- Tabs (solo en modo creación) -->
+        <ul class="nav nav-tabs mb-4" *ngIf="!modoEdicion">
           <!--
           <li class="nav-item">
             <a
@@ -63,7 +67,10 @@
 
         <!-- Tab Content: Crear Proceso -->
         <div *ngIf="activeTab === 'process'">
-          <h3 class="fs-6 fw-semibold mb-3">Crear proceso</h3>
+          <h3 class="fs-6 fw-semibold mb-3">
+            <ng-container *ngIf="!modoEdicion">Crear proceso</ng-container>
+            <ng-container *ngIf="modoEdicion">Editar proceso</ng-container>
+          </h3>
 
           <form>
             <div class="mb-3">
@@ -95,7 +102,7 @@
             </div>
             <div class="mb-3">
               <label for="clienteId" class="form-label text-muted small">
-                Identicficación Cliente <span class="text-danger">*</span>
+                Identificación Cliente <span class="text-danger">*</span>
               </label>
               <input
                 type="text"
@@ -105,6 +112,23 @@
                 name="clienteId"
                 placeholder="Ej: 123456797"
               />
+            </div>
+
+            <div class="mb-3">
+              <label for="tipoProceso" class="form-label text-muted small">
+                Tipo de Proceso <span class="text-danger">*</span>
+              </label>
+              <select
+                class="form-select"
+                id="tipoProceso"
+                [(ngModel)]="formDataProcess.tipoProceso"
+                name="tipoProceso"
+              >
+                <option value="">Seleccione un tipo de proceso</option>
+                <option *ngFor="let tipo of tiposProceso" [value]="tipo">
+                  {{ tipo }}
+                </option>
+              </select>
             </div>
 
             <div class="alert alert-info d-flex align-items-start" role="alert">

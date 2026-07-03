@@ -1,200 +1,132 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { SharedModule } from '../../shared/shared.module';
+import { Router } from '@angular/router';
+import { CategoriaService } from '../../../domain/services/categoria/categoria.service';
+import { CategoriaDTO } from '../../../domain/models/categoria.model';
+import { SentenciaService } from '../../../domain/services/sentencia/sentencia.service';
+import { SentenciaResponse } from '../../../domain/models/sentencia.model';
+import { SentenciaModalComponent } from '../../sentencias/componentes/sentencia-modal/sentencia-modal.component';
+import { VerDocumentoService } from '../../shared/components/ver-documento/ver-documento-service/ver-documento.service';
 
-interface DocumentoContable {
-  id: number;
-  mes: string;
-  anio: number;
-  tipoDocumento: string;
-  estado: string;
-  fecha?: Date;
-  descripcion?: string;
-}
 
 @Component({
   selector: 'app-contable',
-  imports: [FormsModule, CommonModule],
+  imports: [SharedModule, CommonModule, FormsModule, NgbPaginationModule],
+  providers: [
+    DatePipe
+  ],
   templateUrl: './contable.component.html',
   styleUrl: './contable.component.scss'
 })
-export class ContableComponent {
-
-  showModal: boolean = false;
-  
-  meses = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-  
-  anios: number[] = [];
-  
-  tiposDocumento = [
-    'Factura',
-    'Balance',
-    'Declaración',
-    'Soporte DIAN',
-    'Recibo',
-    'Comprobante'
-  ];
-  
+export class ContableComponent implements OnInit {
   // Filtros
-  mesSeleccionado: string = 'Abril';
-  anioSeleccionado: number = 2025;
-  tipoDocumentoFiltro: string = 'Factura';
-  
-  // Formulario modal
-  formData = {
-    tipoDocumento: 'Balance',
-    fecha: '',
-    descripcion: ''
-  };
-  
-  selectedFile: File | null = null;
-  
-  // Datos de la tabla
-  documentos: DocumentoContable[] = [
-    { id: 1, mes: 'Abril', anio: 2025, tipoDocumento: 'Declaración', estado: 'Cargado' },
-    { id: 2, mes: 'Abril', anio: 2025, tipoDocumento: 'Balance', estado: 'Cargado' },
-    { id: 3, mes: 'Abril', anio: 2025, tipoDocumento: 'Factura', estado: 'Cargado' },
-    { id: 4, mes: 'Abril', anio: 2025, tipoDocumento: 'Soporte DIAN', estado: 'Cargado' }
-  ];
-  
-  // Paginación
-  currentPage: number = 1;
-  itemsPerPage: number = 10;
-  totalPages: number = 1;
-  
+  filtroBusqueda: string = '';
+  categoriaSeleccionada: string = '';
+
+  page = 1;
+  pageSize = 10;
+
+  contables: SentenciaResponse[] = [];
+  categorias: CategoriaDTO[] = [];
+
+  constructor(
+    private pipe: DatePipe, 
+    private modalService: NgbModal, 
+    private router: Router,
+    private categoriaService: CategoriaService,
+    private sentenciaService: SentenciaService,
+    private verDocumentoService: VerDocumentoService
+  ) {
+    
+  }
+
   ngOnInit(): void {
-    // Generar anios (últimos 5 anios + próximos 2)
-    const currentYear = new Date().getFullYear();
-    for (let i = currentYear - 5; i <= currentYear + 2; i++) {
-      this.anios.push(i);
-    }
-    
-    // Establecer fecha actual en el formulario
-    const today = new Date();
-    this.formData.fecha = this.formatDate(today);
-    
-    this.calculateTotalPages();
+    this.cargarContables();
   }
-  
-  formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  
-  get documentosFiltrados(): DocumentoContable[] {
-    return this.documentos.filter(doc => {
-      const mesMatch = doc.mes === this.mesSeleccionado;
-      const anioMatch = doc.anio === this.anioSeleccionado;
-      const tipoMatch = this.tipoDocumentoFiltro === '' || doc.tipoDocumento === this.tipoDocumentoFiltro;
-      return mesMatch && anioMatch && tipoMatch;
+
+  cargarContables(): void {
+    this.sentenciaService.listarDocumentos("CONTABLE").subscribe({
+      next: (data) => {
+        this.contables = data;
+      },
+      error: err => console.error('Error fetching items', err)
     });
   }
-  
-  get documentosPaginados(): DocumentoContable[] {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.documentosFiltrados.slice(startIndex, endIndex);
-  }
-  
-  calculateTotalPages(): void {
-    this.totalPages = Math.ceil(this.documentosFiltrados.length / this.itemsPerPage);
-  }
-  
-  getPaginationPages(): number[] {
-    const pages: number[] = [];
-    for (let i = 1; i <= this.totalPages; i++) {
-      pages.push(i);
+
+  get contablesfiltrados(): SentenciaResponse[] {
+    let resultado = [...this.contables];
+
+    // Filtro por búsqueda general
+    if (this.filtroBusqueda && this.filtroBusqueda.trim()) {
+      const texto = this.filtroBusqueda.toLowerCase();
+      resultado = resultado.filter(contable => {
+        const nombreCoincide = contable.nombre?.toLowerCase().includes(texto) || false;
+        const clienteCoincide = contable.clienteId?.toLowerCase().includes(texto) || false;
+        
+        // Convertir la fecha a string de forma segura
+        let fechaCoincide = false;
+        if (contable.fechaSentencia) {
+          const fechaFormateada = this.pipe.transform(contable.fechaSentencia, 'yyyy/MM/dd');
+          fechaCoincide = fechaFormateada ? fechaFormateada.includes(texto) : false;
+        }
+        
+        return nombreCoincide || clienteCoincide || fechaCoincide;
+      });
     }
-    return pages;
+
+    return resultado;
   }
-  
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+
+  get collectionSize(): number {
+    return this.contablesfiltrados.length;
   }
-  
-  onFilterChange(): void {
-    this.currentPage = 1;
-    this.calculateTotalPages();
+
+  get contablesPaginados(): SentenciaResponse[] {
+    const filtered = this.contablesfiltrados;
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
   }
-  
-  openModal(): void {
-    this.showModal = true;
+
+  // Método para limpiar filtros
+  limpiarFiltros(): void {
+    this.filtroBusqueda = '';
+    this.page = 1;
   }
-  
-  closeModal(): void {
-    this.showModal = false;
-    this.resetForm();
+
+  onNodeDoubleClick(idFileBlob: string): void {
+    this.viewFile(idFileBlob);
   }
-  
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-    }
+
+  viewFile(idFileBlob: string): void {
+    this.sentenciaService.downloadFile(idFileBlob);
   }
-  
-  onSubmit(): void {
-    if (!this.formData.tipoDocumento || !this.formData.fecha || 
-        !this.formData.descripcion || !this.selectedFile) {
-      alert('Por favor complete todos los campos requeridos');
-      return;
-    }
+
+  downloadFile(idFileBlob: string): void {
+    this.sentenciaService.downloadFile(idFileBlob);
+  }
+
+  openModal() {
+    const buttonElement = document.activeElement as HTMLElement;
+    buttonElement.blur();
+    const modalRef = this.modalService.open(SentenciaModalComponent, { size: 'lg' });
+    modalRef.componentInstance.modalTitle = 'Registrar Nuevo Documento Contable';
+    modalRef.componentInstance.tipoDocumento = 'CONTABLE';
     
-    // Extraer mes y anio de la fecha
-    const fecha = new Date(this.formData.fecha);
-    const mesIndex = fecha.getMonth();
-    const anio = fecha.getFullYear();
-    
-    const nuevoDocumento: DocumentoContable = {
-      id: this.documentos.length + 1,
-      mes: this.meses[mesIndex],
-      anio: anio,
-      tipoDocumento: this.formData.tipoDocumento,
-      estado: 'Cargado',
-      fecha: fecha,
-      descripcion: this.formData.descripcion
-    };
-    
-    this.documentos.unshift(nuevoDocumento);
-    console.log('Documento subido:', nuevoDocumento, 'Archivo:', this.selectedFile);
-    
-    alert('Documento contable subido exitosamente');
-    this.closeModal();
-    this.calculateTotalPages();
+    // Suscribirse al cierre del modal
+    modalRef.result.then(() => {
+      this.cargarContables();
+    }).catch(() => {
+      this.cargarContables();
+    });
   }
-  
-  resetForm(): void {
-    this.formData = {
-      tipoDocumento: 'Balance',
-      fecha: this.formatDate(new Date()),
-      descripcion: ''
-    };
-    this.selectedFile = null;
-  }
-  
-  editarDocumento(doc: DocumentoContable): void {
-    console.log('Editar documento:', doc);
-    // Implementar lógica de edición
-  }
-  
-  eliminarDocumento(doc: DocumentoContable): void {
-    if (confirm(`¿Está seguro de eliminar el documento ${doc.tipoDocumento} de ${doc.mes} ${doc.anio}?`)) {
-      this.documentos = this.documentos.filter(d => d.id !== doc.id);
-      this.calculateTotalPages();
-      console.log('Documento eliminado:', doc);
-    }
-  }
-  
-  descargarDocumento(doc: DocumentoContable): void {
-    console.log('Descargar documento:', doc);
-    // Implementar lógica de descarga
-    alert(`Descargando ${doc.tipoDocumento}...`);
+
+  verDocumento(url: string) {
+    this.verDocumentoService.urlDocumentToConsult = url;
+    console.log("urlVErDoc: " + url);
+    this.router.navigate(['/admin/ver']);
   }
 }

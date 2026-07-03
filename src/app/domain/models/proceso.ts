@@ -5,6 +5,7 @@ export interface CreateProceso {
     clienteId: string;
     abogadoResponsableId: number;
     tipoDocumentoCliente: string;
+    tipoProceso: string;
 }
 
 export interface Proceso {
@@ -39,8 +40,18 @@ export interface ProcesoDTO {
     observaciones?: string;
     activo?: boolean;
     createdByNombre?: string;
+    createdById?: number;
     createdAt?: Date;
     updatedAt?: Date;
     totalExpedientes?: number;
     totalEventos?: number;
+}
+
+export interface EditProcesoRequest {
+  id: number;
+  numeroProceso: string;
+  nombre: string;
+  descripcion?: string;
+  tipoProceso?: string;
+  clienteId: string;
 }

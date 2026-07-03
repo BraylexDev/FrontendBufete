@@ -42,7 +42,7 @@ export class EditUserComponent {
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
       email: ['', Validators.required],
-      contraseña: ['', Validators.required],
+      contrasena: ['', Validators.required],
       rol_id: ['', Validators.required],
     });
 
@@ -62,7 +62,7 @@ export class EditUserComponent {
               nombre: [this.users.nombre, Validators.required],
               apellido: [this.users.apellido, Validators.required],
               email: [this.users.email, Validators.required],
-              contraseña: [this.users.contrasena, Validators.required],
+              contrasena: [this.users.contrasena, Validators.required],
               rol_id: [this.users.rolId, Validators.required],
             });
           }
@@ -78,7 +78,7 @@ export class EditUserComponent {
               nombre: [data.nombre, Validators.required],
               apellido: [data.apellido, Validators.required],
               email: [data.email, Validators.required],
-              contraseña: [data.contraseña, Validators.required],
+              contrasena: [data.contrasena, Validators.required],
               rol_id: [data.rol_id, Validators.required],
             });
           }
@@ -87,34 +87,34 @@ export class EditUserComponent {
   }
 
   editUser() {
-    const { nombre, apellido, email, contraseña, rol_id } = this.form.value;
+    const { nombre, apellido, email, contrasena, rol_id } = this.form.value;
     const nuevoRol = this.roles.find(obj => obj.id === Number.parseInt(rol_id)) as Role;
     /* console.log(rols); */
-    /* const newUser: User = { id: this.userToEdit.id, nombre: nombre, identificacion: '', apellido: apellido, email: email, contraseña: contraseña, rolId: rol_id } */
-    this.form.reset({ nombre: '', apellido: '', email: '', contraseña: '', rol_id: '' });
+    /* const newUser: User = { id: this.userToEdit.id, nombre: nombre, identificacion: '', apellido: apellido, email: email, contrasena: contrasena, rolId: rol_id } */
+    this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
     this.actualizarUser();
 
     this.triggerAlert('Actualización Exitosa', 'success');
   }
 
   actualizarUser(){
-    const { nombre, apellido, email, contraseña, rol_id } = this.form.value;
-    /* this.svc.actualizar(this.paramEdit, nombre, apellido, email, contraseña, rol_id)
+    const { nombre, apellido, email, contrasena, rol_id } = this.form.value;
+    /* this.svc.actualizar(this.paramEdit, nombre, apellido, email, contrasena, rol_id)
       .subscribe(
           () => {
             this.triggerAlert('Actualización Exitosa', 'success');
-            this.form.reset({ nombre: '', apellido: '', email: '', contraseña: '', rol_id: '' });
+            this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
           }
       ); */
   }
   /* actualizarUser() {
-    const { nombre, apellido, email, contraseña, rol_id } = this.form.value;
-    const newUser: User = { id: this.paramEdit, identificacion: "0",  nombre: nombre, apellido: apellido, email: email, contraseña: contraseña, rol_id: Number.parseInt(rol_id) }
+    const { nombre, apellido, email, contrasena, rol_id } = this.form.value;
+    const newUser: User = { id: this.paramEdit, identificacion: "0",  nombre: nombre, apellido: apellido, email: email, contrasena: contrasena, rol_id: Number.parseInt(rol_id) }
     this.svc.update( newUser )
       .subscribe(
         () => {
           this.triggerAlert('Actualización Exitosa', 'success');
-          this.form.reset({ nombre: '', apellido: '', email: '', contraseña: '', rol_id: '' });
+          this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
         }
       );
   } */

@@ -246,7 +246,7 @@ export class CalendarComponent implements OnInit {
     modalRef.componentInstance.dataEvento = {
       evento: {
         titulo: '',
-        tipoEventoId: 0,
+        tipoEventoId: 2,
         fechaInicio: '',
         allDay: false
       },
@@ -264,7 +264,7 @@ export class CalendarComponent implements OnInit {
         let formData: CreateEventoRequest = {
           titulo: newEvent.evento.titulo,
           descripcion: newEvent.infoCalendar.title,
-          tipoEventoId: 6,
+          tipoEventoId: 2,
           fechaInicio: fechaI,
           fechaFin: newEvent.evento.fechaFin,
           allDay: newEvent.evento.allDay || true,

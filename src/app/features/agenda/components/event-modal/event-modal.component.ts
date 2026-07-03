@@ -50,7 +50,7 @@ export class EventModalComponent implements OnInit {
     evento: {
       procesoId: 0,
       titulo: '',
-      tipoEventoId: 0,
+      tipoEventoId: 2,
       fechaInicio: '',
       allDay: false,
       descripcion: ''

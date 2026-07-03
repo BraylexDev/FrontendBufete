@@ -1,85 +1,139 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { EventoData } from '../../../agenda/utils/eventoData';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../shared/shared.module';
+import { FormsModule } from '@angular/forms';
 import { ProcesoService } from '../../../../domain/services/proceso/proceso.service';
-import { Proceso } from '../../../../domain/models/proceso';
+import { ProcesoDTO } from '../../../../domain/models/proceso';
 import { ExpedienteService } from '../../../../domain/services/expediente/expediente.service';
-import { Documento } from '../../../../domain/models/document';
 import { ExpedienteDTO } from '../../../../domain/models/expediente';
-
-
-const exp: Array<string> = [
-  'Administrativo',
-  'Civil',
-  'Familia',
-  'Penal'
-];
-
+import { CreateSentenciaRequest, SentenciaResponse } from '../../../../domain/models/sentencia.model';
+import { SentenciaService } from '../../../../domain/services/sentencia/sentencia.service';
+import { NodeService } from '../../../../domain/services/folder/node.service';
 
 @Component({
   selector: 'app-sentencia-modal',
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, FormsModule],
   templateUrl: './sentencia-modal.component.html',
   styleUrl: './sentencia-modal.component.scss'
 })
-export class SentenciaModalComponent {
+export class SentenciaModalComponent implements OnInit {
 
   @Input() modalTitle: string = '';
-  @Input() event: Documento = {
+  @Input() tipoDocumento: string = 'SENTENCIA'; // Default to SENTENCIA
+  @Output() sentenciaGuardada = new EventEmitter<SentenciaResponse>();
+
+  tiposSentencia = ['Condenatoria', 'Absolutoria', 'Mixta', 'Apelación', 'Casación'];
+  procesos: ProcesoDTO[] = [];
+  expedientes: ExpedienteDTO[] = [];
+
+  formData = {
     nombre: '',
-    tipo: '',
-    tipo_contable: '',
-    descripcion: '',
-    url: '',
-    fecha_creacion: new Date(),
-    expediente_id: 0,
-    usuario_id: 0
+    description: '',
+    procesoId: '',
+    expedienteId: ''
   };
-  /* @Input() event: CalendarEvent = { start: new Date(), title: '' }; */
-  @Output() eventSaved = new EventEmitter<Documento>();
 
-  expedientes: string[] = exp;
+  selectedFile: File | null = null;
+  procesoSeleccionado: number | string = '';
+  expedienteSeleccionado: number | string = '';
 
-  procesos!: Proceso[];
-  exped!: ExpedienteDTO[];
-  expMap = new Map<number, string>();
-  processMap = new Map<number, string>();
+  constructor(
+    public activeModal: NgbActiveModal, 
+    private procesoService: ProcesoService, 
+    private expedienteService: ExpedienteService,
+    private sentenciaService: SentenciaService,
+    private nodeService: NodeService
+  ) {}
 
-  procesoSelected: number = -1;
+  ngOnInit(): void {
+    // Cargar procesos
+    this.cargarProcesos();
+  }
 
-  constructor(public activeModal: NgbActiveModal, private processService: ProcesoService, private expService: ExpedienteService) {
-    this.processService.listarProcesos()
-      .subscribe(
-        {
-          next: data => {
-            this.procesos = data;
-            this.processMap = new Map(data.map(r => [r.id, r.nombre]));
+  cargarProcesos(): void {
+    this.procesoService.listarProcesosByAbodado().subscribe({
+      next: (data) => {
+        this.procesos = data.data;
+      },
+      error: (err) => console.error('Error cargando procesos:', err)
+    });
+  }
+
+  onProcesoChange(procesoId: number | string): void {
+    this.procesoSeleccionado = procesoId;
+    this.formData.procesoId = String(procesoId);
+    this.expedientes = [];
+    this.expedienteSeleccionado = '';
+    this.formData.expedienteId = '';
+    
+    // Cargar expedientes del proceso seleccionado
+    if (procesoId) {
+      this.expedienteService.getExpedientesByProceso(Number(procesoId)).subscribe({
+        next: (data: any) => {
+          this.expedientes = data.data || [];
+        },
+        error: (err: any) => console.error('Error cargando expedientes:', err)
+      });
+    }
+  }
+
+  onExpedienteChange(expedienteId: number | string): void {
+    this.expedienteSeleccionado = expedienteId;
+    this.formData.expedienteId = String(expedienteId);
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  saveEvent(): void {
+    if (!this.validarFormulario()) {
+      alert('Por favor complete todos los campos requeridos');
+      return;
+    }
+
+    // Subir el archivo
+    if (this.selectedFile) {
+      this.nodeService.uploadFileSentencia(
+        this.selectedFile,
+        this.formData.procesoId,
+        this.formData.expedienteId,
+        this.tipoDocumento,
+        this.formData.nombre,
+        this.formData.description
+      ).subscribe({
+        next: (response: any) => {
+          if (response.success && response.data) {
+            console.log('Archivo subido exitosamente:', response.data);
+            // Emitir evento de éxito (en este caso sin sentencia, solo archivo)
+            this.sentenciaGuardada.emit();
+            this.activeModal.close(response.data);
           }
+        },
+        error: (err: any) => {
+          console.error('Error al subir archivo:', err);
+          alert('Error al subir el archivo. Por favor intente nuevamente.');
         }
-      );
+      });
+    } else {
+      alert('Por favor seleccione un archivo');
+    }
   }
 
-  m(){
-    console.log(this.procesoSelected);
-  }
-
-  cargarExpedientes(pS: number){
-    this.expService.listarExpedientes()
-    .subscribe(
-      {
-        next: data => {
-          this.exped = data.filter(exp => exp.procesoId === pS);
-          this.expMap = new Map(data.map(r => [r.id, r.nombre]));
-        }
-      }
+  private validarFormulario(): boolean {
+    return !!(
+      this.formData.nombre.trim() &&
+      this.formData.procesoId &&
+      this.formData.expedienteId &&
+      this.selectedFile
     );
   }
 
-  saveEvent() {
-    this.eventSaved.emit(this.event);
-    this.activeModal.close(this.event);
+  cancelar(): void {
+    this.activeModal.dismiss('cancel');
   }
-
 }

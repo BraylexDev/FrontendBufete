@@ -1,0 +1,132 @@
+.gestion-expedientes-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-section {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+
+  .title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #033857;
+    margin: 0;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #999;
+    margin: 8px 0 0 0;
+  }
+}
+
+.search-section {
+  margin-bottom: 20px;
+
+  .input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+
+    .input-group-text {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      color: #666;
+    }
+
+    .form-control {
+      border: 1px solid #e9ecef;
+      padding: 10px 15px;
+
+      &:focus {
+        border-color: #033857;
+        box-shadow: 0 0 0 0.2rem rgba(3, 56, 87, 0.1);
+      }
+    }
+  }
+}
+
+.expedientes-table {
+  .table {
+    margin: 0;
+    font-size: 13px;
+
+    thead th {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #033857;
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        text-align: center;
+      }
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 5px 8px;
+    font-weight: 500;
+    display: inline-block;
+  }
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  padding: 40px;
+
+  .empty-state-content {
+    text-align: center;
+
+    h4 {
+      color: #333;
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+    }
+
+    p {
+      color: #999;
+      font-size: 14px;
+    }
+  }
+}
+
+.empty-search {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+.spinner-border {
+  color: #033857;
+}
+
+.alert {
+  border-radius: 6px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}

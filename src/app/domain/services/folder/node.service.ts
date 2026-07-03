@@ -117,9 +117,11 @@ export class NodeService {
     file: File,
     procesoId: string,
     expedienteId: string,
+    tipo_doc: string,
     nombre?: string,
-    description?: string
+    description?: string,
   ): Observable<ApiResponse<FileUploadResponse>> {
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('procesoId', procesoId);
@@ -133,6 +135,7 @@ export class NodeService {
     if (expedienteId) {
       formData.append('expedienteId', expedienteId);
     }
+  formData.append('tipoDoc', tipo_doc);
     return this.http.post<ApiResponse<FileUploadResponse>>(`${this.apiUrl}/uploadSentencia`, formData);
   }
 

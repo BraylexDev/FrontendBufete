@@ -1,0 +1,180 @@
+.gestion-expedientes-container {
+  padding: 2rem 0;
+
+  .header-section {
+    margin-bottom: 2rem;
+
+    .title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #1a202c;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #718096;
+      margin: 0;
+    }
+  }
+
+  .search-section {
+    margin-bottom: 1.5rem;
+
+    .input-group {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-radius: 0.5rem;
+
+      .input-group-text {
+        background-color: #f7fafc;
+        border: 1px solid #e2e8f0;
+        color: #718096;
+      }
+
+      .form-control {
+        border: 1px solid #e2e8f0;
+        border-left: none;
+
+        &:focus {
+          border-color: #4299e1;
+          box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+          outline: none;
+        }
+
+        &::placeholder {
+          color: #cbd5e0;
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background-color: #f7fafc;
+    border-radius: 0.5rem;
+    border: 2px dashed #cbd5e0;
+
+    .empty-state-content {
+      text-align: center;
+
+      i {
+        display: block;
+        margin-bottom: 1rem;
+      }
+
+      h4 {
+        color: #1a202c;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      p {
+        color: #718096;
+        margin: 0;
+      }
+    }
+  }
+
+  .expedientes-table {
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .table {
+      margin-bottom: 0;
+
+      thead {
+        background-color: #f7fafc;
+        border-bottom: 2px solid #e2e8f0;
+
+        th {
+          color: #4a5568;
+          font-weight: 600;
+          padding: 1rem;
+          vertical-align: middle;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid #e2e8f0;
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background-color: #f9fafb;
+          }
+
+          td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: #2d3748;
+
+            &:first-child {
+              font-weight: 500;
+            }
+
+            .badge {
+              padding: 0.4rem 0.8rem;
+              font-size: 0.75rem;
+              font-weight: 500;
+            }
+
+            small {
+              display: block;
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Spinner customizado
+  .spinner-border {
+    color: #4299e1;
+  }
+
+  // Alertas
+  .alert {
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    &.alert-danger {
+      background-color: #fef5f5;
+      color: #c53030;
+
+      .btn-close {
+        color: #c53030;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .gestion-expedientes-container {
+    padding: 1rem 0;
+
+    .header-section {
+      .title {
+        font-size: 1.5rem;
+      }
+    }
+
+    .expedientes-table {
+      .table {
+        font-size: 0.875rem;
+
+        thead th,
+        tbody td {
+          padding: 0.75rem 0.5rem;
+        }
+      }
+    }
+  }
+}

@@ -27,12 +27,12 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">*Contraseña</label>
+                            <label for="exampleInputPassword1">*Contrasena</label>
                             <input type="text" formControlName="contrasena" class="form-control key"  autocomplete="off"
                                 id="exampleInputPassword1" placeholder="Contrasena" />
                             <div *ngIf="form.get('contrasena')!.hasError('required') && form.get('contrasena')!.touched"
                                 style="color:red">
-                                Contraseña requerida.
+                                Contrasena requerida.
                             </div>
                         </div>
                         <button type="button" class="btn btn-primary" (click)="create()" [disabled]="form.invalid">

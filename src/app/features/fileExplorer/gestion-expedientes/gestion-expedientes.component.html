@@ -1,0 +1,112 @@
+<div class="gestion-expedientes-container">
+  <!-- Encabezado -->
+  <div class="header-section">
+    <h2 class="title">Gestión de Expedientes</h2>
+    <p class="subtitle">Visualiza y gestiona todos tus expedientes legales</p>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-section mb-3">
+    <div class="input-group">
+      <span class="input-group-text" id="icon-search">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="search"
+        class="form-control"
+        placeholder="Buscar por nombre, proceso o creador..."
+        aria-label="Buscar"
+        aria-describedby="icon-search"
+        [(ngModel)]="filtroBusqueda"
+        (input)="onBusquedaChange()"
+      />
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando expedientes...</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
+  </div>
+
+  <!-- Lista vacía -->
+  <div *ngIf="!cargando && expedientes.length === 0 && !error" class="empty-state">
+    <div class="empty-state-content">
+      <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+      <h4>No hay expedientes</h4>
+      <p class="text-muted">Aún no tienes expedientes registrados. Comienza creando uno nuevo.</p>
+    </div>
+  </div>
+
+  <!-- Tabla de expedientes -->
+  <div *ngIf="!cargando && expedientesFiltrados.length > 0" class="expedientes-table">
+    <app-card [hidHeader]="true" [options]="false">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" style="width: 18%">Nombre</th>
+              <th scope="col" style="width: 15%">Proceso</th>
+              <th scope="col" style="width: 12%">Estado</th>
+              <th scope="col" style="width: 12%">Creado por</th>
+              <th scope="col" style="width: 12%">Documentos</th>
+              <th scope="col" style="width: 15%">Fecha Creación</th>
+              <th scope="col" style="width: 6%">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let expediente of expedientesFiltrados">
+              <td>
+                <strong>{{ expediente.nombre }}</strong>
+              </td>
+              <td>
+                <span class="badge bg-info text-dark">{{ expediente.procesoNombre }}</span>
+              </td>
+              <td>
+                <span 
+                  class="badge" 
+                  [ngClass]="getEstadoBadgeClass(expediente.estado)">
+                  {{ expediente.estado || 'N/A' }}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{ expediente.createdByNombre || '-' }}</small>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ expediente.totalDocumentos || 0 }}</span>
+              </td>
+              <td>
+                <small>{{ formatDate(expediente.fechaCreacion) }}</small>
+              </td>
+              <td>
+                <!-- Botón de eliminar con validación de permisos -->
+                <app-delete-action
+                  [itemType]="'expediente'"
+                  [item]="expediente"
+                  (deleted)="onExpedienteEliminado()">
+                </app-delete-action>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
+
+  <!-- Mensaje de no resultados en búsqueda -->
+  <div *ngIf="!cargando && filtroBusqueda && expedientesFiltrados.length === 0 && expedientes.length > 0" class="empty-search">
+    <div class="text-center py-4">
+      <i class="bi bi-search" style="font-size: 32px; color: #ccc; margin-bottom: 12px;"></i>
+      <h5>No se encontraron expedientes</h5>
+      <p class="text-muted">Intenta con otros términos de búsqueda</p>
+    </div>
+  </div>
+</div>

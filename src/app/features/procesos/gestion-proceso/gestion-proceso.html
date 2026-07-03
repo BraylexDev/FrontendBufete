@@ -1,1 +1,282 @@
-<p>gestion-proceso works!</p>
+<div class="gestion-proceso-container">
+  <!-- Encabezado con botón crear -->
+  <div class="header-section">
+    <div class="header-top">
+      <div>
+        <h2 class="title">Gestión de Procesos</h2>
+        <p class="subtitle">Esta pantalla permite visualizar y crear procesos o expedientes</p>
+      </div>
+      <button class="btn btn-primary btn-lg" (click)="openModal()">
+        <i class="bi bi-plus-circle"></i> Crear Proceso / Expediente
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-section mb-3">
+    <div class="input-group">
+      <span class="input-group-text" id="icon-search">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="search"
+        class="form-control"
+        placeholder="Buscar..."
+        aria-label="Buscar"
+        aria-describedby="icon-search"
+        [(ngModel)]="filtroBusqueda"
+        (input)="onBusquedaChange()"
+      />
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando procesos...</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
+  </div>
+
+  <!-- Lista vacía -->
+  <div *ngIf="!cargando && !mostrarAbogado && procesos.length === 0 && !error" class="empty-state">
+    <div class="empty-state-content">
+      <i class="bi bi-folder-x" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+      <h4>No hay procesos</h4>
+      <p class="text-muted">Aún no tienes procesos registrados. Comienza creando uno nuevo.</p>
+    </div>
+  </div>
+
+  <!-- Lista vacía (vista agrupada) -->
+  <div *ngIf="!cargando && mostrarAbogado && usuarioGrupos.length === 0 && !error" class="empty-state">
+    <div class="empty-state-content">
+      <i class="bi bi-folder-x" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+      <h4>No hay procesos</h4>
+      <p class="text-muted">No hay procesos registrados en el sistema.</p>
+    </div>
+  </div>
+
+  <!-- Lista jerárquica de procesos y expedientes (vista normal sin agrupación) -->
+  <div *ngIf="!cargando && !mostrarAbogado && procesosFiltrados.length > 0" class="tree-container">
+    <div class="tree-list">
+      <div *ngFor="let proceso of procesosFiltrados" class="tree-item proceso-item">
+        <!-- Fila del proceso -->
+        <div class="item-row proceso-row">
+          <!-- Botón expandir/contraer -->
+          <button 
+            class="expand-btn" 
+            (click)="toggleExpanded(proceso)"
+            [class.expanded]="proceso.expanded">
+            <i class="bi" [ngClass]="proceso.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+          </button>
+
+          <!-- Ícono y nombre del proceso -->
+          <div class="item-content">
+            <i class="bi bi-folder-fill proceso-icon"></i>
+            <div class="proceso-info">
+              <span class="item-name">{{ proceso.numeroProceso }}</span>
+              <span class="proceso-description">{{ proceso.nombre }}</span>
+            </div>
+          </div>
+
+          <!-- Acciones del proceso -->
+          <div class="item-actions">
+            <button 
+              class="btn btn-sm btn-info" 
+              (click)="editarProceso(proceso)" 
+              title="Editar proceso">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button 
+              class="btn btn-sm btn-danger" 
+              (click)="eliminarProceso(proceso)" 
+              title="Eliminar proceso">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Expedientes del proceso (expandible) -->
+        <div class="expedientes-container" *ngIf="proceso.expanded" [@slideDown]>
+          <!-- Cargando expedientes -->
+          <div *ngIf="proceso.cargandoExpedientes" class="loading-expedientes">
+            <small class="text-muted">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Cargando expedientes...
+            </small>
+          </div>
+
+          <!-- Lista de expedientes -->
+          <div *ngIf="!proceso.cargandoExpedientes && proceso.expedientes && proceso.expedientes.length > 0">
+            <div *ngFor="let expediente of proceso.expedientes" class="tree-item expediente-item">
+              <div class="item-row expediente-row">
+                <!-- Ícono y nombre del expediente -->
+                <div class="item-content">
+                  <i class="bi bi-file-text-fill expediente-icon"></i>
+                  <span class="item-name">{{ expediente.nombre }}</span>
+                </div>
+
+                <!-- Acciones del expediente -->
+                <div class="item-actions">
+                  <button 
+                    class="btn btn-sm btn-info" 
+                    (click)="editarExpediente(expediente)" 
+                    title="Editar expediente">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-danger" 
+                    (click)="eliminarExpediente(expediente, proceso)" 
+                    title="Eliminar expediente">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sin expedientes -->
+          <div *ngIf="!proceso.cargandoExpedientes && (!proceso.expedientes || proceso.expedientes.length === 0)" class="no-expedientes">
+            <small class="text-muted">Sin expedientes</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
+  <div *ngIf="!cargando && mostrarAbogado && usuarioGruposFiltrados.length > 0" class="tree-container">
+    <div class="tree-list">
+      <!-- Grupo de usuario -->
+      <div *ngFor="let grupo of usuarioGruposFiltrados" class="usuario-grupo" [class.mis-procesos]="grupo.esMisProcesos">
+        <!-- Fila del usuario -->
+        <div class="item-row usuario-row" [class.mis-procesos-row]="grupo.esMisProcesos">
+          <!-- Botón expandir/contraer -->
+          <button 
+            class="expand-btn" 
+            (click)="toggleUsuarioGrupo(grupo)"
+            [class.expanded]="grupo.expanded">
+            <i class="bi" [ngClass]="grupo.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+          </button>
+
+          <!-- Ícono y nombre del usuario -->
+          <div class="item-content usuario-content">
+            <i class="bi" [ngClass]="grupo.esMisProcesos ? 'bi-person-circle' : 'bi-person-circle'" class="usuario-icon"></i>
+            <span class="usuario-nombre">{{ grupo.usuarioNombre }}</span>
+            <span class="procesos-count">{{ grupo.procesos.length }} proceso(s)</span>
+          </div>
+        </div>
+
+        <!-- Procesos del usuario (expandible) -->
+        <div class="procesos-del-usuario-container" *ngIf="grupo.expanded">
+          <div *ngFor="let proceso of grupo.procesos" class="tree-item proceso-item">
+            <!-- Fila del proceso -->
+            <div class="item-row proceso-row">
+              <!-- Botón expandir/contraer -->
+              <button 
+                class="expand-btn" 
+                (click)="toggleExpanded(proceso)"
+                [class.expanded]="proceso.expanded">
+                <i class="bi" [ngClass]="proceso.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+              </button>
+
+              <!-- Ícono y nombre del proceso -->
+              <div class="item-content">
+                <i class="bi bi-folder-fill proceso-icon"></i>
+                <div class="proceso-info">
+                  <span class="item-name">{{ proceso.numeroProceso }}</span>
+                  <span class="proceso-description">{{ proceso.nombre }}</span>
+                </div>
+              </div>
+
+              <!-- Acciones del proceso -->
+              <div class="item-actions">
+                <button 
+                  class="btn btn-sm btn-info" 
+                  (click)="editarProceso(proceso)" 
+                  title="Editar proceso">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="eliminarProceso(proceso)" 
+                  title="Eliminar proceso">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expedientes del proceso (expandible) -->
+            <div class="expedientes-container" *ngIf="proceso.expanded" [@slideDown]>
+              <!-- Cargando expedientes -->
+              <div *ngIf="proceso.cargandoExpedientes" class="loading-expedientes">
+                <small class="text-muted">
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Cargando expedientes...
+                </small>
+              </div>
+
+              <!-- Lista de expedientes -->
+              <div *ngIf="!proceso.cargandoExpedientes && proceso.expedientes && proceso.expedientes.length > 0">
+                <div *ngFor="let expediente of proceso.expedientes" class="tree-item expediente-item">
+                  <div class="item-row expediente-row">
+                    <!-- Ícono y nombre del expediente -->
+                    <div class="item-content">
+                      <i class="bi bi-file-text-fill expediente-icon"></i>
+                      <span class="item-name" (click)="toFolder(expediente)">{{ expediente.nombre }}</span>
+                    </div>
+
+                    <!-- Acciones del expediente -->
+                    <div class="item-actions">
+                      <button 
+                        class="btn btn-sm btn-info" 
+                        (click)="editarExpediente(expediente)" 
+                        title="Editar expediente">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button 
+                        class="btn btn-sm btn-danger" 
+                        (click)="eliminarExpediente(expediente, proceso)" 
+                        title="Eliminar expediente">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sin expedientes -->
+              <div *ngIf="!proceso.cargandoExpedientes && (!proceso.expedientes || proceso.expedientes.length === 0)" class="no-expedientes">
+                <small class="text-muted">Sin expedientes</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje de no resultados en búsqueda (vista normal) -->
+  <div *ngIf="!cargando && !mostrarAbogado && filtroBusqueda && procesosFiltrados.length === 0 && procesos.length > 0" class="empty-search">
+    <div class="text-center py-4">
+      <i class="bi bi-search" style="font-size: 32px; color: #ccc; margin-bottom: 12px;"></i>
+      <h5>No se encontraron procesos</h5>
+      <p class="text-muted">Intenta con otros términos de búsqueda</p>
+    </div>
+  </div>
+
+  <!-- Mensaje de no resultados en búsqueda (vista agrupada) -->
+  <div *ngIf="!cargando && mostrarAbogado && filtroBusqueda && usuarioGruposFiltrados.length === 0 && usuarioGrupos.length > 0" class="empty-search">
+    <div class="text-center py-4">
+      <i class="bi bi-search" style="font-size: 32px; color: #ccc; margin-bottom: 12px;"></i>
+      <h5>No se encontraron resultados</h5>
+      <p class="text-muted">Intenta con otros términos de búsqueda</p>
+    </div>
+  </div>
+</div>

@@ -4,7 +4,7 @@
         "nombre": "Lucas",
         "apellido": "Perez",
         "email": "lucas@gmail.com",
-        "contraseña": "admin",
+        "contrasena": "admin",
         "rol": {
             "id": 1,
             "nombre": "Administrador",

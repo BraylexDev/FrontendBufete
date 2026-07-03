@@ -5,7 +5,6 @@ export interface CreateSentenciaRequest {
     procesoId: number;
     clienteId: number;
     abogadoId: number;
-    fileBlobId: string;
 }
 
 export interface SentenciaResponse {

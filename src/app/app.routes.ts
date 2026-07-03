@@ -21,6 +21,10 @@ import { ConstanciaCarcelariaComponent } from './features/gestionAdministrativa/
 import { loginGuard } from './guards/login/login.guard';
 import { authGuard } from './guards/auth/auth.guard';
 import { ExpedienteDetailComponent } from './features/reportes/componentes/expedienteDetail/expediente-detail/expediente-detail.component';
+import { GestionProcesoComponent } from './features/procesos/gestion-proceso/gestion-proceso';
+import { GestionProcesoPenalesCivilesComponent } from './features/procesos/gestion-proceso-penales-civiles/gestion-proceso-penales-civiles';
+import { GestionProcesoAdministrativosComponent } from './features/procesos/gestion-proceso-administrativos/gestion-proceso-administrativos';
+import { GestionExpedientesComponent } from './features/expediente/gestion-expedientes/gestion-expedientes.component';
 
 export const routes: Routes = [
     {
@@ -80,19 +84,27 @@ export const routes: Routes = [
             {
                 path: 'expedientes/:id/archivos',
                 component: ExpedienteDetailComponent 
-            },/* 
-
-
-            {
-                path: 'expediente',
-                loadComponent: () =>
-                    import('./features/file-manager/file-manager/file-manager.component').then(m => m.FileManagerComponent)
             },
             {
-                path: 'expediente/:expedienteId',
-                loadComponent: () =>
-                    import('./features/file-manager/file-manager/file-manager.component').then(m => m.FileManagerComponent)
-            } */
+                path: 'gestion-procesos',
+                component: GestionProcesoComponent,
+                canActivate: [authGuard]
+            },
+            {
+                path: 'gestion-procesos-penales-civiles',
+                component: GestionProcesoPenalesCivilesComponent,
+                canActivate: [authGuard]
+            },
+            {
+                path: 'gestion-procesos-administrativos',
+                component: GestionProcesoAdministrativosComponent,
+                canActivate: [authGuard]
+            },
+            {
+                path: 'gestion-expedientes',
+                component: GestionExpedientesComponent,
+                canActivate: [authGuard]
+            },
         ]
     },
     {

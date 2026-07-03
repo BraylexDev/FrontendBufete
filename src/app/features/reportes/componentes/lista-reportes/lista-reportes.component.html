@@ -69,8 +69,25 @@
                 style="color: gray"
               ></i>
             </button>
-            <i class="feather icon-folder" style="font-size:30px; margin-inline: 10px;  color: #033857"></i>
-            <strong class="ms-1">{{ proceso.nombre }}</strong>
+            <div  class="item-content">
+              <i class="feather icon-folder" style="font-size:30px; margin-inline: 10px;  color: #033857"></i>
+              <strong class="ms-1">{{ proceso.nombre }}</strong>
+            </div>
+            <!-- Acciones del proceso -->
+            <div class="item-actions">
+              <button 
+                class="btn btn-sm btn-info" 
+                (click)="editarProceso(proceso)" 
+                title="Editar proceso">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button 
+                class="btn btn-sm btn-danger" 
+                (click)="eliminarProceso(proceso)" 
+                title="Eliminar proceso">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Expedientes (colapsable) -->
@@ -89,10 +106,27 @@
                     style="color: gray"
                   ></i>
                 </button>
+                <div  class="item-content">
                 <i class="feather icon-file-text" style="font-size:30px; margin-inline: 10px; color: #033857"></i>
                 <span class="ms-1" (click)="toFolder(exp)">{{
-                  exp.numero
+                  exp.nombre
                 }}</span>
+                </div>
+                <!-- Acciones del expediente -->
+                <div class="item-actions">
+                  <button 
+                    class="btn btn-sm btn-info" 
+                    (click)="editarExpediente(exp)" 
+                    title="Editar expediente">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn btn-sm btn-danger" 
+                    (click)="eliminarExpediente(exp, proceso)" 
+                    title="Eliminar expediente">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
               </div>
             </li>
           </ul>

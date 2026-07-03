@@ -78,6 +78,7 @@ export class RolesComponent implements OnInit {
     this.svc.listarPermisos().subscribe({
       next: (ps) => {
         this.permisos = ps;
+        console.log("Permisos cargados:", ps);
         this.permissions = ps;
         this.groupPermissionsByModule(ps);
       },

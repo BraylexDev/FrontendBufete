@@ -108,12 +108,28 @@ export const NavigationItems: NavigationItem[] = [
         type: 'collapse',
         icon: 'feather icon-cpu',
         children: [
-          {
+          /* {
             id: 'dashboard',
             title: 'Procesos Registrados',
             type: 'item',
             url: '/admin/listaReporte',
             icon: 'feather icon-layers'
+          }, */
+          {
+            id: 'gestion-procesos-penales-civiles',
+            title: 'Procesos Penales y Civiles',
+            type: 'item',
+            url: '/admin/gestion-procesos-penales-civiles',
+            icon: 'feather icon-folder',
+            breadcrumbs: true
+          },
+          {
+            id: 'gestion-procesos-administrativos',
+            title: 'Procesos Administrativos',
+            type: 'item',
+            url: '/admin/gestion-procesos-administrativos',
+            icon: 'feather icon-folder',
+            breadcrumbs: true
           },
           {
             id: 'dashboard',
@@ -127,7 +143,7 @@ export const NavigationItems: NavigationItem[] = [
       },
       {
         id: 'sentencias',
-        title: 'Sentencias',
+        title: 'Informacion Relevante Para Usuario',
         type: 'collapse',
         icon: 'feather icon-layers',
         children: [
@@ -199,5 +215,37 @@ export const NavigationItems: NavigationItem[] = [
         ]
       },
     ]
-  }
+  },
+  /* {
+    id: 'management',
+    title: 'Gestión Integrada',
+    type: 'group',
+    icon: 'icon-layers',
+    children: [
+      {
+        id: 'gestion-procesos-penales-civiles',
+        title: 'Gestión de Procesos Penales y Civiles',
+        type: 'item',
+        url: '/admin/gestion-procesos-penales-civiles',
+        icon: 'feather icon-folder',
+        breadcrumbs: true
+      },
+      {
+        id: 'gestion-procesos-administrativos',
+        title: 'Gestión de Procesos Administrativos',
+        type: 'item',
+        url: '/admin/gestion-procesos-administrativos',
+        icon: 'feather icon-folder',
+        breadcrumbs: true
+      },
+      {
+        id: 'gestion-expedientes',
+        title: 'Gestión de Expedientes',
+        type: 'item',
+        url: '/admin/gestion-expedientes',
+        icon: 'feather icon-file-text',
+        breadcrumbs: true
+      },
+    ]
+  } */
 ];

@@ -40,13 +40,24 @@ export class NewUserComponent {
       rol_id: ['', Validators.required],
     });
 
+    console.log("Formulario de usuario creado");
+    
+  }
+
+  ngOnInit(): void {
+    this.cargarPermisos();  
+  }
+  
+  cargarPermisos() {
     this.rolsvc.listarRoles().subscribe({
       next: data => {
         this.roles = data;
+        console.log("Roles cargados:", this.roles);
         this.rolMap = new Map(data.map(r => [r.id, r.nombre]));
       }
     });
   }
+
 
   create() {
     const { nombre, apellido, email, contrasena: contrasena, rol_id } = this.form.value;
@@ -64,7 +75,7 @@ export class NewUserComponent {
 
     this.svc.createUsuario(newUser)             
       .subscribe(() => {
-        this.form.reset({ nombre: '', apellido: '', email: '', contraseña: '', rol_id: '' });
+        this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
       });
     this.triggerAlert('Registro Exitoso', 'success');
   }

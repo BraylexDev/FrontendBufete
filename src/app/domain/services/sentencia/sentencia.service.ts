@@ -21,6 +21,10 @@ export class SentenciaService {
       return this.http.post<SentenciaResponse>(this.baseUrl, proceso );
     }
 
+  listarDocsPorCliente(idCliente: string): Observable<SentenciaResponse[]> {
+    return this.http.get<SentenciaResponse[]>(`${this.baseUrl}/cliente/${idCliente}`);
+  }  
+
   listarDocumentos(tipo: string): Observable<SentenciaResponse[]> {
     return this.http.get<SentenciaResponse[]>(`${this.baseUrl}/tipo/${tipo}`);
   }

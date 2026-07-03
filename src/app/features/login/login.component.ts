@@ -46,7 +46,7 @@ export class LoginComponent {
       error: (error) => {
         this.isLoading.set(false);
         if (error.status === 401) {
-          this.errorMessage.set('Usuario o Contraseña Incorrectos.');
+          this.errorMessage.set('Usuario o Contrasena Incorrectos.');
         } else if (error.status === 0) {
           this.errorMessage.set('No se pudo conectar con el servidor.');
         } else {

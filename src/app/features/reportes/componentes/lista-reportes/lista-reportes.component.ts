@@ -12,19 +12,28 @@ import { ProcesoDTO } from '../../../../domain/models/proceso';
 import { ExpedienteService } from '../../../../domain/services/expediente/expediente.service';
 import { ExpedienteDTO } from '../../../../domain/models/expediente';
 
+interface ProcesoExpandible extends ProcesoDTO {
+  expanded?: boolean;
+  expedientes?: ExpedienteDTO[];
+  cargandoExpedientes?: boolean;
+}
 
 interface Expedienteaux {
   id: number;
-  numero: string;
+  nombre: string;
+  procesoId?: number;
   rootNodeId: string;
-  abierto: boolean; // controla colapso
+  abierto: boolean; 
 }
 
 interface Procesoaux {
   id?: number;
-  nombre?: string; // e.g. "Divorcio - Juan Pérez"
+  nombre?: string; 
+  numeroProceso?: string; 
+  clienteId?: string;
   expedientes: Expedienteaux[];
-  abierto: boolean; // controla colapso
+  abierto: boolean; 
+  cargandoExpedientes?: boolean;
 }
 
 
@@ -35,6 +44,9 @@ interface Procesoaux {
   styleUrl: './lista-reportes.component.scss'
 })
 export class ListaReportesComponent {
+  private procesoService = inject(ProcesoService);
+  private expedienteService = inject(ExpedienteService);
+  private modalService2 = inject(NgbModal);
 
   private router = inject(Router);
   // modelo de datos simulado
@@ -44,6 +56,7 @@ export class ListaReportesComponent {
   expedientesGlobal: ExpedienteDTO[] = [];
 
   listaprocesos: ProcesoDTO[] = [];
+
   // texto en el campo de búsqueda
   filtroBusqueda: string = '';
 
@@ -56,7 +69,7 @@ export class ListaReportesComponent {
   ) { }
 
   ngOnInit(): void {
-    this.cargarProcesos();    
+    this.cargarProcesos();  
   }
 
   cargarProcesos(){
@@ -65,6 +78,7 @@ export class ListaReportesComponent {
         {
           next: (data) => {
             this.listaprocesos = data.data,
+            console.log(data.data)
               this.conversionAux2(this.listaprocesos),
               this.consultarExpedientes(this.procesos)
           },
@@ -83,6 +97,7 @@ export class ListaReportesComponent {
       modalRef.dismissed.subscribe(() => {
         this.cargarProcesos();
       });
+
     }
 
   toFolder(exp: Expedienteaux){
@@ -99,14 +114,15 @@ export class ListaReportesComponent {
           {
             next: (data) => {
                 this.expedientesGlobal = data.data,
+                console.log(" exps", this.expedientesGlobal),
                 this.procesos[index].expedientes = this.cargarExpedientes(this.expedientesGlobal),
-                this.procesos[index].abierto = this.existExpedients(this.expedientesGlobal)
+                console.log(" expsdasd", this.procesos[index].expedientes),
+                this.procesos[index].abierto = false
             },
             error: err => console.error('Error fetching items', err)
           }
         )
     }
-
   }
 
   existExpedients(exp: ExpedienteDTO[]): boolean{
@@ -123,19 +139,21 @@ export class ListaReportesComponent {
 
       expedientes.push({
         id: element.id,
-        numero: element.nombre,
+        nombre: element.nombre,
+        procesoId: element.procesoId,
         rootNodeId: element.rootNodeId,
         abierto: true
       })
     }
     return expedientes;
-
   }
 
   conversionAux2(proc: ProcesoDTO[]) {
     this.procesos = proc.map((p) => {
       return {
         id: p.id ?? 0, 
+        numeroProceso: p.numeroProceso,
+        clienteId: p.clienteId.toString(),
         nombre: p.nombre,
         expedientes: [], 
         abierto: false,
@@ -165,7 +183,7 @@ export class ListaReportesComponent {
 
         // Para cada expediente, filtramos documentos que coincidan
         const expedientesFiltrados = proceso.expedientes.map(exp => {
-          const coincideExpediente = exp.numero.toLowerCase().includes(texto);
+          const coincideExpediente = exp.nombre.toLowerCase().includes(texto);
 
           return {
             ...exp,
@@ -173,7 +191,7 @@ export class ListaReportesComponent {
           };
         })
           // Dejamos solo expedientes que tengan documentos filtrados o cuyo número concatene el texto
-          .filter(exp => exp.numero.toLowerCase().includes(texto));
+          .filter(exp => exp.nombre.toLowerCase().includes(texto));
 
         // Si algún expediente se mantiene, abrimos el proceso
         const hayExpedientes = expedientesFiltrados.length > 0;
@@ -227,4 +245,71 @@ export class ListaReportesComponent {
     URL.revokeObjectURL(urlDocument);
   }
 
+  editarProceso(proceso: Procesoaux): void {
+      const modalRef = this.modalService.open(ProcesoModalComponent, { size: 'lg' });
+      modalRef.componentInstance.modoEdicion = true;
+      modalRef.componentInstance.procesoEdicion = { ...proceso };
+      console.log("proceso a editar : ", proceso)
+      
+      modalRef.result.then(() => {
+        this.cargarProcesos();
+      }).catch((reason) => {
+        console.log('Modal cerrado:', reason);
+      });
+    }
+  
+    eliminarProceso(proceso: Procesoaux): void {
+      if (!proceso.id) return;
+      
+      if (!confirm(`¿Está seguro de que desea eliminar el proceso "${proceso.nombre}"?`)) {
+        return;
+      }
+  
+      this.procesoService.eliminarProceso(proceso.id).subscribe({
+        next: () => {
+          alert('Proceso eliminado exitosamente');
+          this.cargarProcesos();
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar proceso:', err);
+          alert('Error al eliminar el proceso. Por favor intente nuevamente.');
+        }
+      });
+    }
+  
+    editarExpediente(expediente: Expedienteaux): void {
+      const modalRef = this.modalService.open(ProcesoModalComponent, { size: 'lg' });
+      modalRef.componentInstance.modoEdicion = true;
+      modalRef.componentInstance.expedienteEdicion = { ...expediente };
+      modalRef.componentInstance.activeTab = 'expediente';
+      console.log("expediente a editar : ", expediente)
+      
+      modalRef.result.then(() => {
+        this.cargarProcesos();
+      }).catch((reason) => {
+        console.log('Modal cerrado:', reason);
+      });
+    }
+  
+    eliminarExpediente(expediente: Expedienteaux, proceso: Procesoaux): void {
+      if (!expediente.id) return;
+      
+      if (!confirm(`¿Está seguro de que desea eliminar el expediente "${expediente.nombre}"?`)) {
+        return;
+      }
+  
+      this.expedienteService.eliminarExpediente(expediente.id).subscribe({
+        next: () => {
+          alert('Expediente eliminado exitosamente');
+          // Recargar expedientes del proceso
+          if (proceso.id) {
+            this.cargarProcesos()
+          }
+        },
+        error: (err: any) => {
+          console.error('Error al eliminar expediente:', err);
+          alert('Error al eliminar el expediente. Por favor intente nuevamente.');
+        }
+      });
+    }
 }

@@ -86,7 +86,7 @@ export class UserService {
   }
 
   /**
-   * Cambia la contraseña de un usuario
+   * Cambia la contrasena de un usuario
    */
   changePassword(id: number, request: ChangePasswordRequest): Observable<ApiResponse<Usuario>> {
     return this.http.put<ApiResponse<Usuario>>(`${this.apiUrl}/${id}/change-password`, request);
@@ -116,8 +116,8 @@ export class UserService {
     return this.http.get<User>(`${this.baseUrl}/usuario/${id}`);
   }
 
-  actualizar(id: number, nombre: string, apellido: string, email: string, contraseña: string, rol_id: number){
-    return this.http.put<User>(`${this.baseUrl}/usuario/${id}`, { nombre, apellido, email, contraseña, rol_id });
+  actualizar(id: number, nombre: string, apellido: string, email: string, contrasena: string, rol_id: number){
+    return this.http.put<User>(`${this.baseUrl}/usuario/${id}`, { nombre, apellido, email, contrasena, rol_id });
   } */
 
 }

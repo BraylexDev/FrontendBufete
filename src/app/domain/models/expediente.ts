@@ -11,6 +11,7 @@ export interface ExpedienteDTO {
     rootNodeId: string;
     orden: number;
     createdByNombre: string;
+    createdById?: number;
     updatedAt: string;
     totalDocumentos: number;
     totalSize: number;

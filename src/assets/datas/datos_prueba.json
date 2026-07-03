@@ -5,7 +5,7 @@
             "nombre": "Lucas",
             "apellido": "Perez",
             "email": "lucas@gmail.com",
-            "contraseña": "admin",
+            "contrasena": "admin",
             "rol": "Administrador"
         },
         {
@@ -13,7 +13,7 @@
             "nombre": "Juan David",
             "apellido": "Ramirez",
             "email": "juan@gmail.com",
-            "contraseña": "admin",
+            "contrasena": "admin",
             "rol": "Administrador"
         }
     ],
