@@ -69,6 +69,6 @@ export class ExpedienteDetailComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/expedientes']);
+    this.router.navigate(['/admin/gestion-procesos']);
   }
 }

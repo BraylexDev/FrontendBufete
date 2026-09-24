@@ -132,10 +132,10 @@ export const NavigationItems: NavigationItem[] = [
             breadcrumbs: true
           }, */
           {
-            id: 'gestion-procesos-nueva',
+            id: 'gestion-procesos',
             title: 'Jurisdicción',
             type: 'item',
-            url: '/admin/gestion-procesos-nueva',
+            url: '/admin/gestion-procesos',
             icon: 'feather icon-plus-circle',
             breadcrumbs: true
           },

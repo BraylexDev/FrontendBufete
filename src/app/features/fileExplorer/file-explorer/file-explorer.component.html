@@ -76,7 +76,7 @@
       <thead>
         <tr>
           <th>Nombre</th>
-          <th>Tipo</th>
+          <th>Tamaño</th>
           <th>Modificado</th>
           <th>Acciones</th>
         </tr>
@@ -94,7 +94,7 @@
           </td>
           <td>
             <span class="badge">{{
-              node.type === NodeType.FOLDER ? "Carpeta" : "Archivo"
+              node.sizeBytes ? formatFileSize(node.sizeBytes) : "--"
             }}</span>
           </td>
           <td>{{ formatDate(node.updatedAt) }}</td>

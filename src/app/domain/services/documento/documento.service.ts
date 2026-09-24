@@ -11,7 +11,7 @@ import { TablaDocumento } from '../../models/sentenciasTable';
 })
 export class DocumentoService {
 
-  private baseUrl = environment.secUrl + '/api';
+  private baseUrl = environment.apiUrl + '/api';
 
   constructor(private http: HttpClient) { }
 

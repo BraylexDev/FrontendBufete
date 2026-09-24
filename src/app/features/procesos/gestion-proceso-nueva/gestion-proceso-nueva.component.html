@@ -28,12 +28,7 @@
 
         <div class="col-12 col-lg-6">
           <label class="form-label" for="asunto">Asunto</label>
-          <select
-            id="asunto"
-            class="form-select"
-            formControlName="asunto"
-            [disabled]="!jurisdiccionControl?.value"
-          >
+          <select id="asunto" class="form-select" formControlName="asunto">
             <option value="">Seleccione un asunto</option>
             <option *ngFor="let item of asuntosDisponibles" [value]="item">
               {{ item }}
@@ -50,19 +45,21 @@
     </div>
   </div>
 
-  <div class="d-flex flex-column gap-3 align-items-center" *ngIf="!showInfoMessage">
+  <div
+    class="d-flex flex-column gap-3 align-items-center"
+    *ngIf="!showInfoMessage"
+  >
     <div class="d-flex flex-wrap gap-2">
-      
       <button
         type="button"
         class="btn btn-outline-secondary"
         (click)="openActionModal('MODIFICAR_ACTUACION')"
       >
-        MODIFICAR O ADICIONAR ACTUACION DE ASUNTO CARGADO
+        MODIFICAR O ADICIONAR ACTUACION DE ASUNTO
       </button>
       <button
         type="button"
-         class="btn btn-outline-primary" 
+        class="btn btn-outline-primary"
         (click)="openActionModal('ESTADISTICA_AREA')"
       >
         ESTADISTICA DE AREA
@@ -87,119 +84,227 @@
         <p class="text-muted">No hay procesos registrados en el sistema.</p>
       </div>
     </div>
-    
-    <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
-  <div *ngIf="!cargando && mostrarAbogado && usuarioGruposFiltrados.length > 0 && showProcesosList" class="tree-container">
-    <div class="tree-list">
-      <!-- Grupo de usuario -->
-      <div *ngFor="let grupo of usuarioGruposFiltrados" class="usuario-grupo" [class.mis-procesos]="grupo.esMisProcesos">
-        <!-- Fila del usuario -->
-        <div class="item-row usuario-row" [class.mis-procesos-row]="grupo.esMisProcesos">
-          <!-- Botón expandir/contraer -->
-          <button 
-            class="expand-btn" 
-            (click)="toggleUsuarioGrupo(grupo)"
-            [class.expanded]="grupo.expanded">
-            <i class="bi" [ngClass]="grupo.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-          </button>
 
-          <!-- Ícono y nombre del usuario -->
-          <div class="item-content usuario-content">
-            <i class="bi" [ngClass]="grupo.esMisProcesos ? 'bi-person-circle' : 'bi-person-circle'" class="usuario-icon"></i>
-            <span class="usuario-nombre">{{ grupo.usuarioNombre }}</span>
-            <span class="procesos-count">{{ grupo.procesos.length }} proceso(s)</span>
-          </div>
-        </div>
-
-        <!-- Procesos del usuario (expandible) -->
-        <div class="procesos-del-usuario-container" *ngIf="grupo.expanded">
-          <div *ngFor="let proceso of grupo.procesos" class="tree-item proceso-item">
-            <!-- Fila del proceso -->
-            <div class="item-row proceso-row">
-              <!-- Botón expandir/contraer -->
-              <button 
-                class="expand-btn" 
-                (click)="toggleExpanded(proceso)"
-                [class.expanded]="proceso.expanded">
-                <i class="bi" [ngClass]="proceso.expanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
-              </button>
-
-              <!-- Ícono y nombre del proceso -->
-              <div class="item-content">
-                <i class="bi bi-folder-fill proceso-icon"></i>
-                <div class="proceso-info">
-                  <span class="item-name">{{ proceso.numeroProceso }}</span>
-                  <span class="proceso-description">{{ proceso.nombre }}</span>
-                </div>
-              </div>
-
-              <!-- Acciones del proceso -->
-              <div class="item-actions">
-                <button 
-                  class="btn btn-sm btn-info" 
-                  (click)="editarProceso(proceso)" 
-                  title="Editar proceso">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button 
-                  class="btn btn-sm btn-danger" 
-                  (click)="eliminarProceso(proceso)" 
-                  title="Eliminar proceso">
-                  <i class="bi bi-trash"></i>
-                </button>
+    <!-- Lista jerárquica de procesos y expedientes (vista normal sin agrupación) -->
+    <div
+      *ngIf="!cargando && !mostrarAbogado && procesosFiltrados.length > 0"
+      class="tree-container"
+    >
+      <div class="tree-list">
+        <div
+          *ngFor="let proceso of procesosFiltrados"
+          class="tree-item proceso-item"
+        >
+          <!-- Fila del proceso -->
+          <div class="item-row proceso-row">
+            <!-- Ícono y nombre del proceso -->
+            <div class="item-content">
+              <i class="bi bi-folder-fill proceso-icon"></i>
+              <div class="proceso-info" (click)="toFolder(proceso)">
+                <span class="item-name">{{ proceso.numeroProceso }}</span>
+                <span class="proceso-description">{{ proceso.nombre }}</span>
               </div>
             </div>
 
-            <!-- Expedientes del proceso (expandible) -->
-            <div class="expedientes-container" *ngIf="proceso.expanded" [@slideDown]>
-              <!-- Cargando expedientes -->
-              <div *ngIf="proceso.cargandoExpedientes" class="loading-expedientes">
-                <small class="text-muted">
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                  Cargando expedientes...
-                </small>
-              </div>
+            <!-- Acciones del proceso -->
+            <div class="item-actions">
+              <button
+                class="btn btn-sm btn-success"
+                (click)="toFolder(proceso)"
+                title="Ver Expediente"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-info"
+                (click)="editarProceso(proceso)"
+                title="Editar proceso"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="eliminarProceso(proceso)"
+                title="Eliminar proceso"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
 
-              <!-- Lista de expedientes -->
-              <div *ngIf="!proceso.cargandoExpedientes && proceso.expedientes && proceso.expedientes.length > 0">
-                <div *ngFor="let expediente of proceso.expedientes" class="tree-item expediente-item">
-                  <div class="item-row expediente-row">
-                    <!-- Ícono y nombre del expediente -->
-                    <div class="item-content">
-                      <i class="bi bi-file-text-fill expediente-icon"></i>
-                      <span class="item-name" (click)="toFolder(expediente)">{{ expediente.nombre }}</span>
-                    </div>
+          <!-- Expedientes del proceso (expandible) -->
+          <div
+            class="expedientes-container"
+            *ngIf="proceso.expanded"
+            [@slideDown]
+          >
+            <!-- Cargando expedientes -->
+            <div
+              *ngIf="proceso.cargandoExpedientes"
+              class="loading-expedientes"
+            >
+              <small class="text-muted">
+                <span class="spinner-border spinner-border-sm me-2"></span>
+                Cargando expedientes...
+              </small>
+            </div>
 
-                    <!-- Acciones del expediente -->
-                    <div class="item-actions">
-                      <button 
-                        class="btn btn-sm btn-info" 
-                        (click)="editarExpediente(expediente)" 
-                        title="Editar expediente">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button 
-                        class="btn btn-sm btn-danger" 
-                        (click)="eliminarExpediente(expediente, proceso)" 
-                        title="Eliminar expediente">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
+            <!-- Lista de expedientes -->
+            <div
+              *ngIf="
+                !proceso.cargandoExpedientes &&
+                proceso.expedientes &&
+                proceso.expedientes.length > 0
+              "
+            >
+              <div
+                *ngFor="let expediente of proceso.expedientes"
+                class="tree-item expediente-item"
+              >
+                <div class="item-row expediente-row">
+                  <!-- Ícono y nombre del expediente -->
+                  <div class="item-content">
+                    <i class="bi bi-file-text-fill expediente-icon"></i>
+                    <span class="item-name">{{ expediente.nombre }}</span>
+                  </div>
+
+                  <!-- Acciones del expediente -->
+                  <div class="item-actions">
+                    <button
+                      class="btn btn-sm btn-info"
+                      (click)="editarExpediente(expediente)"
+                      title="Editar expediente"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-danger"
+                      (click)="eliminarExpediente(expediente, proceso)"
+                      title="Eliminar expediente"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Sin expedientes -->
-              <div *ngIf="!proceso.cargandoExpedientes && (!proceso.expedientes || proceso.expedientes.length === 0)" class="no-expedientes">
-                <small class="text-muted">Sin expedientes</small>
+            <!-- Sin expedientes -->
+            <div
+              *ngIf="
+                !proceso.cargandoExpedientes &&
+                (!proceso.expedientes || proceso.expedientes.length === 0)
+              "
+              class="no-expedientes"
+            >
+              <small class="text-muted">Sin expedientes</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
+    <div
+      *ngIf="
+        !cargando &&
+        mostrarAbogado &&
+        usuarioGruposFiltrados.length > 0 &&
+        showProcesosList
+      "
+      class="tree-container"
+    >
+      <div class="tree-list">
+        <!-- Grupo de usuario -->
+        <div
+          *ngFor="let grupo of usuarioGruposFiltrados"
+          class="usuario-grupo"
+          [class.mis-procesos]="grupo.esMisProcesos"
+        >
+          <!-- Fila del usuario -->
+          <div
+            class="item-row usuario-row"
+            [class.mis-procesos-row]="grupo.esMisProcesos"
+          >
+            <!-- Botón expandir/contraer -->
+            <button
+              class="expand-btn"
+              (click)="toggleUsuarioGrupo(grupo)"
+              [class.expanded]="grupo.expanded"
+            >
+              <i
+                class="bi"
+                [ngClass]="
+                  grupo.expanded ? 'bi-chevron-down' : 'bi-chevron-right'
+                "
+              ></i>
+            </button>
+
+            <!-- Ícono y nombre del usuario -->
+            <div class="item-content usuario-content">
+              <i
+                class="bi"
+                [ngClass]="
+                  grupo.esMisProcesos ? 'bi-person-circle' : 'bi-person-circle'
+                "
+                class="usuario-icon"
+              ></i>
+              <span class="usuario-nombre">{{ grupo.usuarioNombre }}</span>
+              <span class="procesos-count"
+                >{{ grupo.procesos.length }} proceso(s)</span
+              >
+            </div>
+          </div>
+
+          <!-- Procesos del usuario (expandible) -->
+          <div class="procesos-del-usuario-container" *ngIf="grupo.expanded">
+            <div
+              *ngFor="let proceso of grupo.procesos"
+              class="tree-item proceso-item"
+            >
+              <!-- Fila del proceso -->
+              <div class="item-row proceso-row">
+                <!-- Ícono y nombre del proceso -->
+                <div class="item-content">
+                  <i class="bi bi-folder-fill proceso-icon"></i>
+                  <div class="proceso-info" (click)="toFolder(proceso)">
+                    <span class="item-name">{{ proceso.numeroProceso }}</span>
+                    <span class="proceso-description">{{
+                      proceso.nombre
+                    }}</span>
+                  </div>
+                </div>
+
+                <!-- Acciones del proceso -->
+                <div class="item-actions">
+                  <button
+                    class="btn btn-sm btn-success"
+                    (click)="toFolder(proceso)"
+                    title="Ver Expediente"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-info"
+                    (click)="editarProceso(proceso)"
+                    title="Editar proceso"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="eliminarProceso(proceso)"
+                    title="Eliminar proceso"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
   </div>
 </div>
 
@@ -215,9 +320,9 @@
   </div>
 
   <div class="modal-body">
-    <ng-container *ngIf="modalAction === 'ASUNTO_NUEVO'">
+    <ng-container *ngIf="modalAction === 'ASUNTO_NUEVO' && asuntoControl?.value === 'ASUNTOS PENALES'">
       <form [formGroup]="subForm" novalidate>
-        <div class="mb-3">
+        <div *ngIf="!showtipoAsunto" class="mb-3">
           <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
           <select
             id="tipoAsuntoNuevo"
@@ -234,12 +339,8 @@
           </select>
         </div>
 
+        <!--
         <div *ngIf="showEtapaConocimiento" class="border rounded p-3 bg-light">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">Paso {{ currentStep }} de 3</h6>
-            <span class="text-muted small">Etapa de conocimiento</span>
-          </div>
-
           <div *ngIf="currentStep === 1" class="d-flex flex-column gap-3">
             <div>
               <label class="form-label" for="tipoProcedimiento"
@@ -271,8 +372,14 @@
           </div>
 
           <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
-            <h6>Formulario datos generales</h6>
-            <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Formulario datos generales</h6>
+          -->
+        <!-- <h6 class="mb-0">Paso {{ currentStep }} de 3</h6> -->
+        <!--<span class="text-muted small">Sindicado o Imputado</span>
+            </div>-->
+        <!--<h6>Formulario datos generales</h6> -->
+        <!--<div>
               <label class="form-label" for="numeroProceso"
                 >Número de proceso *</label
               >
@@ -321,6 +428,62 @@
             </div>
           </div>
 
+          <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Formulario datos generales</h6>
+          -->
+        <!-- <h6 class="mb-0">Paso {{ currentStep }} de 3</h6> -->
+        <!--<span class="text-muted small">Sindicado o Imputado</span>
+            </div>-->
+        <!--<h6>Formulario datos generales</h6> -->
+        <!--<div>
+              <label class="form-label" for="numeroProceso"
+                >Número de proceso *</label
+              >
+              <input
+                id="numeroProceso"
+                class="form-control"
+                formControlName="numeroProceso"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="nombreProceso"
+                >Nombre del proceso *</label
+              >
+              <input
+                id="nombreProceso"
+                class="form-control"
+                formControlName="nombreProceso"
+              />
+            </div>
+            <div>
+              <label class="form-label" for="identificacionCliente"
+                >Identificación cliente *</label
+              >
+              <input
+                id="identificacionCliente"
+                class="form-control"
+                formControlName="identificacionCliente"
+              />
+            </div>
+            <span class="text-muted small">* Datos Obligatorios</span>
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+
           <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
             <h6>Planificador de procesos</h6>
             <div>
@@ -359,6 +522,727 @@
                 (click)="guardarAsuntoNuevo()"
               >
                 Guardar
+              </button>
+            </div>
+          </div>
+        </div>-->
+        <div *ngIf="showEtapaConocimiento" class="border rounded p-3 bg-light">
+          <!-- ===================================================== -->
+          <!-- PASO 1 - INFORMACIÓN DEL PROCESO -->
+          <!-- ===================================================== -->
+          <div *ngIf="currentStep === 1" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Información del proceso</h6>
+              <span class="text-muted small">Paso 1 de 3</span>
+            </div>
+
+            <div>
+              <label class="form-label" for="tipoProcedimiento"
+                >Tipo de procedimiento</label
+              >
+              <select
+                id="tipoProcedimiento"
+                class="form-select"
+                formControlName="tipoProcedimiento"
+              >
+                <option value="">Seleccione un tipo</option>
+                <option
+                  *ngFor="let item of tiposProcedimiento"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- NUNC -->
+            <div>
+              <label class="form-label" for="nunc"> NUNC * </label>
+
+              <input
+                id="nunc"
+                type="text"
+                class="form-control"
+                formControlName="nunc"
+                placeholder="Ingrese el numero unico de noticia criminal"
+              />
+
+              <div
+                class="text-danger small mt-1"
+                *ngIf="
+                  subForm.get('nunc')?.touched && subForm.get('nunc')?.invalid
+                "
+              >
+                El NUNC es obligatorio.
+              </div>
+            </div>
+
+            <!-- ETAPA PROCESO -->
+            <div>
+              <label class="form-label" for="etapaProceso">
+                Etapa del proceso *
+              </label>
+
+              <select
+                id="etapaProceso"
+                class="form-select"
+                formControlName="etapaProceso"
+              >
+                <option value="">Seleccione una etapa</option>
+
+                <option *ngFor="let item of etapasProceso" [value]="item.value">
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- HUBO VÍCTIMAS -->
+            <div>
+              <label class="form-label"> ¿Hubo víctimas? * </label>
+
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasSi"
+                    [value]="true"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasSi">
+                    Sí
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasNo"
+                    [value]="false"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasNo">
+                    No
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ===================================================== -->
+          <!-- PASO 2 - IMPUTADOS -->
+          <!-- ===================================================== -->
+
+          <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">Imputados</h6>
+                <span class="text-muted small">
+                  Agregue uno o varios imputados
+                </span>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="agregarImputado()"
+              >
+                <i class="bi bi-plus-lg"></i>
+                Agregar imputado
+              </button>
+            </div>
+
+            <!-- LISTA DE IMPUTADOS -->
+            <div formArrayName="imputados" class="d-flex flex-column gap-3">
+              <div
+                *ngFor="let imputado of imputados.controls; let i = index"
+                [formGroupName]="i"
+                class="card"
+              >
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <strong> Imputado {{ i + 1 }} </strong>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="eliminarImputado(i)"
+                    *ngIf="imputados.length > 1"
+                  >
+                    <i class="bi bi-trash"></i>
+                    Eliminar
+                  </button>
+                </div>
+
+                <div class="card-body">
+                  <div class="row g-3">
+                    <!-- TIPO DOCUMENTO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Tipo de documento * </label>
+
+                      <select
+                        class="form-select"
+                        formControlName="tipoDocumento"
+                      >
+                        <option value="">Seleccione</option>
+
+                        <option value="CC">Cédula de ciudadanía</option>
+
+                        <option value="CE">Cédula de extranjería</option>
+
+                        <option value="TI">Tarjeta de identidad</option>
+
+                        <option value="PPT">
+                          Permiso por protección temporal
+                        </option>
+
+                        <option value="PAS">Pasaporte</option>
+                      </select>
+                    </div>
+
+                    <!-- NUMERO DOCUMENTO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Número de documento * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="numeroDocumento"
+                      />
+                    </div>
+
+                    <!-- NOMBRES -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Nombres * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="nombres"
+                      />
+                    </div>
+
+                    <!-- APELLIDOS -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Apellidos * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="apellidos"
+                      />
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Correo electrónico </label>
+
+                      <input
+                        type="email"
+                        class="form-control"
+                        formControlName="email"
+                      />
+                    </div>
+
+                    <!-- TELEFONO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Teléfono </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="telefono"
+                      />
+                    </div>
+
+                    <!-- PRIVADO LIBERTAD -->
+                    <!-- <div class="col-md-6">
+                      <label class="form-label">
+                        ¿Privado de la libertad? *
+                      </label>
+
+                      <select
+                        class="form-select"
+                        formControlName="privadoLibertad"
+                      >
+                        <option [ngValue]="null">Seleccione</option>
+
+                        <option [ngValue]="true">Sí</option>
+
+                        <option [ngValue]="false">No</option>
+                      </select>
+                    </div>-->
+
+                    <!-- TIPO DETENCION -->
+                    <div
+                      class="col-md-12"
+                    >
+                      <label class="form-label"> Tipo de Detención Preventiva* </label>
+
+                      <select
+                        class="form-select"
+                        formControlName="tipoDetencion"
+                      >
+                        <option value="">Seleccione</option>
+
+                        <option
+                          *ngFor="let item of tiposDetencion"
+                          [value]="item.value"
+                        >
+                          {{ item.label }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <!-- ESTABLECIMIENTO -->
+                    <div
+                      class="col-md-12"
+                    >
+                      <label class="form-label">
+                        Establecimiento Penitenciario o Lugar de Residencia
+                      </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="establecimientoOResidencia"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SIN IMPUTADOS -->
+            <div *ngIf="imputados.length === 0" class="alert alert-info">
+              No hay imputados agregados. Pulse
+              <strong>Agregar imputado</strong>
+              para registrar uno.
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ===================================================== -->
+          <!-- PASO 3 - DELITOS Y BIENES JURÍDICOS -->
+          <!-- ===================================================== -->
+
+          <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">Delitos y bienes jurídicos</h6>
+
+                <span class="text-muted small">
+                  Seleccione los elementos relacionados con el proceso
+                </span>
+              </div>
+            </div>
+            <!-- DELITOS -->
+            <div>
+              <label class="form-label" for="buscarDelito">Delitos *</label>
+
+              <div class="multi-select-box">
+                <div
+                  class="selected-items"
+                  *ngIf="delitosSeleccionados.length > 0"
+                >
+                  <span
+                    class="selected-item"
+                    *ngFor="let delito of delitosSeleccionados"
+                  >
+                    {{ delito.nombre }}
+                    <button
+                      type="button"
+                      class="selected-item-remove"
+                      (click)="toggleDelito(delito.id)"
+                      [attr.aria-label]="'Quitar ' + delito.nombre"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                </div>
+
+                <div class="multi-select-search">
+                  <i class="bi bi-search"></i>
+                  <input
+                    id="buscarDelito"
+                    type="search"
+                    class="form-control"
+                    placeholder="Buscar delito..."
+                    [(ngModel)]="filtroDelito"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+
+                <div
+                  class="multi-select-options"
+                  role="listbox"
+                  aria-label="Delitos"
+                >
+                  <label
+                    class="multi-select-option"
+                    *ngFor="let delito of delitosFiltrados"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="estaDelitoSeleccionado(delito.id)"
+                      (change)="toggleDelito(delito.id)"
+                    />
+                    <span>{{ delito.nombre }}</span>
+                  </label>
+                  <small
+                    class="text-muted"
+                    *ngIf="delitosFiltrados.length === 0"
+                  >
+                    No se encontraron delitos.
+                  </small>
+                </div>
+              </div>
+              <small class="text-muted">Seleccione uno o varios delitos.</small>
+            </div>
+
+            <!-- BIENES JURÍDICOS -->
+            <div>
+              <label class="form-label" for="buscarBienJuridico"
+                >Bienes jurídicos *</label
+              >
+
+              <div class="multi-select-box">
+                <div
+                  class="selected-items"
+                  *ngIf="bienesJuridicosSeleccionados.length > 0"
+                >
+                  <span
+                    class="selected-item"
+                    *ngFor="let bien of bienesJuridicosSeleccionados"
+                  >
+                    {{ bien.nombre }}
+                    <button
+                      type="button"
+                      class="selected-item-remove"
+                      (click)="toggleBienJuridico(bien.id)"
+                      [attr.aria-label]="'Quitar ' + bien.nombre"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                </div>
+
+                <div class="multi-select-search">
+                  <i class="bi bi-search"></i>
+                  <input
+                    id="buscarBienJuridico"
+                    type="search"
+                    class="form-control"
+                    placeholder="Buscar bien jurídico..."
+                    [(ngModel)]="filtroBienJuridico"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+
+                <div
+                  class="multi-select-options"
+                  role="listbox"
+                  aria-label="Bienes jurídicos"
+                >
+                  <label
+                    class="multi-select-option"
+                    *ngFor="let bien of bienesJuridicosFiltrados"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="estaBienJuridicoSeleccionado(bien.id)"
+                      (change)="toggleBienJuridico(bien.id)"
+                    />
+                    <span>{{ bien.nombre }}</span>
+                  </label>
+                  <small
+                    class="text-muted"
+                    *ngIf="bienesJuridicosFiltrados.length === 0"
+                  >
+                    No se encontraron bienes jurídicos.
+                  </small>
+                </div>
+              </div>
+              <small class="text-muted"
+                >Seleccione uno o varios bienes jurídicos.</small
+              >
+            </div>
+
+            <!-- IMPUTACIÓN -->
+            <!--<div>
+              <label class="form-label"> Imputación </label>
+
+              <textarea
+                class="form-control"
+                rows="5"
+                formControlName="imputacion"
+                placeholder="Ingrese la descripción de la imputación"
+              ></textarea>
+            </div>-->
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================= -->
+          <!-- PASO 4 -->
+          <!-- ========================================= -->
+
+          <div
+            *ngIf="currentStep === 4"
+            class="border rounded p-3 bg-light"
+            formGroupName="fiscal"
+          >
+            <div class="mb-3">
+              <h6 class="mb-1">4. Información de la Fiscalía</h6>
+
+              <small class="text-muted">
+                Registre los datos del fiscal asociado al proceso.
+              </small>
+            </div>
+
+            <!-- Nombre del fiscal -->
+
+            <div class="mb-3">
+              <label for="nombreFiscal" class="form-label">
+                Nombre del fiscal *
+              </label>
+
+              <input
+                id="nombreFiscal"
+                type="text"
+                class="form-control"
+                formControlName="nombreFiscal"
+                placeholder="Ingrese el nombre completo"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('nombreFiscal')?.touched &&
+                  fiscal.get('nombreFiscal')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                El nombre del fiscal es obligatorio.
+              </div>
+            </div>
+
+            <!-- Unidad -->
+
+            <div class="mb-3">
+              <label for="unidad" class="form-label"> Unidad * </label>
+
+              <input
+                id="unidad"
+                type="text"
+                class="form-control"
+                formControlName="unidad"
+                placeholder="Ingrese la unidad"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('unidad')?.touched && fiscal.get('unidad')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                La unidad es obligatoria.
+              </div>
+            </div>
+
+            <!-- Correo -->
+
+            <div class="mb-3">
+              <label for="correoFiscal" class="form-label">
+                Correo electrónico *
+              </label>
+
+              <input
+                id="correoFiscal"
+                type="email"
+                class="form-control"
+                formControlName="correo"
+                placeholder="correo@ejemplo.com"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('correo')?.touched && fiscal.get('correo')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                Ingrese un correo electrónico válido.
+              </div>
+            </div>
+
+            <!-- Teléfono -->
+
+            <div class="mb-3">
+              <label for="telefonoFiscal" class="form-label">
+                Teléfono *
+              </label>
+
+              <input
+                id="telefonoFiscal"
+                type="text"
+                class="form-control"
+                formControlName="telefono"
+                placeholder="Ingrese el teléfono"
+              />
+            </div>
+
+            <!-- Navegación -->
+
+            <div class="d-flex justify-content-between mt-4">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================= -->
+          <!-- PASO 5 -->
+          <!-- ========================================= -->
+
+          <div *ngIf="currentStep === 5" class="border rounded p-3 bg-light">
+            <h6 class="mb-3">5. Etapa, competencia y juzgado</h6>
+
+            <!-- ETAPA PROCESO -->
+
+            <div class="mb-3">
+              <label class="form-label" for="etapaProceso">
+                Etapa del proceso *
+              </label>
+
+              <select
+                id="etapaProceso"
+                class="form-select"
+                formControlName="etapaProceso"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option *ngFor="let item of etapasProceso" [value]="item.value">
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- COMPETENCIA -->
+
+            <div class="mb-3">
+              <label class="form-label" for="competenciaAsunto">
+                Competencia del asunto *
+              </label>
+
+              <select
+                id="competenciaAsunto"
+                class="form-select"
+                formControlName="competenciaAsunto"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option
+                  *ngFor="let item of competenciasAsunto"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- TIPO JUZGADO -->
+
+            <div class="mb-3">
+              <label class="form-label" for="tipoJuzgado">
+                Tipo de juzgado *
+              </label>
+
+              <select
+                id="tipoJuzgado"
+                class="form-select"
+                formControlName="tipoJuzgado"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option *ngFor="let item of tiposJuzgado" [value]="item.value">
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="guardarAsuntoNuevo()"
+              >
+                Guardar asunto
               </button>
             </div>
           </div>
@@ -435,7 +1319,12 @@
         </div>
       </form>
     </ng-container>
-
+    <div
+      *ngIf="modalAction === 'ASUNTO_NUEVO' && asuntoControl?.value !== 'ASUNTOS PENALES'"
+      class="alert alert-secondary mb-0"
+    >
+      Funcionalidad Pendiente.
+    </div>
     <div
       *ngIf="modalAction === 'MODIFICAR_ACTUACION'"
       class="alert alert-secondary mb-0"

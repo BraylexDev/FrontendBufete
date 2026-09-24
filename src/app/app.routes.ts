@@ -87,7 +87,7 @@ export const routes: Routes = [
                 component: ExpedienteDetailComponent 
             },
             {
-                path: 'gestion-procesos',
+                path: 'gestion-procesos-base',
                 component: GestionProcesoComponent,
                 canActivate: [authGuard]
             },
@@ -102,7 +102,7 @@ export const routes: Routes = [
                 canActivate: [authGuard]
             },
             {
-                path: 'gestion-procesos-nueva',
+                path: 'gestion-procesos',
                 component: GestionProcesoNuevaComponent,
                 canActivate: [authGuard]
             },
