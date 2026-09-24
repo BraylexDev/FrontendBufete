@@ -532,8 +532,7 @@
           <!-- ===================================================== -->
           <div *ngIf="currentStep === 1" class="d-flex flex-column gap-3">
             <div class="d-flex justify-content-between align-items-center">
-              <h6 class="mb-0">Información del proceso</h6>
-              <span class="text-muted small">Paso 1 de 3</span>
+              <h6 class="mb-0">1. Información del Proceso</h6>
             </div>
 
             <div>
@@ -577,60 +576,6 @@
               </div>
             </div>
 
-            <!-- ETAPA PROCESO -->
-            <div>
-              <label class="form-label" for="etapaProceso">
-                Etapa del proceso *
-              </label>
-
-              <select
-                id="etapaProceso"
-                class="form-select"
-                formControlName="etapaProceso"
-              >
-                <option value="">Seleccione una etapa</option>
-
-                <option *ngFor="let item of etapasProceso" [value]="item.value">
-                  {{ item.label }}
-                </option>
-              </select>
-            </div>
-
-            <!-- HUBO VÍCTIMAS -->
-            <div>
-              <label class="form-label"> ¿Hubo víctimas? * </label>
-
-              <div class="d-flex gap-4">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    id="huboVictimasSi"
-                    [value]="true"
-                    formControlName="huboVictimas"
-                  />
-
-                  <label class="form-check-label" for="huboVictimasSi">
-                    Sí
-                  </label>
-                </div>
-
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    id="huboVictimasNo"
-                    [value]="false"
-                    formControlName="huboVictimas"
-                  />
-
-                  <label class="form-check-label" for="huboVictimasNo">
-                    No
-                  </label>
-                </div>
-              </div>
-            </div>
-
             <div class="d-flex justify-content-end">
               <button
                 type="button"
@@ -649,7 +594,7 @@
           <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="mb-1">Imputados</h6>
+                <h6 class="mb-1">2. Información de Imputados</h6>
                 <span class="text-muted small">
                   Agregue uno o varios imputados
                 </span>
@@ -860,7 +805,7 @@
           <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="mb-1">Delitos y bienes jurídicos</h6>
+                <h6 class="mb-1">3. Delitos y bienes jurídicos</h6>
 
                 <span class="text-muted small">
                   Seleccione los elementos relacionados con el proceso
@@ -1163,7 +1108,7 @@
           <!-- ========================================= -->
 
           <div *ngIf="currentStep === 5" class="border rounded p-3 bg-light">
-            <h6 class="mb-3">5. Etapa, competencia y juzgado</h6>
+            <h6 class="mb-3">5.Informacion adicional</h6>
 
             <!-- ETAPA PROCESO -->
 
@@ -1226,6 +1171,40 @@
                   {{ item.label }}
                 </option>
               </select>
+            </div>
+            <!-- HUBO VÍCTIMAS -->
+            <div>
+              <label class="form-label"> ¿Hubo víctimas? * </label>
+
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasSi"
+                    [value]="true"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasSi">
+                    Sí
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasNo"
+                    [value]="false"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasNo">
+                    No
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="d-flex justify-content-between">

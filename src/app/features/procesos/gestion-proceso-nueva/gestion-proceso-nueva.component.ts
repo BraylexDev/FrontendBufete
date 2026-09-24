@@ -732,7 +732,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
       const controlesPaso1 = [
         'nunc',
-        'etapaProceso',
         'tipoProcedimiento'
       ];
 
@@ -829,7 +828,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       const campos = [
         'etapaProceso',
         'competenciaAsunto',
-        'tipoJuzgado'
+        'tipoJuzgado',
       ];
 
       let valido = true;
