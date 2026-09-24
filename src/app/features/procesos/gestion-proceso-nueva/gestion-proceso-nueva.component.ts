@@ -16,6 +16,8 @@ import { DelitoService } from '../../../domain/services/delito/delito.service';
 import { BienJuridicoService } from '../../../domain/services/bienJuridico/bien-juridico.service';
 import { AsuntoPenal, BienJuridico, Delito, Persona } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
 import { AsuntoPenalService } from '../../../domain/services/asuntoPenal/asunto-penal.service';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { SharedModule } from '../../shared/shared.module';
 
 
 interface ProcesoExpandible extends ProcesoDTO {
@@ -50,14 +52,13 @@ interface ProcesoItem {
 @Component({
   selector: 'app-gestion-proceso-nueva',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgbModalModule],
+  imports: [SharedModule, CommonModule, FormsModule, ReactiveFormsModule, NgbModalModule],
   templateUrl: './gestion-proceso-nueva.component.html',
   styleUrl: './gestion-proceso-nueva.component.scss'
 })
 export class GestionProcesoNuevaComponent implements OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly modalService = inject(NgbModal);
-  private readonly alertService = inject(AlertService);
 
   private delitoService = inject(DelitoService);
   private bienService = inject(BienJuridicoService);
@@ -190,7 +191,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   selectedFileName = '';
   currentStep = 1;
 
-  constructor() {
+  constructor(private alertService: AlertService) {
     this.buscadorForm = this.fb.group({
       jurisdiccion: ['', Validators.required],
       asunto: [{ value: '', disabled: true }, Validators.required]

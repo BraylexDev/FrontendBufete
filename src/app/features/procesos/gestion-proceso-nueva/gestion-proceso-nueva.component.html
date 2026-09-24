@@ -318,9 +318,17 @@
       (click)="cerrarModal()"
     ></button>
   </div>
+  <div styles="position: fixed; z-index:9999">
+    <app-alert></app-alert>
+  </div>
 
   <div class="modal-body">
-    <ng-container *ngIf="modalAction === 'ASUNTO_NUEVO' && asuntoControl?.value === 'ASUNTOS PENALES'">
+    <ng-container
+      *ngIf="
+        modalAction === 'ASUNTO_NUEVO' &&
+        asuntoControl?.value === 'ASUNTOS PENALES'
+      "
+    >
       <form [formGroup]="subForm" novalidate>
         <div *ngIf="!showtipoAsunto" class="mb-3">
           <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
@@ -733,10 +741,10 @@
                     </div>-->
 
                     <!-- TIPO DETENCION -->
-                    <div
-                      class="col-md-12"
-                    >
-                      <label class="form-label"> Tipo de Detención Preventiva* </label>
+                    <div class="col-md-12">
+                      <label class="form-label">
+                        Tipo de Detención Preventiva*
+                      </label>
 
                       <select
                         class="form-select"
@@ -754,9 +762,7 @@
                     </div>
 
                     <!-- ESTABLECIMIENTO -->
-                    <div
-                      class="col-md-12"
-                    >
+                    <div class="col-md-12">
                       <label class="form-label">
                         Establecimiento Penitenciario o Lugar de Residencia
                       </label>
@@ -1299,7 +1305,10 @@
       </form>
     </ng-container>
     <div
-      *ngIf="modalAction === 'ASUNTO_NUEVO' && asuntoControl?.value !== 'ASUNTOS PENALES'"
+      *ngIf="
+        modalAction === 'ASUNTO_NUEVO' &&
+        asuntoControl?.value !== 'ASUNTOS PENALES'
+      "
       class="alert alert-secondary mb-0"
     >
       Funcionalidad Pendiente.
