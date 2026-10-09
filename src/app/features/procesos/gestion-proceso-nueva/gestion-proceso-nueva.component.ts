@@ -218,7 +218,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       // =========================
       // Delitos y bienes jurídicos
       // =========================
-      delitosIds: this.fb.control<number[]>([], Validators.required),
+      delitosIds: this.fb.control<number[]>([1]),
       bienesJuridicosIds: this.fb.control<number[]>([], Validators.required),
 
       // =========================
@@ -496,7 +496,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   eliminarProceso(proceso: ProcesoExpandible): void {
     if (!proceso.id) return;
 
-    if (!confirm(`¿Está seguro de que desea eliminar el proceso "${proceso.nombre}"?`)) {
+    if (!confirm(`¿Está seguro de que desea eliminar el proceso "${proceso.numeroProceso}"?`)) {
       return;
     }
 
@@ -953,6 +953,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
         this.imputados.clear();
 
         this.currentStep = 1;
+        this.cargarProcesos();
       },
 
       error: (error) => {
@@ -1028,7 +1029,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       medidaEjecucion: '',
       archivo: null,
       delitosIds: [],
-      bienesJuridicosIds: []
+      bienesJuridicosIds: [2]
     });
     this.selectedFileName = '';
     this.filtroDelito = '';
@@ -1174,7 +1175,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
   private toggleSeleccion(controlName: 'delitosIds' | 'bienesJuridicosIds', id: number): void {
     const control = this.subForm.get(controlName);
-    const ids: number[] = control?.value ?? [];
+    const ids: number[] = control?.value ?? [1,2];
     const nuevosIds = ids.includes(id)
       ? ids.filter(selectedId => selectedId !== id)
       : [...ids, id];

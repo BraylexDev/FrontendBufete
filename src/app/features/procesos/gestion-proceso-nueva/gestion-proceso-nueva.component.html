@@ -225,12 +225,12 @@
           <div
             class="item-row usuario-row"
             [class.mis-procesos-row]="grupo.esMisProcesos"
+            (click)="toggleUsuarioGrupo(grupo)"
+            [class.expanded]="grupo.expanded"
           >
             <!-- Botón expandir/contraer -->
             <button
               class="expand-btn"
-              (click)="toggleUsuarioGrupo(grupo)"
-              [class.expanded]="grupo.expanded"
             >
               <i
                 class="bi"
@@ -811,7 +811,7 @@
           <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <h6 class="mb-1">3. Delitos y bienes jurídicos</h6>
+                <h6 class="mb-1">3. Delitos Imputados</h6>
 
                 <span class="text-muted small">
                   Seleccione los elementos relacionados con el proceso
@@ -883,6 +883,7 @@
             </div>
 
             <!-- BIENES JURÍDICOS -->
+             <!--
             <div>
               <label class="form-label" for="buscarBienJuridico"
                 >Bienes jurídicos *</label
@@ -949,6 +950,7 @@
                 >Seleccione uno o varios bienes jurídicos.</small
               >
             </div>
+            -->
 
             <!-- IMPUTACIÓN -->
             <!--<div>
