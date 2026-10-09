@@ -33,7 +33,7 @@ export class AlertService {
 		setTimeout(() => {
 			alert.show = true
 			this.alertsSubject.next(this.alerts)
-		}, 10) // Pequeño retraso para activar la animación de fade-in
+		}, 10) // Pequeño retraso para activar la animación de fade-in asdasd
 
 		setTimeout(() => {
 			this.fadeOutAlert(alert.id)
