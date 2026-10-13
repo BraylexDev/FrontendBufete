@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { ProcesoModalComponent } from '../proceso-modal/proceso-modal.component';
 import { DelitoService } from '../../../domain/services/delito/delito.service';
 import { BienJuridicoService } from '../../../domain/services/bienJuridico/bien-juridico.service';
-import { AsuntoPenal, BienJuridico, Delito, Persona } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
+import { AsuntoPenal, AsuntoPenalDetalleDTO, BienJuridico, Delito, Persona } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
 import { AsuntoPenalService } from '../../../domain/services/asuntoPenal/asunto-penal.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SharedModule } from '../../shared/shared.module';
@@ -98,22 +98,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       label: 'CONOCIMIENTO'
     },
   ];
-
-  competenciasAsunto = [
-    {
-      value: 'MUNICIPAL',
-      label: 'MUNICIPAL'
-    },
-    {
-      value: 'CIRCUITO',
-      label: 'CIRCUITO'
-    },
-    {
-      value: 'CIRCUITO_ESPECIALIZADO',
-      label: 'CIRCUITO ESPECIALIZADO'
-    },
-  ]
-
   filtroDelito = '';
   filtroBienJuridico = '';
 
@@ -185,11 +169,30 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     { value: 'TRASLADOS', label: 'Solicitud de traslados de establecimientos penitenciarios' }
   ];
 
+  readonly competenciasAsunto = [
+    {
+      value: 'MUNICIPAL',
+      label: 'MUNICIPAL'
+    },
+    {
+      value: 'CIRCUITO',
+      label: 'CIRCUITO'
+    },
+    {
+      value: 'CIRCUITO_ESPECIALIZADO',
+      label: 'CIRCUITO ESPECIALIZADO'
+    },
+  ]
+
   procesos: ProcesoItem[] = [];
-  modalAction: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | null = null;
+  modalAction: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO' | null = null;
   modalTitle = '';
   selectedFileName = '';
   currentStep = 1;
+
+  detalleAsunto: AsuntoPenalDetalleDTO | null = null;
+
+  procesoSeleccionado!: number;
 
   constructor(private alertService: AlertService) {
     this.buscadorForm = this.fb.group({
@@ -481,7 +484,17 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
   }
 
-  editarProceso(proceso: ProcesoExpandible): void {
+  /* editarProceso(proceso: ProcesoExpandible): void {
+    console.log('formulario editarProceso 1:' , this.subForm.controls);
+    this.cargarDetalleAsuntoPenal(proceso.id || 0);
+    this.openActionModal('EDITAR_ASUNTO');
+    console.log('formulario editarProceso 2:' , this.subForm.controls);
+
+    this.cargarDetalleAsuntoPenal(proceso.id || 0);
+    this.openActionModal('EDITAR_ASUNTO');
+
+    console.log('formulario editarProceso 2:' , this.subForm.controls);
+
     const modalRef = this.modalService.open(ProcesoModalComponent, { size: 'lg' });
     modalRef.componentInstance.modoEdicion = true;
     modalRef.componentInstance.procesoEdicion = { ...proceso };
@@ -491,6 +504,18 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     }).catch((reason) => {
       console.log('Modal cerrado:', reason);
     });
+  } */
+
+  editarProceso(proceso: ProcesoExpandible): void {
+    const procesoId = proceso.id;
+
+    if (!procesoId) {
+      console.error('El proceso no tiene un ID válido');
+      return;
+    }
+
+    this.cargarDetalleAsuntoPenal(procesoId);
+    this.procesoSeleccionado = procesoId;
   }
 
   eliminarProceso(proceso: ProcesoExpandible): void {
@@ -521,7 +546,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     modalRef.result.then(() => {
       this.cargarProcesos();
     }).catch((reason) => {
-      console.log('Modal cerrado:', reason);
     });
   }
 
@@ -573,9 +597,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       if (control instanceof FormGroup) {
         this.mostrarErroresFormulario(control, campo);
       } else if (control?.invalid) {
-        console.log(`❌ Campo inválido: ${campo}`);
-        console.log('   Valor:', control.value);
-        console.log('   Errores:', control.errors);
       }
     });
   }
@@ -670,7 +691,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     return false;
   }
 
-  openActionModal(action: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA'): void {
+  /* openActionModal(action: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO'): void {
     this.modalAction = action;
 
     if (action === 'ASUNTO_NUEVO') {
@@ -679,11 +700,38 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       this.currentStep = 1;
     } else if (action === 'MODIFICAR_ACTUACION') {
       this.modalTitle = 'Modificar o adicionar actuación';
+    } else if (action === 'EDITAR_ASUNTO') {
+      this.modalTitle = 'Editar asunto';
+      this.currentStep = 1;
     } else {
       this.modalTitle = 'Estadística de área';
     }
 
     this.modalService.open(this.actionModal, { size: 'lg', centered: true });
+  } */
+
+  openActionModal(
+    action: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO'
+  ): void {
+
+    this.modalAction = action;
+
+    if (action === 'ASUNTO_NUEVO') {
+      this.modalTitle = 'Asunto Nuevo';
+      this.resetSubForm();
+      this.currentStep = 1;
+    } else if (action === 'MODIFICAR_ACTUACION') {
+      this.modalTitle = 'Modificar o Adicionar Actuación';
+    } else if (action === 'EDITAR_ASUNTO') {
+      this.modalTitle = 'Editar Asunto';
+    } else {
+      this.modalTitle = 'Estadística de Área';
+    }
+
+    this.modalService.open(this.actionModal, {
+      size: 'lg',
+      centered: true
+    });
   }
 
   cerrarModal(): void {
@@ -750,7 +798,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       if (valido) {
         this.currentStep = 2;
         if (this.imputados.length === 0) {
-          this.agregarImputado(); 
+          this.agregarImputado();
         }
       }
 
@@ -806,9 +854,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     if (this.currentStep === 4) {
 
       const fiscal = this.subForm.get('fiscal');
-
-      console.log('FORM:', fiscal);
-      console.log('incalid:', fiscal?.invalid);
       this.mostrarErroresFormulario(this.subForm);
 
       if (!fiscal || fiscal.invalid) {
@@ -895,13 +940,89 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
   guardarAsuntoNuevo(): void {
 
-    console.log("guadando asunto ...")
-    console.log('FORM:', this.subForm);
+    if (this.showEtapaConocimiento) {
+      this.mostrarErroresFormulario(this.subForm);
+      if (this.subForm.invalid) {
+        this.subForm.markAllAsTouched();
+        this.triggerAlert(
+          'Complete los campos obligatorios',
+          'warning'
+        );
+
+        return;
+      }
+
+      if (this.imputados.length === 0) {
+        this.triggerAlert(
+          'Debe agregar al menos un imputado',
+          'warning'
+        );
+
+        return;
+      }
+
+      if (this.imputados.invalid) {
+        this.imputados.markAllAsTouched();
+
+        this.triggerAlert(
+          'Complete los datos obligatorios de los imputados',
+          'warning'
+        );
+
+        return;
+      }
+
+      const request: AsuntoPenal =
+        this.construirRequest();
+
+      this.asuntoService.crearAsuntoPenal(request).subscribe({
+        next: (response) => {
+
+          this.triggerAlert(
+            'Registro exitoso',
+            'success'
+          );
+
+          this.modalService.dismissAll();
+
+          this.subForm.reset();
+
+          this.imputados.clear();
+
+          this.currentStep = 1;
+          this.cargarProcesos();
+        },
+
+        error: (error) => {
+          console.error(
+            'Error creando asunto penal:',
+            error
+          );
+
+          this.triggerAlert(
+            'No fue posible crear el asunto penal',
+            'warning'
+          );
+
+        }
+      });
+    } else if (this.showRecursoExtraordinario) {
+      if (!this.selectedFileName) {
+        return;
+      }
+    } else if (this.showPenitenciario) {
+      if (this.subForm.get('medidaEjecucion')?.invalid || !this.selectedFileName) {
+        this.subForm.get('medidaEjecucion')?.markAsTouched();
+        return;
+      }
+    }
+  }
+
+  actualizarAsunto(): void {
 
     this.mostrarErroresFormulario(this.subForm);
     if (this.subForm.invalid) {
       this.subForm.markAllAsTouched();
-      console.log("subfrom invalid");
       this.triggerAlert(
         'Complete los campos obligatorios',
         'warning'
@@ -911,7 +1032,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     }
 
     if (this.imputados.length === 0) {
-      console.log("imputados 0");
       this.triggerAlert(
         'Debe agregar al menos un imputado',
         'warning'
@@ -921,7 +1041,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     }
 
     if (this.imputados.invalid) {
-      console.log("imputados invalid");
       this.imputados.markAllAsTouched();
 
       this.triggerAlert(
@@ -935,12 +1054,9 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     const request: AsuntoPenal =
       this.construirRequest();
 
-    console.log('Request a enviar:', request);
-
-    this.asuntoService.crearAsuntoPenal(request).subscribe({
+    this.asuntoService.actualizarAsuntoPenal(this.procesoSeleccionado, request).subscribe({
       next: (response) => {
 
-        console.log("response guardar asunto nuevo" + response);
         this.triggerAlert(
           'Registro exitoso',
           'success'
@@ -957,7 +1073,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       },
 
       error: (error) => {
-        console.log("Error-...")
         console.error(
           'Error creando asunto penal:',
           error
@@ -971,6 +1086,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       }
     });
   }
+  
 
 
   private agregarProcesoSimulado(): void {
@@ -1018,9 +1134,14 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   private resetSubForm(): void {
+    this.subForm.get('tipoAsuntoNuevo')?.enable();
     this.subForm.reset({
       tipoAsuntoNuevo: '',
       tipoProcedimiento: '',
+      etapaProceso:'',
+      competenciaAsunto: '',
+      tipoJuzgado: '',
+      nunc: '',
       numeroProceso: '',
       nombreProceso: '',
       identificacionCliente: '',
@@ -1029,7 +1150,45 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       medidaEjecucion: '',
       archivo: null,
       delitosIds: [],
-      bienesJuridicosIds: [2]
+      bienesJuridicosIds: [2],
+      huboVictimas: false,
+    });
+    this.selectedFileName = '';
+    this.filtroDelito = '';
+    this.filtroBienJuridico = '';
+    this.currentStep = 1;
+  }
+  private cargarSubForm(asunto: AsuntoPenalDetalleDTO): void {
+    this.subForm.reset({
+      tipoAsuntoNuevo: this.opcionesAsuntoNuevo.find(opcion => opcion.value === "ETAPA_CONOCIMIENTO")?.value || '',
+      tipoProcedimiento: asunto.proceso.tipoProcedimientoNorma,
+      huboVictimas: asunto.procesoPenal.huboVictimas,
+      etapaProceso: asunto.proceso.etapaActualNombre,
+      competenciaAsunto: asunto.procesoPenal.competencia,
+      tipoJuzgado: asunto.procesoPenal.tipoJuzgado,
+
+      imputados: this.fb.array(asunto.participantes.map(imputado => this.fb.group({
+        tipodocumento: [imputado.tipoDocumento],
+        numeroDocumento: [imputado.numeroDocumento],
+        nombres: [imputado.nombres],
+        apellidos: [imputado.apellidos],
+        email: [imputado.email],
+        telefono: [imputado.telefono],
+        tipoDetencion: [imputado.tipoDetencion],
+        establecimientoOResidencia: [imputado.establecimientoOResidencia]
+      }))),
+
+      delitosIds: asunto.delitos.map(delito => delito.id),
+      bienesJuridicosIds: asunto.bienesJuridicos.map(bien => bien.id),
+      fiscal: this.fb.group({
+        nombreFiscal: [asunto.fiscal.nombreFiscal],
+        unidad: [asunto.fiscal.unidad],
+        correo: [asunto.fiscal.correo],
+        telefono: [asunto.fiscal.telefono]
+      }),
+
+      nunc: asunto.proceso.numeroProceso,
+      nombreProceso: asunto.proceso.asuntoNombre
     });
     this.selectedFileName = '';
     this.filtroDelito = '';
@@ -1115,7 +1274,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.delitoService.getDelitos().subscribe({
       next: (response) => {
         this.delitos = response.data;
-        console.log('Delitos cargados:', response.data);
       },
       error: (err) => {
         console.error('Error al cargar delitos:', err);
@@ -1127,7 +1285,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.bienService.getBienesJuridicos().subscribe({
       next: (response) => {
         this.bienesJuridicos = response.data;
-        console.log('Bienes jurídicos cargados:', response);
       },
       error: (err) => {
         console.error('Error al cargar bienes jurídicos:', err);
@@ -1175,7 +1332,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
   private toggleSeleccion(controlName: 'delitosIds' | 'bienesJuridicosIds', id: number): void {
     const control = this.subForm.get(controlName);
-    const ids: number[] = control?.value ?? [1,2];
+    const ids: number[] = control?.value ?? [1, 2];
     const nuevosIds = ids.includes(id)
       ? ids.filter(selectedId => selectedId !== id)
       : [...ids, id];
@@ -1238,9 +1395,192 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       bienesJuridicosIds: formValue.bienesJuridicosIds,
 
       /* imputacion: formValue.imputacion */
-      
+
       fiscal: formValue.fiscal
 
     };
   }
+
+
+  /* Editar asunto penal */
+  /* cargarDetalleAsuntoPenal(procesoId: number) {
+    this.asuntoService.obtenerAsuntoPenal(procesoId).subscribe({
+      next: (asunto) => {
+        this.detalleAsunto = asunto.data;
+        console.log('Mensaje del servidor:', asunto.message);
+        console.log('Detalle del DTO:', this.detalleAsunto);
+        // A. Resolvemos el valor del Asunto Nuevo
+        const tipoAsuntoValue = this.opcionesAsuntoNuevo.find(opcion => opcion.value === "ETAPA_CONOCIMIENTO")?.value || '';
+
+        // B. Reemplazamos el FormArray vacío por uno nuevo con los datos de los participantes
+        const listaImputadosGroup = asunto.data.participantes.map((imputado: any) => this.fb.group({
+          tipoDocumento: [imputado.tipoDocumento],
+          numeroDocumento: [imputado.numeroDocumento],
+          nombres: [imputado.nombres],
+          apellidos: [imputado.apellidos],
+          email: [imputado.email],
+          telefono: [imputado.telefono],
+          tipoDetencion: [imputado.tipoDetencion],
+          establecimientoOResidencia: [imputado.establecimientoOResidencia]
+        }));
+
+        // setControl sobrescribe de manera segura el array actual
+        this.subForm.setControl('imputados', this.fb.array(listaImputadosGroup));
+
+        // C. Mapeamos y parchamos el resto de los campos planos, arrays simples y sub-grupos
+        this.subForm.patchValue({
+          tipoAsuntoNuevo: tipoAsuntoValue,
+          tipoProcedimiento: asunto.data.proceso?.tipoProcedimientoNorma,
+          huboVictimas: asunto.data.procesoPenal?.huboVictimas,
+          etapaProceso: asunto.data.proceso?.etapaActualNombre,
+          competenciaAsunto: asunto.data.procesoPenal?.competenciaMunicipal,
+          tipoJuzgado: asunto.data.procesoPenal?.tipoJuzgado,
+
+          delitosIds: asunto.data.delitos?.map((delito: any) => delito.id) || [],
+          bienesJuridicosIds: asunto.data.bienesJuridicos?.map((bien: any) => bien.id) || [],
+
+          fiscal: {
+            nombreFiscal: asunto.data.fiscal?.nombreFiscal,
+            unidad: asunto.data.fiscal?.unidad,
+            correo: asunto.data.fiscal?.correo,
+            telefono: asunto.data.fiscal?.telefono
+          },
+
+          nunc: asunto.data.proceso?.numeroProceso,
+          nombreProceso: asunto.data.proceso?.asuntoNombre
+        });
+      },
+      error: (err) => {
+        console.error('Error al obtener el detalle penal:', err);
+      }
+    });
+  } */
+
+  cargarDetalleAsuntoPenal(procesoId: number): void {
+    this.asuntoService.obtenerAsuntoPenal(procesoId).subscribe({
+      next: (respuesta) => {
+        const asunto = respuesta.data;
+
+        if (!asunto) {
+          console.error('No se encontró el detalle del asunto penal');
+          return;
+        }
+
+        this.detalleAsunto = asunto;
+
+        // Establecer el paso inicial del formulario
+        this.currentStep = 1;
+
+        // Construir el FormArray de imputados
+        const imputadosForm = (asunto.participantes ?? [])
+          .filter(p => p.rol === 'IMPUTADO')
+          .map(imputado =>
+            this.fb.group({
+              tipoDocumento: [imputado.tipoDocumento ?? ''],
+              numeroDocumento: [imputado.numeroDocumento ?? ''],
+              nombres: [imputado.nombres ?? ''],
+              apellidos: [imputado.apellidos ?? ''],
+              email: [imputado.email ?? ''],
+              telefono: [imputado.telefono ?? ''],
+              tipoDetencion: [imputado.tipoDetencion ?? ''],
+              establecimientoOResidencia: [
+                imputado.establecimientoOResidencia ?? ''
+              ]
+            })
+          );
+
+        this.subForm.setControl(
+          'imputados',
+          this.fb.array(imputadosForm)
+        );
+
+        // Extraer los IDs de los delitos y bienes jurídicos
+        const delitosIds = (asunto.delitos ?? []).map(d => d.id);
+        const bienesJuridicosIds = (asunto.bienesJuridicos ?? []).map(
+          b => b.id
+        );
+
+        /* const tipoProcedimiento = this.obtenerValuePorLabel(
+          this.tiposProcedimiento,
+          asunto.proceso?.tipoProcedimientoNorma
+        ); */
+        const tipoProcedimiento = this.tiposProcedimiento.find(
+          item => item.label.trim().toLowerCase() === asunto.proceso?.tipoProcedimientoNorma?.toLowerCase()
+        )?.value;
+
+        const tipoAsuntoNuevo = this.obtenerValuePorLabel(
+          this.opcionesAsuntoNuevo,
+          asunto.proceso?.etapaActualNombre
+        );
+
+        const etapaProceso = this.obtenerValuePorLabel(
+          this.etapasProceso,
+          asunto.procesoPenal?.etapaProceso
+        );
+
+        const competenciaAsunto = this.obtenerValuePorLabel(
+          this.competenciasAsunto,
+          asunto.procesoPenal?.competencia
+        );
+
+        const tipoJuzgado = this.obtenerValuePorLabel(
+          this.tiposJuzgado,
+          asunto.procesoPenal?.tipoJuzgado
+        );
+
+        // Cargar los campos del formulario
+        this.subForm.patchValue({
+          tipoAsuntoNuevo: 'ETAPA_CONOCIMIENTO',
+          tipoProcedimiento,
+          etapaProceso,
+
+          // El NUNC pertenece a procesoPenal
+          nunc: asunto.procesoPenal?.nunc ?? '',
+
+          nombreProceso:
+            asunto.proceso?.asuntoNombre ?? '',
+
+          competenciaAsunto,
+
+          tipoJuzgado:
+            asunto.procesoPenal?.tipoJuzgado ?? '',
+
+          huboVictimas:
+            asunto.procesoPenal?.huboVictimas ?? null,
+
+          delitosIds,
+          bienesJuridicosIds,
+
+          fiscal: {
+            nombreFiscal: asunto.fiscal?.nombreFiscal ?? '',
+            unidad: asunto.fiscal?.unidad ?? '',
+            correo: asunto.fiscal?.correo ?? '',
+            telefono: asunto.fiscal?.telefono ?? ''
+          }
+        });
+        this.subForm.get('tipoAsuntoNuevo')?.disable();
+        // Abrir el modal una vez cargados los datos
+        this.openActionModal('EDITAR_ASUNTO');
+      },
+
+      error: (err) => {
+        console.error('Error al obtener el detalle del asunto penal:', err);
+      }
+    });
+  }
+
+
+  private obtenerValuePorLabel<T>(
+    opciones: { value: T; label: string }[],
+    labelApi: string | null | undefined
+  ): T | '' {
+    if (!labelApi) {
+      return '';
+    }
+    const opcion = opciones.find(
+      item => item.value === labelApi
+    );
+    return opcion ? opcion.value : '';
+  }
+
 }

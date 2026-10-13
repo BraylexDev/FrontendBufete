@@ -15,21 +15,23 @@
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <!-- Email -->
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">Correo electrónico *</label>
         <input
           type="email"
           id="email"
           formControlName="email"
           class="form-control"
+          (focus)="mostrarMensaje = true; errorMessage.set('')"
+          (blur)="mostrarMensaje = false"
           [class.is-invalid]="email?.invalid && email?.touched"
-          placeholder="tu@email.com"
+          placeholder=""
         />
         @if (email?.invalid && email?.touched) {
         <div class="invalid-feedback">
           @if (email?.errors?.['required']) {
-          <span>El email es requerido</span>
+          <span>Correo Requerido</span>
           } @if (email?.errors?.['email']) {
-          <span>El email no es válido</span>
+          <span>Correo Inválido</span>
           }
         </div>
         }
@@ -37,14 +39,16 @@
 
       <!-- Password -->
       <div class="form-group">
-        <label for="password">Contrasena</label>
+        <label for="password">Contraseña *</label>
         <div class="password-input">
           <input
             [type]="showPassword() ? 'text' : 'password'"
             id="password"
             formControlName="password"
             class="form-control"
-            [class.is-invalid]="password?.invalid && password?.touched"
+            (focus)="mostrarMensaje = true; errorMessage.set('')"
+            (blur)="mostrarMensaje = false"
+            [class.is-invalidp]="password?.invalid && password?.touched"
             placeholder="••••••••"
           />
           <button
@@ -55,19 +59,16 @@
             <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
           </button>
         </div>
-        @if (password?.invalid && password?.touched) {
-        <div class="invalid-feedback">
-          @if (password?.errors?.['required']) {
-          <span>La contrasena es requerida</span>
-          } @if (password?.errors?.['minlength']) {
-          <span>La contrasena debe tener al menos 6 caracteres</span>
-          }
-        </div>
+         @if (password?.invalid && password?.touched) {
+          <div class="invalid-feedback-p">
+            <span>Contraseña Requerida</span>
+          </div>
         }
       </div>
+     
 
       <!-- Error Message -->
-      @if (errorMessage()) {
+      @if (errorMessage() && (!mostrarMensaje)) {
       <div class="alert alert-danger">
         <i class="fas fa-exclamation-circle"></i>
         {{ errorMessage() }}

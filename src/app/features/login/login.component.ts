@@ -17,6 +17,8 @@ export class LoginComponent {
   errorMessage = signal('');
   showPassword = signal(false);
 
+  mostrarMensaje = false;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -24,7 +26,7 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(1)]]
     });
   }
 
@@ -40,18 +42,26 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
+    console.log('Login form values:', this.loginForm.value);
+
     this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
+      next: (response) => {
+        this.isLoading.set(false);
       },
       error: (error) => {
         this.isLoading.set(false);
-        if (error.status === 401) {
-          this.errorMessage.set('Usuario o Contrasena Incorrectos.');
+        this.loginForm.get("password")?.reset();
+        if (error.status === 200) {
+          this.errorMessage.set('Correo o Contraseña Incorrectos.');
         } else if (error.status === 0) {
-          this.errorMessage.set('No se pudo conectar con el servidor.');
+          this.errorMessage.set('No se pudo conectar con el servidor. Contacte a soporte técnico');
         } else {
-          this.errorMessage.set('Ha ocurrido un error. Intenta nuevamente.');
+          this.errorMessage.set('Ha ocurrido un error inesperado. Contacte a soporte técnico');
         }
+      },
+      complete: () => {
+        this.isLoading.set(false);
+        this.loginForm.get("password")?.setValue("");
       }
     });
   }

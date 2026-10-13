@@ -229,9 +229,7 @@
             [class.expanded]="grupo.expanded"
           >
             <!-- Botón expandir/contraer -->
-            <button
-              class="expand-btn"
-            >
+            <button class="expand-btn">
               <i
                 class="bi"
                 [ngClass]="
@@ -542,10 +540,8 @@
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">1. Información del Proceso</h6>
             </div>
-
             <div>
-              <label class="form-label" for="tipoProcedimiento"
-                >Tipo de procedimiento</label
+              <label class="form-label" for="tipoProcedimiento">Tipo de procedimiento</label
               >
               <select
                 id="tipoProcedimiento"
@@ -814,7 +810,7 @@
                 <h6 class="mb-1">3. Delitos Imputados</h6>
 
                 <span class="text-muted small">
-                  Seleccione los elementos relacionados con el proceso
+                  Seleccione los delitos relacionados con el proceso
                 </span>
               </div>
             </div>
@@ -883,7 +879,7 @@
             </div>
 
             <!-- BIENES JURÍDICOS -->
-             <!--
+            <!--
             <div>
               <label class="form-label" for="buscarBienJuridico"
                 >Bienes jurídicos *</label
@@ -1229,7 +1225,7 @@
                 class="btn btn-success"
                 (click)="guardarAsuntoNuevo()"
               >
-                Guardar asunto
+                Guardar Asunto
               </button>
             </div>
           </div>
@@ -1308,12 +1304,629 @@
     </ng-container>
     <div
       *ngIf="
-        modalAction === 'ASUNTO_NUEVO' &&
-        asuntoControl?.value !== 'ASUNTOS PENALES'
+        modalAction === 'EDITAR_ASUNTO' &&
+        asuntoControl?.value === 'ASUNTOS PENALES'
       "
       class="alert alert-secondary mb-0"
     >
-      Funcionalidad Pendiente.
+      <form [formGroup]="subForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
+          <select
+            id="tipoAsuntoNuevo"
+            class="form-select"
+            formControlName="tipoAsuntoNuevo"
+          >
+            <option value="">Seleccione una opción</option>
+            <option
+              *ngFor="let item of opcionesAsuntoNuevo"
+              [value]="item.value"
+            >
+              {{ item.label }}
+            </option>
+          </select>
+        </div>
+        <div  class="border rounded p-3 bg-light">
+          <!-- ===================================================== -->
+          <!-- PASO 1 - INFORMACIÓN DEL PROCESO -->
+          <!-- ===================================================== -->
+          <div *ngIf="currentStep === 1" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">1. Información del Proceso</h6>
+            </div>
+
+            <div>
+              <label class="form-label" for="tipoProcedimiento"
+                >Tipo de procedimiento</label
+              >
+              <select
+                id="tipoProcedimiento"
+                class="form-select"
+                formControlName="tipoProcedimiento"
+              >
+                <option value="">Seleccione un tipo</option>
+                <option
+                  *ngFor="let item of tiposProcedimiento"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- NUNC -->
+            <div>
+              <label class="form-label" for="nunc"> NUNC * </label>
+
+              <input
+                id="nunc"
+                type="text"
+                class="form-control"
+                formControlName="nunc"
+                placeholder="Ingrese el numero unico de noticia criminal"
+              />
+
+              <div
+                class="text-danger small mt-1"
+                *ngIf="
+                  subForm.get('nunc')?.touched && subForm.get('nunc')?.invalid
+                "
+              >
+                El NUNC es obligatorio.
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ===================================================== -->
+          <!-- PASO 2 - IMPUTADOS -->
+          <!-- ===================================================== -->
+
+          <div *ngIf="currentStep === 2" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">2. Información de Imputados</h6>
+                <span class="text-muted small">
+                  Agregue uno o varios imputados
+                </span>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="agregarImputado()"
+              >
+                <i class="bi bi-plus-lg"></i>
+                Agregar imputado
+              </button>
+            </div>
+
+            <!-- LISTA DE IMPUTADOS -->
+            <div formArrayName="imputados" class="d-flex flex-column gap-3">
+              <div
+                *ngFor="let imputado of imputados.controls; let i = index"
+                [formGroupName]="i"
+                class="card"
+              >
+                <div
+                  class="card-header d-flex justify-content-between align-items-center"
+                >
+                  <strong> Imputado {{ i + 1 }} </strong>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="eliminarImputado(i)"
+                    *ngIf="imputados.length > 1"
+                  >
+                    <i class="bi bi-trash"></i>
+                    Eliminar
+                  </button>
+                </div>
+
+                <div class="card-body">
+                  <div class="row g-3">
+                    <!-- TIPO DOCUMENTO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Tipo de documento * </label>
+
+                      <select
+                        class="form-select"
+                        formControlName="tipoDocumento"
+                      >
+                        <option value="">Seleccione</option>
+
+                        <option value="CC">Cédula de ciudadanía</option>
+
+                        <option value="CE">Cédula de extranjería</option>
+
+                        <option value="TI">Tarjeta de identidad</option>
+
+                        <option value="PPT">
+                          Permiso por protección temporal
+                        </option>
+
+                        <option value="PAS">Pasaporte</option>
+                      </select>
+                    </div>
+
+                    <!-- NUMERO DOCUMENTO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Número de documento * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="numeroDocumento"
+                      />
+                    </div>
+
+                    <!-- NOMBRES -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Nombres * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="nombres"
+                      />
+                    </div>
+
+                    <!-- APELLIDOS -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Apellidos * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="apellidos"
+                      />
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Correo electrónico </label>
+
+                      <input
+                        type="email"
+                        class="form-control"
+                        formControlName="email"
+                      />
+                    </div>
+
+                    <!-- TELEFONO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Teléfono </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="telefono"
+                      />
+                    </div>
+
+                    <!-- TIPO DETENCION -->
+                    <div class="col-md-12">
+                      <label class="form-label">
+                        Tipo de Detención Preventiva*
+                      </label>
+
+                      <select
+                        class="form-select"
+                        formControlName="tipoDetencion"
+                      >
+                        <option value="">Seleccione</option>
+
+                        <option
+                          *ngFor="let item of tiposDetencion"
+                          [value]="item.value"
+                        >
+                          {{ item.label }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <!-- ESTABLECIMIENTO -->
+                    <div class="col-md-12">
+                      <label class="form-label">
+                        Establecimiento Penitenciario o Lugar de Residencia
+                      </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="establecimientoOResidencia"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SIN IMPUTADOS -->
+            <div *ngIf="imputados.length === 0" class="alert alert-info">
+              No hay imputados agregados. Pulse
+              <strong>Agregar imputado</strong>
+              para registrar uno.
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ===================================================== -->
+          <!-- PASO 3 - DELITOS Y BIENES JURÍDICOS -->
+          <!-- ===================================================== -->
+
+          <div *ngIf="currentStep === 3" class="d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1">3. Delitos Imputados</h6>
+
+                <span class="text-muted small">
+                  Seleccione los delitos relacionados con el proceso
+                </span>
+              </div>
+            </div>
+            <!-- DELITOS -->
+            <div>
+              <label class="form-label" for="buscarDelito">Delitos *</label>
+
+              <div class="multi-select-box">
+                <div
+                  class="selected-items"
+                  *ngIf="delitosSeleccionados.length > 0"
+                >
+                  <span
+                    class="selected-item"
+                    *ngFor="let delito of delitosSeleccionados"
+                  >
+                    {{ delito.nombre }}
+                    <button
+                      type="button"
+                      class="selected-item-remove"
+                      (click)="toggleDelito(delito.id)"
+                      [attr.aria-label]="'Quitar ' + delito.nombre"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </span>
+                </div>
+
+                <div class="multi-select-search">
+                  <i class="bi bi-search"></i>
+                  <input
+                    id="buscarDelito"
+                    type="search"
+                    class="form-control"
+                    placeholder="Buscar delito..."
+                    [(ngModel)]="filtroDelito"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+
+                <div
+                  class="multi-select-options"
+                  role="listbox"
+                  aria-label="Delitos"
+                >
+                  <label
+                    class="multi-select-option"
+                    *ngFor="let delito of delitosFiltrados"
+                  >
+                    <input
+                      type="checkbox"
+                      [checked]="estaDelitoSeleccionado(delito.id)"
+                      (change)="toggleDelito(delito.id)"
+                    />
+                    <span>{{ delito.nombre }}</span>
+                  </label>
+                  <small
+                    class="text-muted"
+                    *ngIf="delitosFiltrados.length === 0"
+                  >
+                    No se encontraron delitos.
+                  </small>
+                </div>
+              </div>
+              <small class="text-muted">Seleccione uno o varios delitos.</small>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================= -->
+          <!-- PASO 4 -->
+          <!-- ========================================= -->
+
+          <div
+            *ngIf="currentStep === 4"
+            class="border rounded p-3 bg-light"
+            formGroupName="fiscal"
+          >
+            <div class="mb-3">
+              <h6 class="mb-1">4. Información de la Fiscalía</h6>
+
+              <small class="text-muted">
+                Registre los datos del fiscal asociado al proceso.
+              </small>
+            </div>
+
+            <!-- Nombre del fiscal -->
+
+            <div class="mb-3">
+              <label for="nombreFiscal" class="form-label">
+                Nombre del fiscal *
+              </label>
+
+              <input
+                id="nombreFiscal"
+                type="text"
+                class="form-control"
+                formControlName="nombreFiscal"
+                placeholder="Ingrese el nombre completo"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('nombreFiscal')?.touched &&
+                  fiscal.get('nombreFiscal')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                El nombre del fiscal es obligatorio.
+              </div>
+            </div>
+
+            <!-- Unidad -->
+
+            <div class="mb-3">
+              <label for="unidad" class="form-label"> Unidad * </label>
+
+              <input
+                id="unidad"
+                type="text"
+                class="form-control"
+                formControlName="unidad"
+                placeholder="Ingrese la unidad"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('unidad')?.touched && fiscal.get('unidad')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                La unidad es obligatoria.
+              </div>
+            </div>
+
+            <!-- Correo -->
+
+            <div class="mb-3">
+              <label for="correoFiscal" class="form-label">
+                Correo electrónico *
+              </label>
+
+              <input
+                id="correoFiscal"
+                type="email"
+                class="form-control"
+                formControlName="correo"
+                placeholder="correo@ejemplo.com"
+              />
+
+              <div
+                *ngIf="
+                  fiscal.get('correo')?.touched && fiscal.get('correo')?.invalid
+                "
+                class="text-danger small mt-1"
+              >
+                Ingrese un correo electrónico válido.
+              </div>
+            </div>
+
+            <!-- Teléfono -->
+
+            <div class="mb-3">
+              <label for="telefonoFiscal" class="form-label">
+                Teléfono *
+              </label>
+
+              <input
+                id="telefonoFiscal"
+                type="text"
+                class="form-control"
+                formControlName="telefono"
+                placeholder="Ingrese el teléfono"
+              />
+            </div>
+
+            <!-- Navegación -->
+
+            <div class="d-flex justify-content-between mt-4">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="siguientePaso()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <!-- ========================================= -->
+          <!-- PASO 5 -->
+          <!-- ========================================= -->
+
+          <div *ngIf="currentStep === 5" class="border rounded p-3 bg-light">
+            <h6 class="mb-3">5.Informacion adicional</h6>
+
+            <!-- ETAPA PROCESO -->
+
+            <div class="mb-3">
+              <label class="form-label" for="etapaProceso">
+                Etapa del proceso *
+              </label>
+
+              <select
+                id="etapaProceso"
+                class="form-select"
+                formControlName="etapaProceso"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option *ngFor="let item of etapasProceso" [value]="item.value">
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- COMPETENCIA -->
+
+            <div class="mb-3">
+              <label class="form-label" for="competenciaAsunto">
+                Competencia del asunto *
+              </label>
+
+              <select
+                id="competenciaAsunto"
+                class="form-select"
+                formControlName="competenciaAsunto"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option
+                  *ngFor="let item of competenciasAsunto"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- TIPO JUZGADO -->
+
+            <div class="mb-3">
+              <label class="form-label" for="tipoJuzgado">
+                Tipo de juzgado *
+              </label>
+
+              <select
+                id="tipoJuzgado"
+                class="form-select"
+                formControlName="tipoJuzgado"
+              >
+                <option value="">Seleccione una opción</option>
+
+                <option *ngFor="let item of tiposJuzgado" [value]="item.value">
+                  {{ item.label }}
+                </option>
+              </select>
+            </div>
+            <!-- HUBO VÍCTIMAS -->
+            <div>
+              <label class="form-label"> ¿Hubo víctimas? * </label>
+
+              <div class="d-flex gap-4">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasSi"
+                    [value]="true"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasSi">
+                    Sí
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    id="huboVictimasNo"
+                    [value]="false"
+                    formControlName="huboVictimas"
+                  />
+
+                  <label class="form-check-label" for="huboVictimasNo">
+                    No
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnterior()"
+              >
+                Anterior
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="actualizarAsunto()"
+              >
+                Actualizar Asunto
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
     <div
       *ngIf="modalAction === 'MODIFICAR_ACTUACION'"

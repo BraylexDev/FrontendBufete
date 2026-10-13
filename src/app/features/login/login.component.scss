@@ -68,7 +68,16 @@ label {
     border-color: #dc3545 !important;
 }
 
+.is-invalidp {
+    border-color: #dc3545 !important;
+}
+
 .invalid-feedback {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}
+.invalid-feedback-p {
     color: #dc3545;
     font-size: 0.85rem;
     margin-top: 0.3rem;

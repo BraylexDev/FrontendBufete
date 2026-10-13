@@ -8,6 +8,8 @@ import { ExpedienteService } from '../../../domain/services/expediente/expedient
 import { CreateExpedienteDto, ExpedienteDTO } from '../../../domain/models/expediente';
 import { AlertService, AlertType } from '../../shared/alert/service/alert.service';
 import { SharedModule } from '../../shared/shared.module';
+import { AsuntoPenalService } from '../../../domain/services/asuntoPenal/asunto-penal.service';
+import { AsuntoPenalDetalleDTO } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
 
 @Component({
   selector: 'app-proceso-modal',
@@ -50,16 +52,20 @@ export class ProcesoModalComponent {
     procesoId: '',
   };
 
+  detalleAsunto: AsuntoPenalDetalleDTO | null = null;
+
   constructor(
     public activeModal: NgbActiveModal,
     private svcProcesos: ProcesoService,
     private svcExpediente: ExpedienteService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private svcAsuntoPenal: AsuntoPenalService
   ) { }
 
   ngOnInit(): void {
+    console.log('ProcesoModalComponent initialized');
     this.cargarProcesos();
-    
+    this.cargarDetalleAsuntoPenal(this.procesoEdicion?.id || 0);
     // Si estamos en modo edición, cargamos los datos
     if (this.modoEdicion) {
       if (this.procesoEdicion) {
@@ -87,6 +93,19 @@ export class ProcesoModalComponent {
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
+  }
+
+  cargarDetalleAsuntoPenal(procesoId: number) {
+    this.svcAsuntoPenal.obtenerAsuntoPenal(procesoId).subscribe({
+      next: (response) => {
+        this.detalleAsunto = response.data; 
+        console.log('Mensaje del servidor:', response.message);
+        console.log('Detalle del DTO:', this.detalleAsunto);
+      },
+      error: (err) => {
+        console.error('Error al obtener el detalle penal:', err);
+      }
+    });
   }
 
   cargarProcesos() {
@@ -226,5 +245,7 @@ export class ProcesoModalComponent {
     this.alertService.showAlert(message, type);
   }
 
+  /* modal */
+  
   
 }
