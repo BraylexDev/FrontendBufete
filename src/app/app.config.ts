@@ -8,6 +8,7 @@ import { HttpClientModule, provideHttpClient, withFetch, withInterceptors } from
 import { FileManagementService } from './domain/services/fileManagement/file-management.service';
 import { FormsModule } from '@angular/forms';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { DatePipe } from '@angular/common';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor]),
       withFetch()
     ),
+    DatePipe,
     FileManagementService
   ]
 };

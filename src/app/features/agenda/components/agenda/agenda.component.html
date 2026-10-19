@@ -26,14 +26,18 @@
               <tr>
                 <td>
                   <div>
-                    <b>Proceso: </b>
-                    {{ consguirProceso(evt.descripcion) || evt.titulo}}
+                    <b>Número de Noticia Criminal (Nunc): </b>
                   </div>
                   <div>
-                    <b>{{ evt.titulo}}</b>
+                    {{ consguirProceso(evt.expedienteNombre)}}
+                  </div>
+                  <div>
+                    <b>{{ evt.titulo}} </b>
                   </div>
                   <div><b>Día:</b> {{ formatFecha(evt.fechaInicio) }}</div>
-                  <div><b>Hora:</b> {{ formatHora(evt.fechaInicio) }}</div>
+                  @if(!evt.allDay){
+                    <div><b>Hora:</b> {{ formatHora(evt.fechaInicio) }}</div>
+                  }
                 </td>
               </tr>
               }

@@ -63,7 +63,7 @@ export class ConstanciaCarcelariaComponent implements OnInit {
       const texto = this.filtroBusqueda.toLowerCase();
       resultado = resultado.filter(constancia => {
         const nombreCoincide = constancia.nombre?.toLowerCase().includes(texto) || false;
-        const clienteCoincide = constancia.clienteId?.toLowerCase().includes(texto) || false;
+        const clienteCoincide = constancia.clienteNumeroDocumento?.toLowerCase().includes(texto) || false;
         
         // Convertir la fecha a string de forma segura
         let fechaCoincide = false;

@@ -68,7 +68,7 @@ export class ListarSentenciasComponent implements OnInit{
       resultado = resultado.filter(sentencia => {
         const nombreCoincide = sentencia.nombre?.toLowerCase().includes(texto) || false;
         const tipoCoincide = sentencia.tipoSentencia?.toLowerCase().includes(texto) || false;
-        const clienteCoincide = sentencia.clienteId?.toLowerCase().includes(texto) || false;
+        const clienteCoincide = sentencia.clienteNumeroDocumento?.toLowerCase().includes(texto) || false;
         
         // Convertir la fecha a string de forma segura
         let fechaCoincide = false;

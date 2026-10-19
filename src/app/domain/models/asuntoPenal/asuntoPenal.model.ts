@@ -226,3 +226,15 @@ export interface AsuntoPenalDetalleDTO {
     terminos: TerminoDTO[];
     eventos: EventoDetalle[];
 }
+
+/* Lista de asuntos penales por procedimiento */
+
+export interface AsuntoPenalDetalleBasicoDTO {
+    id: number;
+    nunc: string;
+}
+
+export interface AsuntosPenalesPorProcedimientoDTO {
+    tipoProcedimiento: number;
+    procesos: AsuntoPenalDetalleBasicoDTO[];
+}

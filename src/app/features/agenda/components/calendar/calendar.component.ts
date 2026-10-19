@@ -99,13 +99,13 @@ export class CalendarComponent implements OnInit {
   viewDate: Date = new Date();
 
   actions: CalendarEventAction[] = [
-    {
+    /* {
       label: '<i class="fas fa-fw fa-pencil-alt"></i>',
       a11yLabel: 'Edit',
       onClick: ({ event }: { event: CalendarEvent }): void => {
         this.handleEvent('Edited', event);
       },
-    },
+    }, */
     {
       label: '<i class="fas fa-fw fa-trash-alt"></i>',
       a11yLabel: 'Delete',
@@ -165,6 +165,8 @@ export class CalendarComponent implements OnInit {
         }));
         this.refresh.next();
         this.eventos = data.data;
+
+        console.log(data.data);
       },
       (error) => {
         console.error('Error fetching events:', error);
@@ -267,7 +269,7 @@ export class CalendarComponent implements OnInit {
           tipoEventoId: 2,
           fechaInicio: fechaI,
           fechaFin: newEvent.evento.fechaFin,
-          allDay: newEvent.evento.allDay || true,
+          allDay: newEvent.evento.allDay,
           procesoId: newEvent.evento.procesoId,
           expedienteId: newEvent.evento.expedienteId
         }
@@ -312,7 +314,7 @@ export class CalendarComponent implements OnInit {
       });
     }
     if (action.toString() === "Edited") {
-      console.log('edit');
+      console.log("Edited")
     }
     /* this.modal.open(this.modalContent, { size: 'lg' }); */
   }
@@ -341,12 +343,10 @@ export class CalendarComponent implements OnInit {
 
   deleteEvent(eventToDelete: CalendarEvent) {
     this.events = this.events.filter((event) => event !== eventToDelete);
-    console.log("delete");
   }
 
   setView(view: CalendarView) {
     this.view = view;
-    console.log("sett");
   }
 
   closeOpenMonthViewDay() {

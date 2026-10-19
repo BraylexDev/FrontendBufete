@@ -2,7 +2,17 @@
     <div class="col-md-12">
         <app-alert></app-alert>
     </div>
-    <app-card [hidHeader]="true" [options]="false" blockClass="table-border-style">
+    <div class="empty-state text-center" *ngIf="users.length<=0">
+      <div class="empty-state-content">
+        <i
+          class="bi bi-person-bounding-box"
+          style="font-size: 48px; color: #ccc; margin-bottom: 16px"
+        ></i>
+        <h4>No hay usuarios</h4>
+        <p class="text-muted">No hay otros usuarios registrados en el sistema.</p>
+      </div>
+    </div>
+    <app-card *ngIf="users.length>0" [hidHeader]="true" [options]="false" blockClass="table-border-style">
         <div class="table-responsive table-outer">
             <table class="table table-styling" *ngIf="users.length > 0;" style="text-align: center; cursor: default;">
                 <thead>

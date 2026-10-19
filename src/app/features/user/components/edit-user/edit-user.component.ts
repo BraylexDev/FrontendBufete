@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../../domain/services/user/user.service';
 import { RoleService } from '../../../../domain/services/role/role.service';
 import { Role } from '../../../../domain/models/role.model';
@@ -32,11 +32,11 @@ export class EditUserComponent {
   rolMap = new Map<number, string>();
 
   myData$!: Observable<User>;
+  showPassword = false;
 
   constructor(private svc: UserService, private fb: FormBuilder, private rolsvc: RoleService, private editService: EditUserService, private alertService: AlertService) {
 
     this.paramEdit = this.editService.userToEdit;
-
 
     this.form = this.fb.group({
       nombre: ['', Validators.required],
@@ -44,7 +44,10 @@ export class EditUserComponent {
       email: ['', Validators.required],
       contrasena: ['', Validators.required],
       rol_id: ['', Validators.required],
-    });
+      confirmContrasena: ['', Validators.required],
+    },
+    { validators: this.passwordMatchValidator }
+    );
 
     this.rolsvc.listarRoles().subscribe({
       next: data => {
@@ -62,7 +65,8 @@ export class EditUserComponent {
               nombre: [this.users.nombre, Validators.required],
               apellido: [this.users.apellido, Validators.required],
               email: [this.users.email, Validators.required],
-              contrasena: [this.users.contrasena, Validators.required],
+              contrasena: ['', Validators.required],
+              confirmContrasena: ['', Validators.required],
               rol_id: [this.users.rolId, Validators.required],
             });
           }
@@ -97,27 +101,66 @@ export class EditUserComponent {
     this.triggerAlert('Actualización Exitosa', 'success');
   }
 
-  actualizarUser(){
+  /* actualizarUser(){
     const { nombre, apellido, email, contrasena, rol_id } = this.form.value;
-    /* this.svc.actualizar(this.paramEdit, nombre, apellido, email, contrasena, rol_id)
+    this.svc.actualizar(this.paramEdit, nombre, apellido, email, contrasena, rol_id)
       .subscribe(
           () => {
             this.triggerAlert('Actualización Exitosa', 'success');
             this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
           }
-      ); */
-  }
-  /* actualizarUser() {
+      );
+  } */
+  actualizarUser() {
     const { nombre, apellido, email, contrasena, rol_id } = this.form.value;
-    const newUser: User = { id: this.paramEdit, identificacion: "0",  nombre: nombre, apellido: apellido, email: email, contrasena: contrasena, rol_id: Number.parseInt(rol_id) }
-    this.svc.update( newUser )
+    const newUser: User = {identificacion: "0",  nombre: nombre, apellido: apellido, email: email, contrasena: contrasena, rolId: Number.parseInt(rol_id) }
+    this.svc.updateUsuario( this.paramEdit, newUser )
       .subscribe(
-        () => {
+        (response) => {
           this.triggerAlert('Actualización Exitosa', 'success');
           this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
         }
       );
-  } */
+  }
+
+  isFieldInvalidPassword(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  passwordMatchValidator(
+    control: AbstractControl,
+  ): { [key: string]: boolean } | null {
+    const password = control.get('contrasena');
+    const confirmPassword = control.get('confirmContrasena');
+
+    if (!password || !confirmPassword) return null;
+
+    if (password.value && confirmPassword.value) {
+      return password.value === confirmPassword.value
+        ? null
+        : { passwordMismatch: true };
+    }
+
+    return null;
+  }
+
+  get passwordMismatch(): boolean {
+    return (
+      (this.form.hasError('passwordMismatch') &&
+        this.form.get('confirmContrasena')?.touched) ||
+      false
+    );
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   triggerAlert(message: string, type: AlertType) {
     this.alertService.showAlert(message, type);

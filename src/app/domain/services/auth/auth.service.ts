@@ -1,9 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { catchError, Observable, tap, throwError } from 'rxjs';
 import { JwtAuthResponse, LoginRequest, User } from '../../models/auth/auth.model';
 import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../models/apiResponse/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,15 +23,15 @@ export class AuthService {
   constructor(private http: HttpClient, private router: Router) {}
 
   /** Iniciar sesión */
-  login(credentials: LoginRequest): Observable<JwtAuthResponse> {
-    return this.http.post<JwtAuthResponse>(`${this.API_URL}/signin`, credentials)
+  login(credentials: LoginRequest): Observable<ApiResponse<JwtAuthResponse>> {
+    return this.http.post<ApiResponse<JwtAuthResponse>>(`${this.API_URL}/signin`, credentials)
       .pipe(
         tap(response => {
-          this.setToken(response.accessToken);
+          this.setToken(response.data.accessToken);
           const user: User = {
-            email: response.email,
-            nombre: response.name,
-            role: response.rol
+            email: response.data.email,
+            nombre: response.data.name,
+            role: response.data.rol
           };
           this.setUser(user);
           this.currentUserSignal.set(user);

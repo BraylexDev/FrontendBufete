@@ -92,7 +92,7 @@ export class EventModalComponent implements OnInit {
   saveEvent() {
     const procesoBuscado = this.procesos.find(proceso => proceso.id === Number(this.dataEvento.evento.procesoId));
     if (procesoBuscado) {
-      this.dataEvento.infoCalendar.title = procesoBuscado.numeroProceso + " - " + procesoBuscado.nombre + " <br> " + this.dataEvento.evento.titulo;
+      this.dataEvento.infoCalendar.title = procesoBuscado.numeroProceso  + " <br> " + this.dataEvento.evento.titulo;
     }
     else {
       this.dataEvento.infoCalendar.title = this.dataEvento.evento.titulo
@@ -116,6 +116,8 @@ export class EventModalComponent implements OnInit {
 
     this.dataEvento.infoCalendar.end = new Date(`${this.defaultDate}T${this.defaultTime}`);
     addDays(this.dataEvento.infoCalendar.end || new Date, this.selectedTermino);
+    this.dataEvento.infoCalendar.allDay = this.dataEvento.evento.allDay;
+    console.log("Evento data: ", this.dataEvento)
     this.eventSaved.emit(this.dataEvento);
     this.activeModal.close(this.dataEvento);
   }

@@ -44,7 +44,6 @@ export class RoleService {
 
   actualizarPermisos(id: number, permisos: string[]): Observable<Role> {
     const body = { permisos };
-    console.log(permisos);
     
     return this.http.post<Role>(`${this.baseUrl}/${id}`,body );
   }

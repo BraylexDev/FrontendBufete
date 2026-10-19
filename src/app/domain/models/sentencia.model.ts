@@ -11,10 +11,11 @@ export interface SentenciaResponse {
     id: number;
     nombre: string;
     tipoSentencia: string;
+    tipoDocumento: string;
     fechaSentencia: string;
-    procesoId: string;
-    clienteId: string;
-    abogadoId: string;
+    procesoNunc: string;
+    clienteNumeroDocumento: string;
+    abogadoNombre: string;
     fileBlobId: string;
     createdById: number;
 }

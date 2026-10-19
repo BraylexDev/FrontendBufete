@@ -33,7 +33,9 @@ export class ListUserComponent implements OnInit {
   rolMap = new Map<number, string>();
 
   constructor(private svc: UserService, private rolsvc: RoleService, private editService: EditUserService, private alertService: AlertService, private changeDetectorRef: ChangeDetectorRef) {
+    this.cargarUsers();
   }
+  
   ngOnInit(): void {
     this.cargarUsers();
     this.cargarRoles();

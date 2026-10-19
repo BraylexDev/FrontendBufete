@@ -5,20 +5,22 @@
 
 <form>
   <div class="mb-3 row">
-    
     <!-- Botón para limpiar filtros -->
-    <div class="col-xs-3 col-sm-auto" *ngIf="categoriaSeleccionada || filtroBusqueda">
-      <button 
-        type="button" 
+    <div
+      class="col-xs-3 col-sm-auto"
+      *ngIf="categoriaSeleccionada || filtroBusqueda"
+    >
+      <button
+        type="button"
         class="btn btn-outline-secondary"
-        (click)="limpiarFiltros()"
         title="Limpiar filtros"
+        (click)="limpiarFiltros()"
       >
         <i class="feather icon-x"></i> Limpiar
       </button>
     </div>
   </div>
-  
+
   <div class="mb-3 row">
     <div class="col-sm-8">
       <div class="input-group w-50">
@@ -33,21 +35,17 @@
           aria-describedby="icon-search"
           [(ngModel)]="filtroBusqueda"
           name="filtroBusqueda"
-          (ngModelChange)="page = 1"
+          (ngModelChange)="aplicarFiltro()"
         />
       </div>
     </div>
-    
+
     <div class="col-sm-4" style="display: flex; justify-content: end">
       <button
         type="button"
+        class="btn btn-outline-primary"
+        style="display: flex; justify-content: center; align-items: center"
         (click)="openModal()"
-        class="btn btn-outline-primary" 
-        style="
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        "
       >
         <i
           class="feather icon-plus-circle"
@@ -60,117 +58,175 @@
 </form>
 
 <div class="container">
-  <div class="row">
-    <!-- Mensaje cuando no hay documentos contables -->
-    <app-card
-      [hidHeader]="true"
-      [options]="false"
-      *ngIf="contables.length === 0"
-    >
-      <div class="empty-state">
-        <h3>No Hay Documentos Contables Registrados</h3>
-        <p>Comienza creando un documento contable</p>
-      </div>
-    </app-card>
-    
-    <!-- Mensaje cuando hay documentos pero ninguno coincide con los filtros -->
-    <app-card
-      [hidHeader]="true"
-      [options]="false"
-      *ngIf="contables.length > 0 && contablesfiltrados.length === 0"
-    >
-      <div class="empty-state">
-        <h3>No se encontraron documentos contables</h3>
-        <p>No hay documentos que coincidan con los filtros aplicados</p>
-        <button 
-          type="button" 
-          class="btn btn-primary mt-3"
-          (click)="limpiarFiltros()"
+  <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
+  <div
+    *ngIf="!cargando && contablesfiltrados.length > 0 && showProcesosList"
+    class="tree-container">
+    <div class="tree-list">
+      <!-- Grupo de Tipo Documento -->
+      <div
+        *ngFor="let grupo of contablesfiltrados"
+        class="usuario-grupo"
+        [class.mis-procesos]="grupo.esMisProcesos"
+      >
+        <!-- Fila del Documento -->
+        <div
+          class="item-row usuario-row"
+          [class.mis-procesos-row]="grupo.esMisProcesos"
+          (click)="toggleUsuarioGrupo(grupo)"
+          [class.expanded]="grupo.expanded"
         >
-          Limpiar filtros
-        </button>
-      </div>
-    </app-card>
-    
-    <!-- Tabla de documentos contables -->
-    <div class="col" *ngIf="contablesfiltrados.length > 0">
-      <div class="table-outer">
-        <table
-          class="table table-bordered"
-          style="text-align: center; cursor: default"
-        >
-          <thead>
-            <tr class="table-primary">
-              <th scope="col">Nombre del Documento</th>
-              <th scope="col">Cliente</th>
-              <th scope="col">Fecha de Subida</th>
-              <th scope="col">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="table align-middle">
-            @for (contable of contablesPaginados; track contable.id) {
-            <tr>
-              <td (dblclick)="onNodeDoubleClick(contable.fileBlobId)" class="urlDoc">
-                {{ contable.nombre }}
-              </td>
-              <td>
-                {{ contable.clienteId }}
-              </td>
-              <td>
-                {{ contable.fechaSentencia | date : "yyyy/MM/dd" }}
-              </td>
-              <td>
-                <div
-                  class="btn-group"
-                  role="group"
-                  aria-label="Basic outlined example"
-                >
-                  <button
-                    type="button"
-                    class="btn btn-md btn-outline-danger"
-                    title="Eliminar"
-                  >
-                    <i class="feather icon-trash-2"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-md btn-outline-success"
-                    title="Descargar"
-                    (click)="downloadFile(contable.fileBlobId)"
-                  >
-                    <i class="feather icon-download"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+          <!-- Botón expandir/contraer -->
+          <button class="expand-btn">
+            <i
+              class="bi"
+              [ngClass]="
+                grupo.expanded ? 'bi-chevron-down' : 'bi-chevron-right'
+              "
+            ></i>
+          </button>
+
+          <!-- Ícono y nombre del usuario -->
+          <div class="item-content usuario-content">
+            <i
+              class="bi"
+              [ngClass]="
+                grupo.esMisProcesos ? 'bi-folder-fill' : 'bi-folder-fill'
+              "
+              class="proceso-icon"
+            ></i>
+            <span class="usuario-nombre">{{ grupo.usuarioNombre }}</span>
+            @if (grupo.procesos.length > 1){
+              <span class="procesos-count">
+                {{ grupo.procesos.length }} documentos
+              </span>
+            } @else {
+              <span class="procesos-count">
+                {{ grupo.procesos.length }} documento
+              </span>
             }
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </div>
 
-      <div class="d-flex justify-content-between p-2">
-        <ngb-pagination
-          [collectionSize]="collectionSize"
-          [(page)]="page"
-          [pageSize]="pageSize"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-        >
-        </ngb-pagination>
+        <!-- Procesos del usuario (expandible) -->
+        <div class="procesos-del-usuario-container" *ngIf="grupo.expanded">
+          <div class="item-row proceso-row" style="background-color: #d0e6fb !important;">
+            <div class="item-content">
+              <div class="proceso-info encabezado d-flex flex">
+                <i class="bi bi-folder2-open"></i>
+                <span class="item-name encabezado-text">Expediente</span>
+              </div>
+              <div class="proceso-info encabezado">
+                <i class="bi bi-file-earmark-richtext"></i>
+                <span class=" item-name encabezado-text">Nombre</span>
+              </div>
+              <div class="proceso-info encabezado">
+                <i class="bi bi-person-bounding-box"></i>
+                <span class=" item-name encabezado-text">Id Cliente</span>
+              </div>
+              <div class="proceso-info encabezado">
+                <i class="bi bi-calendar-check"></i>
+                <span class="item-name encabezado-text">Fecha</span>
+              </div>
+              <div class="item-actions-enc">
+                <i class="bi bi-gear-wide-connected"></i>
+                <span class="item-name-acc encabezado-text">Acciones</span>
+              </div>
+            </div>
+          </div>
+          <div
+            *ngFor="let proceso of grupo.procesos"
+            class="tree-item proceso-item"
+          >
+            <!-- Fila del proceso -->
+            <div class="item-row proceso-row">
+              <!-- Ícono y nombre del proceso -->
+              <div class="item-content">
+                
+                <div class="proceso-info">
+                  <i class="bi bi-folder-fill proceso-icon"></i>
+                  <span class="item-name">{{ proceso.procesoNunc }}</span>
+                </div>
+                <div class="proceso-info">
+                  <span class="item-name">{{ proceso.nombre }}</span>
+                </div>
+                <div class="proceso-info">
+                  <span class="item-name">{{
+                    proceso.clienteNumeroDocumento
+                  }}</span>
+                </div>
+                <div class="proceso-info">
+                  <span class="item-name">{{ proceso.fechaSentencia }}</span>
+                </div>
+              </div>
 
-        <select
-          class="form-select"
-          style="width: auto"
-          [(ngModel)]="pageSize"
-          name="pageSize"
-          (ngModelChange)="page = 1"
-        >
-          <option [ngValue]="10">10 items</option>
-          <option [ngValue]="20">20 items</option>
-          <option [ngValue]="50">50 items</option>
-        </select>
+              <!-- Acciones del proceso -->
+              <div class="item-actions">
+                <button
+                  type="button"
+                  class="btn btn-md btn-outline-success"
+                  title="Descargar"
+                  (click)= downloadFile(proceso.fileBlobId)
+                >
+                  <i class="feather icon-download"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-md btn-outline-danger"
+                  title="Eliminar"
+                  (click)="eliminarDocumentoContable(proceso.id)"
+                >
+                  <i class="feather icon-trash-2"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+  
+  <!-- Mensaje cuando no hay documentos contables -->
+  <app-card
+    [hidHeader]="true"
+    [options]="false"
+    *ngIf="usuarioGruposFiltrados.length <= 0"
+  >
+    <div class="empty-state text-center">
+      <div class="empty-state-content">
+        <i
+          class="bi bi-folder-x"
+          style="font-size: 48px; color: #ccc; margin-bottom: 16px"
+        ></i>
+        <h4>No Hay Documentos Contables.</h4>
+        <p class="text-muted">
+          No hay procesos documentos contables en el sistema.
+        </p>
+      </div>
+    </div>
+  </app-card>
+  <app-card
+    [hidHeader]="true"
+    [options]="false"
+    *ngIf="usuarioGruposFiltrados.length > 0 && contablesfiltrados.length === 0"
+  >
+    <div class="empty-state text-center">
+      <div class="empty-state-content">
+        <i
+          class="bi bi-folder-x"
+          style="font-size: 48px; color: #ccc; margin-bottom: 16px"
+        ></i>
+        <h4>No Se Encontraron Documentos Contables.</h4>
+        <p class="text-muted">
+          No hay documentos que coincidan con los filtros aplicados.
+        </p>
+        <button
+          type="button"
+          class="btn btn-primary mt-3"
+          (click)="limpiarFiltros()">
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+  </app-card>
 </div>

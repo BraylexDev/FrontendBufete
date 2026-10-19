@@ -48,6 +48,13 @@ body {
     margin: 0;
     /* font-family: Roboto, "Helvetica Neue", sans-serif; */
     font-family: Verdana, sans-serif;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+  display: none;
 }
 
 .full-width {

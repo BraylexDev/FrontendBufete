@@ -67,24 +67,26 @@ export const routes: Routes = [
             {
                 path: 'editarUsuario', component: EditUserComponent
             },
-            { path: 'listaUsuarios', component: ListUserComponent },
-            { path: 'agenda', component: AgendaComponent },
-            { path: 'listaPlantilla', component: ListaPlantillasComponent },
-            { path: 'listaReporte', component: ListaReportesComponent },
-            { path: 'listaSentencia', component: ListarSentenciasComponent },
-            { path: 'doc', component: VerArchivoComponent },
-            { path: 'estadistica', component: EstadisticaComponent },
-            { path: 'ver', component: VerDocumentoComponent },
-            { path: 'contable', component: ContableComponent },
-            { path: 'carcel', component: ConstanciaCarcelariaComponent },
+            { path: 'listaUsuarios', component: ListUserComponent, canActivate: [authGuard] },
+            { path: 'agenda', component: AgendaComponent, canActivate: [authGuard] },
+            { path: 'listaPlantilla', component: ListaPlantillasComponent, canActivate: [authGuard] },
+            { path: 'listaReporte', component: ListaReportesComponent, canActivate: [authGuard] },
+            { path: 'listaSentencia', component: ListarSentenciasComponent, canActivate: [authGuard] },
+            { path: 'doc', component: VerArchivoComponent, canActivate: [authGuard] },
+            { path: 'estadistica', component: EstadisticaComponent, canActivate: [authGuard] },
+            { path: 'ver', component: VerDocumentoComponent, canActivate: [authGuard] },
+            { path: 'contable', component: ContableComponent, canActivate: [authGuard] },
+            { path: 'carcel', component: ConstanciaCarcelariaComponent, canActivate: [authGuard] },
 
             {
                 path: 'expedientes/:id',
-                component: ExpedienteDetailComponent
+                component: ExpedienteDetailComponent,
+                canActivate: [authGuard]
             },
             {
                 path: 'expedientes/:id/archivos',
-                component: ExpedienteDetailComponent 
+                component: ExpedienteDetailComponent,
+                canActivate: [authGuard]
             },
             {
                 path: 'gestion-procesos-base',

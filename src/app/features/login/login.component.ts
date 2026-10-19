@@ -42,7 +42,6 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    console.log('Login form values:', this.loginForm.value);
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
@@ -51,17 +50,14 @@ export class LoginComponent {
       error: (error) => {
         this.isLoading.set(false);
         this.loginForm.get("password")?.reset();
-        if (error.status === 200) {
+        if (error.status === 404) {
           this.errorMessage.set('Correo o Contraseña Incorrectos.');
         } else if (error.status === 0) {
           this.errorMessage.set('No se pudo conectar con el servidor. Contacte a soporte técnico');
         } else {
           this.errorMessage.set('Ha ocurrido un error inesperado. Contacte a soporte técnico');
         }
-      },
-      complete: () => {
-        this.isLoading.set(false);
-        this.loginForm.get("password")?.setValue("");
+        
       }
     });
   }

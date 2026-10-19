@@ -10,7 +10,7 @@ export interface EventoDto {
 
     fechaInicio: string;
     fechaFin?: string;
-    allDay?: boolean;
+    allDay: boolean;
 
     procesoId?: number;
     procesoNombre?: string;

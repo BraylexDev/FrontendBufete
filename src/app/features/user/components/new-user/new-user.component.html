@@ -1,70 +1,179 @@
 <div class="row">
-    <div class="col-md-12">
-        <app-alert></app-alert>
-    </div>
-    <div class="col-sm-12">
-        <app-card [hidHeader]="true" [options]="false">
-            <h5>Información</h5>
-            <hr />
-            <div class="row">
-                <div class="col-md-6">
-                    <form [formGroup]="form" action="javascript:">
-                        <div class="form-group">
-                            <label>*Nombre</label>
-                            <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre" />
-                            <div *ngIf="form.get('nombre')!.hasError('required') && form.get('nombre')!.touched"
-                                style="color:red">
-                                El nombre es requerido.
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputEmail1">*Correo</label>
-                            <input type="email" formControlName="email" class="form-control" id="exampleInputEmail1"
-                                aria-describedby="emailHelp" placeholder="Correo" />
-                            <div *ngIf="form.get('email')!.hasError('required') && form.get('email')!.touched"
-                                style="color:red">
-                                El email es requerido.
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputPassword1">*Contraseña</label>
-                            <input type="text" formControlName="contrasena" class="form-control key"  autocomplete="off"
-                                id="exampleInputPassword1" placeholder="Contraseña" />
-                            <div *ngIf="form.get('contrasena')!.hasError('required') && form.get('contrasena')!.touched"
-                                style="color:red">
-                                Contraseña requerida.
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-primary" (click)="create()" [disabled]="form.invalid">
-                            Registrar
-                            
+  <div class="col-md-12">
+    <app-alert></app-alert>
+  </div>
+  <div class="col-sm-12">
+    <app-card [hidHeader]="true" [options]="false">
+      <h5>Información</h5>
+      <hr />
+      <div class="row">
+        <form [formGroup]="form">
+          <div class="border rounded p-3 bg-light">
+            <div class="d-flex flex-column gap-3">
+              <div class="d-flex flex-column gap-3">
+                <div class="card-body">
+                  <div class="row g-3">
+                    <!-- NOMBRE -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Nombre * </label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="nombre"
+                        [class.is-invalid]="isFieldInvalid('nombre')"
+                      />
+                      <div
+                        *ngIf="
+                          form.get('nombre')!.hasError('required') &&
+                          form.get('nombre')!.touched
+                        "
+                        style="color: red"
+                      >
+                        El nombre es requerido.
+                      </div>
+                    </div>
+
+                    <!-- APELLIDOS -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Apellido * </label>
+
+                      <input
+                        type="text"
+                        class="form-control"
+                        formControlName="apellido"
+                        [class.is-invalid]="isFieldInvalid('apellido')"
+                      />
+                      <div
+                        *ngIf="
+                          form.get('apellido')!.hasError('required') &&
+                          form.get('apellido')!.touched
+                        "
+                        style="color: red"
+                      >
+                        El apellido es requerido.
+                      </div>
+                    </div>
+                    <!-- EMAIL -->
+                    <div class="col-md-6">
+                      <label class="form-label"
+                        ><i class="bi i-envelope me-2"></i>Correo electrónico
+                        *</label
+                      >
+
+                      <input
+                        type="email"
+                        class="form-control"
+                        formControlName="email"
+                        [class.is-invalid]="isFieldInvalid('email')"
+                        id="email"
+                        aria-describedby="emailHelp"
+                        pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
+                        placeholder="ejemplo@correo.com"
+                      />
+                      <div
+                        *ngIf="
+                          (form.get('email')!.hasError('required') ||
+                            isFieldInvalid('email')) &&
+                          form.get('email')!.touched
+                        "
+                        style="color: red"
+                      >
+                        El email es invalido.
+                      </div>
+                    </div>
+                    <!-- TIPO USUARIO -->
+                    <div class="col-md-6">
+                      <label class="form-label"> Tipo de Usuario * </label>
+
+                      <select class="form-select" formControlName="rol_id">
+                        <option value="" selected disabled hidden>
+                          Seleccione el tipo de usuario
+                        </option>
+                        <option *ngFor="let p of roles" [value]="p.id">
+                          {{ p.nombre }}
+                        </option>
+                      </select>
+                      <div
+                        *ngIf="
+                          form.get('rol_id')!.hasError('required') &&
+                          form.get('rol_id')!.touched
+                        "
+                        style="color: red"
+                      >
+                        Tipo de usuario requerido.
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="contrasena" class="form-label"
+                        >Contraseña *</label
+                      >
+                      <div class="input-group">
+                        <input
+                          [type]="showPassword ? 'text' : 'password'"
+                          class="form-control"
+                          [class.is-invalid]="
+                            isFieldInvalidPassword('contrasena')
+                          "
+                          id="newPassword"
+                          formControlName="contrasena"
+                          placeholder=""
+                        />
+                        <button
+                          class="btn btn-outline-secondary"
+                          type="button"
+                          (click)="togglePassword()"
+                        >
+                          <i
+                            [class]="
+                              showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'
+                            "
+                          ></i>
                         </button>
-                    </form>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="confirmContrasena" class="form-label"
+                        >Confirmar Contraseña</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control"
+                        [class.is-invalid]="passwordMismatch"
+                        id="confirmContrasena"
+                        formControlName="confirmContrasena"
+                        placeholder=" "
+                      />
+                      <div class="invalid-feedback" *ngIf="passwordMismatch">
+                        Las contraseñas no coinciden.
+                      </div>
+                    </div>
+
+                    <div class="col-md-12 d-flex">
+                      <div class="col-md-6"
+                        >
+                        <label class="" style="color:gray" *ngIf="
+                            form.invalid">Completa todos los campos obligatorios (*)</label
+                      >
+                      </div>
+                      <div class="col-md-6 d-flex justify-content-end">
+                        <button
+                          type="button"
+                          class="btn btn-primary"
+                          (click)="create()"
+                          [disabled]="form.invalid"
+                        >
+                          Registrar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-md-6">
-                    <form [formGroup]="form" action="javascript:">
-                        <div class="form-group">
-                            <label>*Apellido</label>
-                            <input type="text" formControlName="apellido" class="form-control" placeholder="Apellido" />
-                            <div *ngIf="form.get('apellido')!.hasError('required') && form.get('apellido')!.touched"
-                                style="color:red">
-                                El apellido es requerido.
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleFormControlSelect1">*Tipo Usuario</label>
-                            <select formControlName="rol_id" class="form-control" id="exampleFormControlSelect1" >
-                                <option value='' selected disabled hidden>Seleccione el tipo de usuario</option>
-                                <option *ngFor="let p of roles" [value]="p.id">{{p.nombre}}</option>
-                            </select>
-                            <div *ngIf="form.get('rol_id')!.hasError('required') && form.get('rol_id')!.touched"
-                                style="color:red">
-                                Tipo de usuario requerido. 
-                            </div>
-                        </div>
-                    </form>
-                </div>
+              </div>
             </div>
-        </app-card>
-    </div>
+          </div>
+        </form>
+      </div>
+    </app-card>
+  </div>
 </div>

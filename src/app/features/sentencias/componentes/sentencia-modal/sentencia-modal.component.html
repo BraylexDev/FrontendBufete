@@ -1,8 +1,8 @@
 <div class="modal-header border-0 pb-0">
   <h2 class="modal-title">{{ modalTitle }}</h2>
-  <button 
-    type="button" 
-    class="btn-close-custom" 
+  <button
+    type="button"
+    class="btn-close-custom"
     (click)="cancelar()"
     aria-label="Close"
   >
@@ -12,77 +12,75 @@
 <hr class="mx-4 mb-0" />
 
 <div class="modal-body p-4">
-  <form>
+  <form [formGroup]="form">
     <!-- Nombre de la Sentencia -->
     <div class="mb-3">
       <label class="form-label">
         <span class="text-danger me-1">*</span>
-        Nombre del Documento
+        Nombre del Documento :
       </label>
       <input
         type="text"
         class="form-control"
-        [(ngModel)]="formData.nombre"
+        formControlName="nombre"
         name="nombre"
         placeholder="Ingrese el nombre del documento"
       />
     </div>
 
+    @if (tipoSentencia === "CONTABLE") {
+      <div class="mb-3">
+        <label class="form-label">
+          <span class="text-danger me-1">*</span>
+          Tipo De Documento :
+        </label>
+        <select class="form-select" formControlName="tipoDocumento">
+          <option value="">Seleccione</option>
+          <option value="Contrato de prestación de servicios">
+            Contrato de prestación de servicios
+          </option>
+          <option value="Pago de IVA">Pago de IVA</option>
+          <option value="Pago de seguridad social y complementarios">
+            Pago de seguridad social y complementarios
+          </option>
+          <option value="Impuestos adicionales de funcionamiento comercial">
+            Impuestos adicionales de funcionamiento comercial
+          </option>
+        </select>
+      </div>
+    }
+
     <!-- Proceso -->
     <div class="mb-3">
       <label class="form-label">
         <span class="text-danger me-1">*</span>
-        Proceso
+        Expediente :
       </label>
       <select
         class="form-select"
-        [(ngModel)]="formData.procesoId"
+        formControlName="procesoId"
         (change)="onProcesoChange(formData.procesoId)"
         name="procesoId"
         [disabled]="procesos.length === 0"
       >
-        <option value="" selected disabled hidden>Seleccionar Proceso</option>
+        <option value="" selected disabled hidden>
+          Seleccionar Expediente
+        </option>
         <option *ngFor="let proceso of procesos" [value]="proceso.id">
-          {{ proceso.nombre }}
+          {{ proceso.numeroProceso }}
         </option>
       </select>
       <small class="text-danger d-block mt-2" *ngIf="procesos.length === 0">
         <i class="bi bi-exclamation-circle me-1"></i>
-        No Hay Procesos Registrados
+        No Hay Expedientes Registrados
       </small>
     </div>
-
-    <!-- Expediente (dependiente del Proceso) -->
-    <div class="mb-3" *ngIf="formData.procesoId">
-      <label class="form-label">
-        <span class="text-danger me-1">*</span>
-        Expediente Asociado
-      </label>
-      <select
-        class="form-select"
-        [(ngModel)]="formData.expedienteId"
-        (change)="onExpedienteChange(formData.expedienteId)"
-        name="expedienteId"
-        [disabled]="expedientes.length === 0"
-      >
-        <option value="" selected disabled hidden>Seleccionar Expediente</option>
-        <option *ngFor="let exp of expedientes" [value]="exp.id">
-          {{ exp.nombre }}
-        </option>
-      </select>
-      <small class="text-muted d-block mt-2">Los expedientes se cargan automáticamente según el proceso seleccionado</small>
-      <small class="text-danger d-block mt-1" *ngIf="expedientes.length === 0">
-        <i class="bi bi-exclamation-circle me-1"></i>
-        No hay expedientes registrados para este proceso
-      </small>
-    </div>
-
     <!-- Descripción -->
     <div class="mb-3">
-      <label class="form-label">Descripción</label>
+      <label class="form-label">Descripción : </label>
       <textarea
         class="form-control"
-        [(ngModel)]="formData.description"
+        formControlName="description"
         name="description"
         rows="3"
         placeholder="Ej: Descripción o notas adicionales sobre la sentencia"
@@ -90,6 +88,10 @@
     </div>
 
     <!-- Seleccionar archivo -->
+     <label class="form-label">
+      <span class="text-danger me-1">*</span>
+      Archivo : 
+    </label>
     <div class="file-upload-area">
       <input
         type="file"
@@ -98,7 +100,7 @@
         (change)="onFileSelected($event)"
         accept=".pdf,.doc,.docx,.jpg,.png"
       />
-      <label for="fileInputSentencia" class="file-upload-label">
+      <label for="fileInputSentencia" class="file-upload-label" *ngIf="!selectedFile">
         <i class="bi bi-upload fs-3 mb-2"></i>
         <p class="mb-0">Seleccionar archivo de sentencia</p>
         <small class="text-muted">PDF, DOC, DOCX, JPG o PNG</small>
@@ -112,18 +114,10 @@
 </div>
 
 <div class="modal-footer border-0 pt-0 px-4 pb-4">
-  <button 
-    type="button" 
-    class="btn btn-outline-secondary"
-    (click)="cancelar()"
-  >
+  <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">
     Cancelar
   </button>
-  <button 
-    type="button" 
-    class="btn btn-primary"
-    (click)="saveEvent()"
-  >
+  <button type="button" class="btn btn-primary" (click)="saveEvent()">
     Guardar Sentencia
   </button>
 </div>

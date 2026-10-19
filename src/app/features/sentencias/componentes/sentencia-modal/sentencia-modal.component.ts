@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '../../../shared/shared.module';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ProcesoService } from '../../../../domain/services/proceso/proceso.service';
 import { ProcesoDTO } from '../../../../domain/models/proceso';
 import { ExpedienteService } from '../../../../domain/services/expediente/expediente.service';
@@ -20,18 +20,20 @@ import { NodeService } from '../../../../domain/services/folder/node.service';
 export class SentenciaModalComponent implements OnInit {
 
   @Input() modalTitle: string = '';
-  @Input() tipoDocumento: string = 'SENTENCIA'; // Default to SENTENCIA
+  @Input() tipoSentencia: string = 'SENTENCIA'; // Default to SENTENCIA
+  @Input() expedientes: ProcesoDTO[] = []; 
   @Output() sentenciaGuardada = new EventEmitter<SentenciaResponse>();
 
-  tiposSentencia = ['Condenatoria', 'Absolutoria', 'Mixta', 'Apelación', 'Casación'];
+  tiposDocumento = ['Condenatoria', 'Absolutoria', 'Mixta', 'Apelación', 'Casación'];
   procesos: ProcesoDTO[] = [];
-  expedientes: ExpedienteDTO[] = [];
+
+  form: FormGroup;
 
   formData = {
     nombre: '',
+    tipoDocumento:'',
     description: '',
-    procesoId: '',
-    expedienteId: ''
+    procesoId: ''
   };
 
   selectedFile: File | null = null;
@@ -43,29 +45,37 @@ export class SentenciaModalComponent implements OnInit {
     private procesoService: ProcesoService, 
     private expedienteService: ExpedienteService,
     private sentenciaService: SentenciaService,
-    private nodeService: NodeService
-  ) {}
+    private nodeService: NodeService,
+    private fb: FormBuilder,
+  ) {
+    this.form = this.fb.group({
+      nombre: ['', Validators.required],
+      tipoDocumento: ['', Validators.required],
+      description: [''],
+      procesoId: ['', Validators.required],
+    });
+
+  }
 
   ngOnInit(): void {
     // Cargar procesos
-    this.cargarProcesos();
+    this.procesos = this.expedientes;
   }
 
-  cargarProcesos(): void {
+  /* cargarProcesos(): void {
     this.procesoService.listarProcesosByAbodado().subscribe({
       next: (data) => {
         this.procesos = data.data;
       },
       error: (err) => console.error('Error cargando procesos:', err)
     });
-  }
+  } */
 
   onProcesoChange(procesoId: number | string): void {
     this.procesoSeleccionado = procesoId;
     this.formData.procesoId = String(procesoId);
     this.expedientes = [];
     this.expedienteSeleccionado = '';
-    this.formData.expedienteId = '';
     
     // Cargar expedientes del proceso seleccionado
     if (procesoId) {
@@ -80,7 +90,6 @@ export class SentenciaModalComponent implements OnInit {
 
   onExpedienteChange(expedienteId: number | string): void {
     this.expedienteSeleccionado = expedienteId;
-    this.formData.expedienteId = String(expedienteId);
   }
 
   onFileSelected(event: any): void {
@@ -91,20 +100,24 @@ export class SentenciaModalComponent implements OnInit {
   }
 
   saveEvent(): void {
-    if (!this.validarFormulario()) {
+    if (this.form.invalid) {
       alert('Por favor complete todos los campos requeridos');
       return;
     }
 
     // Subir el archivo
     if (this.selectedFile) {
+
+      const { nombre, tipoDocumento, description, procesoId } = this.form.value;
+      console.log("calue: ", this.form.value)
+      
       this.nodeService.uploadFileSentencia(
         this.selectedFile,
-        this.formData.procesoId,
-        this.formData.expedienteId,
-        this.tipoDocumento,
-        this.formData.nombre,
-        this.formData.description
+        procesoId,
+        tipoDocumento,
+        this.tipoSentencia,
+        nombre,
+        description
       ).subscribe({
         next: (response: any) => {
           if (response.success && response.data) {
@@ -128,7 +141,6 @@ export class SentenciaModalComponent implements OnInit {
     return !!(
       this.formData.nombre.trim() &&
       this.formData.procesoId &&
-      this.formData.expedienteId &&
       this.selectedFile
     );
   }

@@ -6,7 +6,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { UserService } from '../../../../domain/services/user/user.service';
 import { Role } from '../../../../domain/models/role.model';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { User } from '../../../../domain/models/user.model';
 import { RoleService } from '../../../../domain/services/role/role.service';
 import { AlertService, AlertType } from '../../../shared/alert/service/alert.service';
@@ -28,20 +28,22 @@ export class NewUserComponent {
   users!: User;
 
   rolMap = new Map<number, string>();
+  showPassword = false;
 
   constructor(private svc: UserService, private fb: FormBuilder, private rolsvc: RoleService, private alertService: AlertService
 
   ) {
+
     this.form = this.fb.group({
       nombre: ['', Validators.required],
       apellido: ['', Validators.required],
       email: ['', Validators.required],
-      contrasena: ['', Validators.required],
       rol_id: ['', Validators.required],
-    });
-
-    console.log("Formulario de usuario creado");
-    
+      contrasena: ['', Validators.required],
+      confirmContrasena: ['', Validators.required],
+    },
+    { validators: this.passwordMatchValidator }
+    );    
   }
 
   ngOnInit(): void {
@@ -52,7 +54,6 @@ export class NewUserComponent {
     this.rolsvc.listarRoles().subscribe({
       next: data => {
         this.roles = data;
-        console.log("Roles cargados:", this.roles);
         this.rolMap = new Map(data.map(r => [r.id, r.nombre]));
       }
     });
@@ -78,6 +79,45 @@ export class NewUserComponent {
         this.form.reset({ nombre: '', apellido: '', email: '', contrasena: '', rol_id: '' });
       });
     this.triggerAlert('Registro Exitoso', 'success');
+  }
+
+  isFieldInvalidPassword(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.form.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  passwordMatchValidator(
+    control: AbstractControl,
+  ): { [key: string]: boolean } | null {
+    const password = control.get('contrasena');
+    const confirmPassword = control.get('confirmContrasena');
+
+    if (!password || !confirmPassword) return null;
+
+    if (password.value && confirmPassword.value) {
+      return password.value === confirmPassword.value
+        ? null
+        : { passwordMismatch: true };
+    }
+
+    return null;
+  }
+
+  get passwordMismatch(): boolean {
+    return (
+      (this.form.hasError('passwordMismatch') &&
+        this.form.get('confirmContrasena')?.touched) ||
+      false
+    );
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   triggerAlert(message: string, type: AlertType) {

@@ -24,7 +24,7 @@
       >
         <option value="">Seleccione Un Proceso</option>
         <option *ngFor="let proceso of procesos" [value]="proceso.id">
-          {{ proceso.numeroProceso }} - {{ proceso.nombre }}
+          {{ proceso.numeroProceso }}
         </option>
       </select>
     </div>
@@ -38,7 +38,7 @@
         name="title"
       />
     </div>
-
+    <!--
     <div class="mb-3">
       <label for="title" class="form-label">* Termino Fijo</label>
       <select
@@ -51,6 +51,7 @@
         <option *ngFor="let p of terminos" [value]="p.id">{{ p.name }}</option>
       </select>
     </div>
+    -->
     <div class="mb-3" style="display: flex; justify-content: space-between">
       <div>
         <label for="title" class="form-label">* Fecha Evento</label>

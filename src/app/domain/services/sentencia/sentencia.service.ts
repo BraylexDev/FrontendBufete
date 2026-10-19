@@ -29,6 +29,9 @@ export class SentenciaService {
     return this.http.get<SentenciaResponse[]>(`${this.baseUrl}/tipo/${tipo}`);
   }
 
+  listarDocumentosPorAbogado(tipo: string): Observable<ApiResponse<SentenciaResponse[]>> {
+    return this.http.get<ApiResponse<SentenciaResponse[]>>(`${this.baseUrl}/abogado/${tipo}`);
+  }
   getDownloadUrl(nodeId: string): Observable<DownloadUrlDTO> {
       return this.http.get<ApiResponse<DownloadUrlDTO>>(
         `${this.baseUrl2}/${nodeId}/downloadDoc`,
@@ -68,5 +71,9 @@ export class SentenciaService {
           console.error('Error descargando archivo:', error);
         }
       });
+    }
+
+    eliminarFile(id: number, tipoSentencia: string): any{
+      return this.http.delete<any>(`${this.baseUrl}/${tipoSentencia}/${id}`);
     }
 }

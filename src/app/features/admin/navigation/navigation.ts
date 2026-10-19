@@ -185,13 +185,13 @@ export const NavigationItems: NavigationItem[] = [
         type: 'collapse',
         icon: 'feather icon-book',
         children: [
-          {
+          /* {
             id: 'crear-usuarios',
             title: 'Constancia Visitas Carcelarias',
             type: 'item',
             url: '/admin/carcel',
             icon: 'feather icon-file-text'
-          },
+          }, */
           {
             id: 'dashboard',
             title: 'Contabilidad',
