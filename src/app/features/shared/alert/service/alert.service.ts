@@ -37,7 +37,7 @@ export class AlertService {
 
 		setTimeout(() => {
 			this.fadeOutAlert(alert.id)
-		}, 15000) // Iniciar desvanecimiento después de 3 segundos
+		}, 4000) // Iniciar desvanecimiento después de 3 segundos
 	}
 
 	fadeOutAlert(id: number) {

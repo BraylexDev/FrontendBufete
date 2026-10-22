@@ -198,6 +198,7 @@ export interface TerminoDTO {
     diasPlazo: number;
     fechaVencimiento: Date;
     eventoId: number;
+    tipoActuacionId: number;
 }
 
 export interface EventoDetalle {

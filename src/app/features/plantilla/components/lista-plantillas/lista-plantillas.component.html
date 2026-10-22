@@ -140,7 +140,7 @@
           <tbody class="table align-middle">
             @for (plantilla of plantillasPaginadas; track plantilla.id) {
             <tr>
-              <td (dblclick)="onNodeDoubleClick(plantilla.id)" class="urlDoc">
+              <td (dblclick)="onNodeDoubleClick(plantilla.id)" class="urlDoc" title={{plantilla.descripcion}}>
                 {{ plantilla.nombre }}
               </td>
               <td>

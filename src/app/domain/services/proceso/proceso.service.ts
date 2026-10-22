@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import { CreateProceso, EditProcesoRequest, Proceso, ProcesoDTO } from '../../models/proceso';
 import { ApiResponse } from '../../models/apiResponse/api-response.model';
 import { PermissionService } from '../permission/permission.service';
+import { TerminoDTO } from '../../models/asuntoPenal/asuntoPenal.model';
 
 @Injectable({
   providedIn: 'root'
@@ -64,6 +65,10 @@ export class ProcesoService {
    */
   eliminarProceso(id: number) {
     return this.http.delete(`${this.baseUrl}/${id}`);
+  }
+
+  obtenerTerminos(idProceso: number){
+    return this.http.get<ApiResponse<TerminoDTO[]>>(`${this.baseUrl}/${idProceso}/terminos`);
   }
 }
 

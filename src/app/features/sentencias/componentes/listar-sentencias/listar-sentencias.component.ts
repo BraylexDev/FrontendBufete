@@ -8,6 +8,8 @@ import { VerDocumentoService } from '../../../shared/components/ver-documento/ve
 import { Router } from '@angular/router';
 import { SentenciaService } from '../../../../domain/services/sentencia/sentencia.service';
 import { SentenciaResponse } from '../../../../domain/models/sentencia.model';
+import { ProcesoDTO } from '../../../../domain/models/proceso';
+import { ProcesoService } from '../../../../domain/services/proceso/proceso.service';
 
 @Component({
   selector: 'app-listar-sentencias',
@@ -29,17 +31,21 @@ export class ListarSentenciasComponent implements OnInit{
   sentencias: SentenciaResponse[] = [];
   tiposSentencia: string[] = ['Condenatoria', 'Absolutoria', 'Mixta', 'Apelación', 'Casación'];
 
+  procesos: ProcesoDTO[] = [];
+
   constructor(
     private verDomuentoService: VerDocumentoService, 
     private pipe: DatePipe, 
     private modalService: NgbModal, 
     private router: Router,
     private sentenciaService: SentenciaService,
+    private procesoService: ProcesoService
   ) {
   }
 
   ngOnInit(): void {
     this.cargarSentencias();
+    this.cargarProcesos();
   }
 
   cargarSentencias(): void {
@@ -113,6 +119,14 @@ export class ListarSentenciasComponent implements OnInit{
   downloadFile(idFileBlob: string): void {
     this.sentenciaService.downloadFile(idFileBlob);
   }
+  cargarProcesos(): void {
+    this.procesoService.listarProcesosByAbodado().subscribe({
+      next: (data) => {
+        this.procesos = data.data;
+      },
+      error: (err) => console.error('Error cargando procesos:', err)
+    });
+  }
 
   openModal() {
     const buttonElement = document.activeElement as HTMLElement;
@@ -120,6 +134,7 @@ export class ListarSentenciasComponent implements OnInit{
     const modalRef = this.modalService.open(SentenciaModalComponent, { size: 'lg' });
     modalRef.componentInstance.modalTitle = 'Registrar Nueva Sentencia';
     modalRef.componentInstance.tipoDocumento = 'SENTENCIA';
+    modalRef.componentInstance.expedientes = this.procesos;
     
     // Suscribirse al cierre del modal
     modalRef.result.then(() => {

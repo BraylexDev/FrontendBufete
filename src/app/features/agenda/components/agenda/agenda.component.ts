@@ -20,6 +20,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private sub!: Subscription;
   eventos: EventoDto[] = [];
 
+  paginaActual: number = 1;
+  eventosPorPagina: number = 4;
+
   constructor(private eventService: EventService) {
   }
   ngOnInit(): void {
@@ -31,6 +34,29 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
+  }
+
+  get eventosPaginados() {
+    const inicio = (this.paginaActual - 1) * this.eventosPorPagina;
+    const fin = inicio + this.eventosPorPagina;
+    return this.eventos.slice(inicio, fin);
+  }
+
+  paginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+    }
+  }
+
+  paginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+    }
+  }
+
+  // Calculamos el total de páginas dinámicamente
+  get totalPaginas(): number {
+    return Math.ceil(this.eventos.length / this.eventosPorPagina);
   }
 
   loadEvents(): void {
@@ -77,8 +103,38 @@ export class AgendaComponent implements OnInit, OnDestroy {
     });
 
     return fechaFormateada;
-
   }
+
+  formatDia(date: string): string {
+    const fecha = new Date(date);
+    let fechaFormateada: string;
+    fechaFormateada = fecha.toLocaleDateString('es-ES', {
+      day: '2-digit'
+    });
+
+    return fechaFormateada;
+  }
+
+  formatMes(date: string): string {
+    const fecha = new Date(date);
+    let fechaFormateada: string;
+    fechaFormateada = fecha.toLocaleDateString('es-ES', {
+      month: 'short'
+    });
+
+    return fechaFormateada;
+  }
+
+  formatAno(date: string): string {
+    const fecha = new Date(date);
+    let fechaFormateada: string;
+    fechaFormateada = fecha.toLocaleDateString('es-ES', {
+      year: 'numeric'
+    });
+
+    return fechaFormateada;
+  }
+
   formatHora(date: string): string {
     const fecha = new Date(date);
     let horaFormateada: string;

@@ -7,14 +7,17 @@
       </a>
       <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end notification">
         <div class="noti-head">
-          <h6 class="d-inline-block m-b-0">Notificationes</h6>
+          <h6 class="d-inline-block m-b-0">Próximos Eventos</h6>
           <div class="float-end">
+            4
           </div>
         </div>
-        <ul class="noti-body">
+        <ul class="noti-body ">
+          <!--
           <li class="n-title">
             <p class="m-b-0">Próximos eventos</p>
           </li>
+          -->
           <li class="notification" *ngIf="eventos.length === 0">
             <div class="media">
               <div class="media-body">
@@ -25,7 +28,7 @@
             </div>
           </li>
           @for (evt of eventos; track evt.id) {
-          <li class="notification">
+          <li class="notification py-2">
             <div class="media">
               <div class="media-body">
                 <p>

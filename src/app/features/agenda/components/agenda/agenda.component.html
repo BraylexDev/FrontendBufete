@@ -1,8 +1,8 @@
 <div class="row">
-  <div class="col-lg-8">
+  <div class="col-lg-7">
     <app-calendar></app-calendar>
   </div>
-  <div class="col-lg-4" style="margin-top: 45px">
+  <div class="col-lg-5">
     <div class="col-xl-12">
       <app-card
         [hidHeader]="true"
@@ -13,36 +13,137 @@
           <h6>No Hay Eventos Registrados</h6>
         </div>
       </app-card>
+
       <app-card
-        cardTitle="Próximos Eventos"
+        [hidHeader]="true"
         [options]="false"
-        blockClass="table-border-style"
-        *ngIf="eventos.length > 0"
-      >
-        <div class="table-responsive">
-          <table class="table table-columned">
-            <tbody>
-              @for (evt of eventos; track evt.id) {
-              <tr>
-                <td>
-                  <div>
-                    <b>Número de Noticia Criminal (Nunc): </b>
+        *ngIf="eventos.length > 0">
+        <h5 class="mb-4 text-primary">🗓️ Próximos Eventos</h5>
+        <!-- Contenedor principal de la agenda -->
+        <div class="col-xl-12 col-lg-12 col-md-12">
+          <!-- ITEM DE EVENTO (Este bloque se repetiría con un *ngFor en Angular) -->
+          @for (evt of eventosPaginados; track evt.id) {
+            <div class="card shadow-sm mb-2 event-card">
+              <div class="row g-0 align-items-center">
+                <!-- Bloque de Fecha -->
+                <div
+                  class="col-3 col-sm-2 bg-primary text-white text-center py-3 event-date">
+                
+                  <span class="d-block fs-3 fw-bold lh-1 small">{{
+                    formatDia(evt.fechaInicio)
+                  }}</span>
+                  <span class="text-uppercase small fw-semibold">{{
+                    formatMes(evt.fechaInicio)
+                  }}</span>
+                  <span class="d-block small fw-semibold lh-1">{{
+                    formatAno(evt.fechaInicio)
+                  }}</span>
+                </div>
+
+                <!-- Bloque de Detalles -->
+                <div class="col-9 col-sm-10">
+                  <div class="card-body py-1 py-sm-2 px-3">
+                    <div
+                      class="d-flex justify-content-between align-items-start mb-1">
+                      <div>
+                        <h6 class="card-title mb-0 text-dark fw-bold small">
+                          Número de Noticia Criminal:
+                        </h6>
+                        <span class="mb-0 fw-semibold text-secondary small">
+                          {{ consguirProceso(evt.expedienteNombre) }}
+                        </span>
+                      </div>    
+                      <!--
+                      <span
+                        class="badge bg-success-subtle text-success rounded-pill px-2 py-1 small">
+                        {{ consguirProceso(evt.expedienteNombre) }}
+                        </span>
+                        -->
+                    </div>
+                    
+                    <p class="card-text small mb-2">
+                      {{ evt.titulo }}
+                    </p>
+
+                    <!-- Meta información (Hora y Lugar) -->
+                    @if (!evt.allDay) {
+                      <div class="d-flex flex-wrap gap-3 text-secondary small">
+                        <span>🕒 {{ formatHora(evt.fechaInicio) }}</span>
+                      </div>
+                    }
                   </div>
-                  <div>
-                    {{ consguirProceso(evt.expedienteNombre)}}
+                </div>
+              </div>
+            </div>
+          }
+
+          <nav
+            aria-label="Navegación de eventos"
+            class="mt-4"
+            *ngIf="eventos.length > eventosPorPagina">
+            <ul class="pagination pagination-sm justify-content-center">
+              <!-- Botón Anterior -->
+              <li class="page-item " [class.disabled]="paginaActual === 1">
+                <button class="page-link" (click)="paginaAnterior()">
+                  Anterior
+                </button>
+              </li>
+
+              <!-- Indicador de Páginas Central (ej: "Página 1 de 3") -->
+              <li class="page-item disabled">
+                <span class="page-link text-dark small">
+                  Página <strong>{{ paginaActual }}</strong> de
+                  {{ totalPaginas }}
+                </span>
+              </li>
+
+              <!-- Botón Siguiente -->
+              <li
+                class="page-item"
+                [class.disabled]="paginaActual === totalPaginas"
+              >
+                <button class="page-link" (click)="paginaSiguiente()">
+                  Siguiente
+                </button>
+              </li>
+            </ul>
+          </nav>
+          <!-- FIN ITEM DE EVENTO -->
+
+          <!-- SEGUNDO ITEM (Ejemplo de evento suspendido/alerta) -->
+          <!--<div
+            class="card shadow-sm mb-3 event-card border-start border-danger border-4">
+            <div class="row g-0 align-items-center">
+              <div
+                class="col-3 col-sm-2 bg-danger text-white text-center py-3 event-date"
+              >
+                <span class="d-block fs-3 fw-bold lh-1">28</span>
+                <span class="text-uppercase small fw-semibold">Oct</span>
+              </div>
+              <div class="col-9 col-sm-10">
+                <div class="card-body py-2 py-sm-3">
+                  <div
+                    class="d-flex justify-content-between align-items-start mb-1"
+                  >
+                    <h5 class="card-title mb-0 text-dark fw-bold">
+                      Entrega de Sprint 2
+                    </h5>
+                    <span
+                      class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 small"
+                      >Crítico</span
+                    >
                   </div>
-                  <div>
-                    <b>{{ evt.titulo}} </b>
+                  <p class="card-text text-muted small mb-2">
+                    Despliegue a ambiente de pruebas y validación de errores.
+                  </p>
+                  <div class="d-flex flex-wrap gap-3 text-secondary small">
+                    <span>🕒 04:00 PM</span>
+                    <span>📍 Servidor QA</span>
                   </div>
-                  <div><b>Día:</b> {{ formatFecha(evt.fechaInicio) }}</div>
-                  @if(!evt.allDay){
-                    <div><b>Hora:</b> {{ formatHora(evt.fechaInicio) }}</div>
-                  }
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+          </div>-->
         </div>
       </app-card>
     </div>

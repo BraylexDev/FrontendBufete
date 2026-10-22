@@ -57,7 +57,7 @@ export class PlantillaModalComponent {
     private alertService: AlertService
   ) {
 
-    this.cargarPlantillas();
+    this.cargarCategoriasPlantillas();
    }
  
   onFileSelected(event: Event) {
@@ -68,7 +68,7 @@ export class PlantillaModalComponent {
     }
   }
 
-  cargarPlantillas(){
+  cargarCategoriasPlantillas(){
     this.categoriaService.listarCategorias("PLANTILLA").subscribe({
       next: data => {
         this.categorias = data;
@@ -91,6 +91,8 @@ export class PlantillaModalComponent {
       return;
     }
 
+    let misErrores: string[] = [];
+
     this.loading = true;
     this.error = null;
     this.nodeService.uploadFileNOexp(
@@ -100,15 +102,24 @@ export class PlantillaModalComponent {
       this.formDataPlantilla.descripcion
     ).subscribe({
       next: (response) => {
+        console.log(response);
         if (response.success) {
           this.triggerAlert('Plantilla Registrada Exitosamente', 'success');
-          this.cargarPlantillas();
+          this.cargarCategoriasPlantillas();
           this.activeModal.dismiss();
         }
         this.loading = false;
       },
       error: (err) => {
-        this.triggerAlert('Error al registrar la plantilla', 'danger');
+        if (err.error && err.error.errors) {
+          misErrores = err.error.errors as string[];
+        }
+
+        for (let i = 0; i < misErrores.length; i++) {
+          const element = misErrores[i];
+          this.triggerAlert(element, 'danger');
+        }
+        
         /* this.activeModal.dismiss(); */
         this.error = err.error?.message || 'Error al subir el archivo';
         this.loading = false;

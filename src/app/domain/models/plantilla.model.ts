@@ -3,4 +3,5 @@ export interface PlantillaDto {
     nombre: string;
     fecha: Date;
     categoria: string;
+    descripcion: string;
 }

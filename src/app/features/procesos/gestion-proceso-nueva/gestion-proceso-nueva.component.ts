@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 import { ProcesoModalComponent } from '../proceso-modal/proceso-modal.component';
 import { DelitoService } from '../../../domain/services/delito/delito.service';
 import { BienJuridicoService } from '../../../domain/services/bienJuridico/bien-juridico.service';
-import { AsuntoPenal, AsuntoPenalDetalleBasicoDTO, AsuntoPenalDetalleDTO, AsuntosPenalesPorProcedimientoDTO, BienJuridico, Delito, Persona } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
+import { AsuntoPenal, AsuntoPenalDetalleBasicoDTO, AsuntoPenalDetalleDTO, AsuntosPenalesPorProcedimientoDTO, BienJuridico, Delito, Persona, TerminoDTO } from '../../../domain/models/asuntoPenal/asuntoPenal.model';
 import { AsuntoPenalService } from '../../../domain/services/asuntoPenal/asunto-penal.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SharedModule } from '../../shared/shared.module';
@@ -65,7 +65,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   private delitoService = inject(DelitoService);
   private bienService = inject(BienJuridicoService);
 
-  private procesoService = inject(ProcesoService);
   private expedienteService = inject(ExpedienteService);
   private permissionService = inject(PermissionService);
   private authService = inject(AuthService);
@@ -141,9 +140,9 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   ];
 
   readonly competenciasAsunto = [
-    { value: 'MUNICIPAL', label: 'MUNICIPAL'}, 
-    { value: 'CIRCUITO', label: 'CIRCUITO'},
-    { value: 'CIRCUITO_ESPECIALIZADO', label: 'CIRCUITO ESPECIALIZADO'},
+    { value: 'MUNICIPAL', label: 'MUNICIPAL' },
+    { value: 'CIRCUITO', label: 'CIRCUITO' },
+    { value: 'CIRCUITO_ESPECIALIZADO', label: 'CIRCUITO ESPECIALIZADO' },
   ]
 
   asuntoSeleccionado: string = '';
@@ -194,8 +193,13 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   procesosDetallesProcedimiento!: AsuntoPenalDetalleBasicoDTO[];
 
   archivoActuacionSeleccionado!: File;
+  procesosExpedientes: ProcesoDTO[] = [];
+  actuacionesProceso: TerminoDTO[] = [];
 
-  constructor(private alertService: AlertService, private asuntoService: AsuntoPenalService) {
+  constructor(
+    private alertService: AlertService,
+    private asuntoService: AsuntoPenalService,
+    private procesoService: ProcesoService) {
     this.buscadorForm = this.fb.group({
       jurisdiccion: ['', Validators.required],
       asunto: [{ value: '', disabled: true }, Validators.required]
@@ -296,6 +300,8 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.cargarBienesJuridicos();
     this.cargarDelitos();
     this.cargarPocesosProcedimiento();
+    this.cargarTerminosActuacion(13);
+    console.log("terminos : ", this.actuacionesProceso)
 
   }
 
@@ -319,7 +325,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
       // 2. Si lo encontramos, asignamos sus procesos; si no, dejamos la lista vacía
       this.procesosDetallesProcedimiento = encontrado ? encontrado.procesos : [];
-      
+
     } else {
       // Si se deselecciona, limpiamos la lista
       this.procesosDetallesProcedimiento = [];
@@ -331,24 +337,24 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   get tipoActuacionSeleccionada(): number {
-  const valor = this.RegistrarActuacionForm.get('tipoActuacion')?.value;
-  return valor ? Number(valor) : 0;
-}
+    const valor = this.RegistrarActuacionForm.get('tipoActuacion')?.value;
+    return valor ? Number(valor) : 0;
+  }
 
   getTextoLabelActuacion(): string {
-  const tipo = this.tipoActuacionSeleccionada;
-  
-  switch (tipo) {
-    case 5:
-      return 'Fecha de Presentación del Escrito de Acusación :';
-    case 2:
-      return 'Fecha de Imputación :';
-    case 9:
-      return 'Fecha de Inicio de Juicio Oral :';
-    default:
-      return 'Fecha de Actuación :'; 
+    const tipo = this.tipoActuacionSeleccionada;
+
+    switch (tipo) {
+      case 5:
+        return 'Fecha de Presentación del Escrito de Acusación :';
+      case 2:
+        return 'Fecha de Imputación :';
+      case 9:
+        return 'Fecha de Inicio de Juicio Oral :';
+      default:
+        return 'Fecha de Actuación :';
+    }
   }
-}
 
   cargarPocesosProcedimiento(): void {
     this.asuntoService.listarProcesosProcedimiento().subscribe({
@@ -749,25 +755,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.procesoAeliminar = proceso;
   }
 
-  /* openActionModal(action: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO'): void {
-    this.modalAction = action;
-
-    if (action === 'ASUNTO_NUEVO') {
-      this.modalTitle = 'Asunto nuevo';
-      this.resetSubForm();
-      this.currentStep = 1;
-    } else if (action === 'MODIFICAR_ACTUACION') {
-      this.modalTitle = 'Modificar o adicionar actuación';
-    } else if (action === 'EDITAR_ASUNTO') {
-      this.modalTitle = 'Editar asunto';
-      this.currentStep = 1;
-    } else {
-      this.modalTitle = 'Estadística de área';
-    }
-
-    this.modalService.open(this.actionModal, { size: 'lg', centered: true });
-  } */
-
   openActionModal(
     action: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO'
   ): void {
@@ -1035,18 +1022,18 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     const request: CrearActuacionRequest =
       this.construirRequestActuacion();
 
-    console.log(this.RegistrarActuacionForm.get('procesoId')?.value)  
+    console.log(this.RegistrarActuacionForm.get('procesoId')?.value)
 
-    const procesoId:number =  Number(this.RegistrarActuacionForm.get('procesoId')?.value);
+    const procesoId: number = Number(this.RegistrarActuacionForm.get('procesoId')?.value);
     console.log("proc id : ", procesoId)
-    console.log("request actuacion : ",request);
+    console.log("request actuacion : ", request);
 
     this.asuntoService.crearAsuntoPenalActuacion(procesoId, request, this.archivoActuacionSeleccionado).subscribe({
       next: (response) => {
         this.modalService.dismissAll();
 
         this.RegistrarActuacionForm.reset();
-        console.log("actuacion: ",response)
+        console.log("actuacion: ", response)
         this.triggerAlert(
           'Actuación Registrada.',
           'success'
@@ -1263,6 +1250,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   get imputados(): FormArray {
     return this.RegistrarAsuntoPenalForm.get('imputados') as FormArray;
   }
+
   private crearImputado(): FormGroup {
     return this.fb.group({
       tipoDocumento: ['', Validators.required],
@@ -1320,9 +1308,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   private construirRequestActuacion(): CrearActuacionRequest {
-
     const formValue = this.RegistrarActuacionForm.getRawValue();
-
     return {
       tipoActuacionId: formValue.tipoActuacion,
       fechaActuacion: formValue.fechaActuacion,
@@ -1443,6 +1429,15 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     });
   }
 
+  cargarProcesosExpedientes(): void {
+    this.procesoService.listarProcesosByAbodado().subscribe({
+      next: (data) => {
+        this.procesosExpedientes = data.data;
+      },
+      error: (err) => console.error('Error cargando procesos:', err)
+    });
+  }
+
 
   private obtenerValuePorLabel<T>(
     opciones: { value: T; label: string }[],
@@ -1457,4 +1452,25 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     return opcion ? opcion.value : '';
   }
 
+
+  cargarTerminosActuacion(idProceso: number) {
+    this.procesoService.obtenerTerminos(idProceso).subscribe({
+      next: (response) => {
+        this.actuacionesProceso = response.data;
+        console.log(response.data);
+      },
+      error: (err) => {
+        console.error('Error al cargar delitos:', err);
+      }
+    });
+  }
+
+  get actuacionProcesoSeleccionado(): TerminoDTO[] {
+    const procesoId = this.RegistrarActuacionForm.get('procesoId')?.value;
+    const tipoActiacionId = this.RegistrarActuacionForm.get('tipoActuacion')?.value;
+
+    this.cargarTerminosActuacion(procesoId);
+    console.log("terinos proceso: => ", this.actuacionesProceso.filter(actuacion => actuacion.tipoActuacionId === tipoActiacionId))
+    return this.actuacionesProceso.filter(actuacion => actuacion.tipoActuacionId === tipoActiacionId);
+  }
 }

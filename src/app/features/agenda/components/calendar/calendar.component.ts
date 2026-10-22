@@ -166,7 +166,6 @@ export class CalendarComponent implements OnInit {
         this.refresh.next();
         this.eventos = data.data;
 
-        console.log(data.data);
       },
       (error) => {
         console.error('Error fetching events:', error);
