@@ -14,6 +14,8 @@ import { NodeService } from '../../../domain/services/folder/node.service';
 export class FileExplorerComponent implements OnInit {
   @Input() rootNodeId!: string;
 
+  readonly RESTRICTED_FOLDER_NAME = 'RECURSO EXTRAORDINARIO';
+
   currentNodes: NodeDTO[] = [];
   currentParentId: string = '';
   breadcrumbs: BreadcrumbItem[] = [];
@@ -136,6 +138,11 @@ export class FileExplorerComponent implements OnInit {
       return;
     }
 
+    if (!this.canCreateFolder) {
+      this.error = 'No se pueden crear carpetas porque ya existe un archivo en RECURSO EXTRAORDINARIO';
+      return;
+    }
+
     this.newFolderName = '';
     this.newFolderDescription = '';
     this.showCreateFolderModal = true;
@@ -181,6 +188,11 @@ export class FileExplorerComponent implements OnInit {
 
     if (!this.currentParentId) {
       this.error = 'No se puede subir archivo: falta el ID del nodo padre';
+      return;
+    }
+
+    if (!this.canUploadFile) {
+      this.error = 'No se pueden subir más archivos porque ya existe un archivo en RECURSO EXTRAORDINARIO';
       return;
     }
 
@@ -298,5 +310,25 @@ export class FileExplorerComponent implements OnInit {
 
   toggleViewMode() {
     this.viewMode = this.viewMode === 'list' ? 'grid' : 'list';
+  }
+
+  get isRestrictedFolder(): boolean {
+    const currentBreadcrumb = this.breadcrumbs[this.breadcrumbs.length - 1];
+
+    return currentBreadcrumb?.name?.trim().toUpperCase() ===
+      this.RESTRICTED_FOLDER_NAME;
+  }
+
+  get hasFilesInRestrictedFolder(): boolean {
+    return this.isRestrictedFolder &&
+      this.currentNodes.some(node => node.type === NodeType.FILE);
+  }
+
+  get canCreateFolder(): boolean {
+    return !this.hasFilesInRestrictedFolder;
+  }
+
+  get canUploadFile(): boolean {
+    return !this.hasFilesInRestrictedFolder;
   }
 }

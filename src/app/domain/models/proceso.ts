@@ -18,6 +18,24 @@ export interface Proceso {
     abogadoResponsableId: number;
     clienteId: number;
 }
+
+export interface ProcesoPersonaDTO {
+
+    id?: number;
+    tipoDocumento: string;
+    numeroDocumento: string;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    telefono: string;
+    rol: string;
+    orden: number;
+    privadoLibertad: boolean;
+    tipoDetencion: string;
+    establecimientoOResidencia: string;
+    observaciones: string;
+}
+
 export interface ProcesoDTO {
     id?: number;
     numeroProceso: string;
@@ -45,6 +63,8 @@ export interface ProcesoDTO {
     updatedAt?: Date;
     totalExpedientes?: number;
     totalEventos?: number;
+
+    personas: ProcesoPersonaDTO[];
 }
 
 export interface EditProcesoRequest {

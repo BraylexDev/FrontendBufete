@@ -45,12 +45,10 @@ export class ListUserComponent implements OnInit {
    * Métodos de ejemplo para acciones sobre usuarios
    */
   viewUsuario(id: number): void {
-    console.log('Ver usuario:', id);
     // Implementar navegación o modal
   }
 
   editUsuario(id: number): void {
-    console.log('Editar usuario:', id);
     // Implementar navegación o modal
   }
 

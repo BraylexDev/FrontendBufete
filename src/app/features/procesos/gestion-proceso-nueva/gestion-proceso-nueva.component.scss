@@ -1,3 +1,15 @@
+.permissions-legend {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+
+  i {
+    color: #3498db;
+    margin-right: 8px;
+  }
+}
+
 .gestion-proceso-nueva-container {
   padding: 1.5rem;
 }
@@ -248,10 +260,33 @@
 
     .proceso-description {
       font-size: 12px;
+      color: #000000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+    .proceso-description2 {
+      font-size: 11px;
       color: #666;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .mostrar-mas-personas {
+      display: inline-block;
+      color: #3b82f6;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: color 0.2s ease;
+    }
+
+    .mostrar-mas-personas:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
     }
 
     .abogado-info {
@@ -470,4 +505,23 @@
       background-color: white;
     }
   }
+}
+
+.form-select,
+.form-control {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+
+  &:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  &:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+  }
+} 
+.text-danger {
+  color: #dc3545;
 }

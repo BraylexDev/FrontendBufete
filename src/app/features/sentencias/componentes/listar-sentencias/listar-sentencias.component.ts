@@ -146,7 +146,6 @@ export class ListarSentenciasComponent implements OnInit{
 
   verDocumento(url: string) {
     this.verDomuentoService.urlDocumentToConsult = url;
-    console.log("urlVErDoc: " + url);
     this.router.navigate(['/admin/ver']);
   }
 

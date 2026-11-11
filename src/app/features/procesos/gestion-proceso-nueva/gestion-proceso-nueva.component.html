@@ -11,36 +11,59 @@
   <div styles="position: fixed; z-index:9999">
     <app-alert></app-alert>
   </div>
-
+  
   <form [formGroup]="buscadorForm" class="card shadow-sm" novalidate>
     <div class="card-body">
       <div class="row g-3">
+
+        <!-- Jurisdicción -->
         <div class="col-12 col-lg-6">
-          <label class="form-label" for="jurisdiccion">Jurisdicción</label>
+          <label class="form-label" for="jurisdiccion">
+            Jurisdicción
+          </label>
+
           <select
             id="jurisdiccion"
             class="form-select"
-            formControlName="jurisdiccion"
-          >
+            formControlName="jurisdiccion">
+
             <option value="">Seleccione una jurisdicción</option>
-            <option *ngFor="let item of jurisdicciones" [value]="item.value">
+
+            <option
+              *ngFor="let item of jurisdicciones"
+              [value]="item.value">
               {{ item.label }}
             </option>
+
           </select>
         </div>
 
+        <!-- Tipo de asunto -->
         <div class="col-12 col-lg-6">
-          <label class="form-label" for="asunto">Asunto</label>
-          <select id="asunto" class="form-select" formControlName="asunto">
+          <label class="form-label" for="asunto">
+            Asunto
+          </label>
+
+          <select
+            id="asunto"
+            class="form-select"
+            formControlName="asunto">
+
             <option value="">Seleccione un asunto</option>
-            <option *ngFor="let item of asuntosDisponibles" [value]="item">
+
+            <option
+              *ngFor="let item of asuntosDisponibles"
+              [value]="item">
               {{ item }}
             </option>
+
           </select>
         </div>
+
       </div>
     </div>
   </form>
+
 
   <div class="mt-4" *ngIf="showInfoMessage">
     <div class="alert alert-info mb-5">
@@ -77,6 +100,18 @@
     </div>
   </div>
   <div class="mt-4" *ngIf="hasSelection">
+    <!-- Estado de carga -->
+    <div *ngIf="cargando" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+
+      <p class="mt-2 text-muted">
+        Cargando procesos...
+      </p>
+    </div>
+
+    <!-- Estado vacío -->
     <div class="empty-state text-center" *ngIf="showEmptyState">
       <div class="empty-state-content">
         <i
@@ -86,18 +121,17 @@
         <h4>No hay procesos</h4>
         <p class="text-muted">No hay procesos registrados en el sistema.</p>
       </div>
+
     </div>
 
     <!-- Lista jerárquica de procesos y expedientes (vista normal sin agrupación) -->
-    <div
-      *ngIf="!cargando && !mostrarAbogado && procesosFiltrados.length > 0"
-      class="tree-container"
-    >
+    <div *ngIf="!cargando && !esAdministrador && procesosFiltrados.length > 0"
+      class="tree-container" >
+
       <div class="tree-list">
-        <div
-          *ngFor="let proceso of procesosFiltrados"
-          class="tree-item proceso-item"
-        >
+        <div *ngFor="let proceso of procesosFiltrados"
+          class="tree-item proceso-item" >
+
           <!-- Fila del proceso -->
           <div class="item-row proceso-row">
             <!-- Ícono y nombre del proceso -->
@@ -105,7 +139,9 @@
               <i class="bi bi-folder-fill proceso-icon"></i>
               <div class="proceso-info" (click)="toFolder(proceso)">
                 <span class="item-name">{{ proceso.numeroProceso }}</span>
-                <span class="proceso-description">{{ proceso.nombre }}</span>
+                <span class="proceso-description">{{
+                  proceso.clienteNombre
+                }}</span>
               </div>
             </div>
 
@@ -223,15 +259,10 @@
     </div>
 
     <!-- Lista jerárquica agrupada por usuario (para usuarios con permisos) -->
-    <div
-      *ngIf="
-        !cargando &&
-        mostrarAbogado &&
-        usuarioGruposFiltrados.length > 0 &&
-        showProcesosList
-      "
-      class="tree-container"
-    >
+    <div *ngIf=" !cargando && esAdministrador && usuarioGruposFiltrados.length > 0 &&
+        showProcesosList "
+      class="tree-container" >
+
       <div class="tree-list">
         <!-- Grupo de usuario -->
         <div
@@ -291,9 +322,53 @@
                   <i class="bi bi-folder-fill proceso-icon"></i>
                   <div class="proceso-info" (click)="toFolder(proceso)">
                     <span class="item-name">{{ proceso.numeroProceso }}</span>
+
                     <span class="proceso-description">{{
-                      proceso.nombre
+                      proceso.clienteNombre
                     }}</span>
+                    <!--
+                    <span *ngFor="let personasProceso of proceso.personas" 
+                        class="proceso-description">
+                        {{ personasProceso.numeroDocumento }}
+                    </span>
+                    -->
+
+                    <div
+                      *ngFor="
+                        let personasProceso of proceso.mostrarTodasPersonas
+                          ? proceso.personas
+                          : proceso.personas.slice(0, 2)
+                      "
+                    >
+                      <span class="proceso-description">
+                        {{ personasProceso.nombres }}
+                        {{ personasProceso.apellidos }}
+                      </span>
+                      -
+                      <span class="proceso-description2">
+                        N° Doc: {{ personasProceso.numeroDocumento }}
+                      </span>
+                    </div>
+
+                    <!-- Botón para mostrar más -->
+                    <div *ngIf="proceso.personas.length > 2">
+                      <span
+                        class="mostrar-mas-personas"
+                        (click)="
+                          proceso.mostrarTodasPersonas =
+                            !proceso.mostrarTodasPersonas;
+                            $event.stopPropagation()
+                        "
+                      >
+                        {{
+                          proceso.mostrarTodasPersonas
+                            ? "Ver menos"
+                            : "Ver " +
+                              (proceso.personas.length - 2) +
+                              " personas más"
+                        }}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -352,12 +427,9 @@
     ></button>
   </div>
   <div class="modal-body">
-    <ng-container
-      *ngIf="
-        modalAction === 'ASUNTO_NUEVO' &&
-        asuntoControl?.value === 'ASUNTOS PENALES'
-      "
-    >
+    <ng-container *ngIf=" modalAction === 'ASUNTO_NUEVO' &&
+        asuntoControl?.value === 'ASUNTOS PENALES' ">
+
       <form [formGroup]="RegistrarAsuntoPenalForm" novalidate>
         <div *ngIf="!showtipoAsunto" class="mb-3">
           <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
@@ -401,6 +473,11 @@
                   {{ item.label }}
                 </option>
               </select>
+              <div class="text-danger small mt-1"
+                *ngIf=" RegistrarAsuntoPenalForm.get('tipoProcedimiento')?.touched &&
+                  RegistrarAsuntoPenalForm.get('tipoProcedimiento')?.invalid ">
+                El tipo de procedimiento es obligatorio.
+              </div>
             </div>
 
             <!-- NUNC -->
@@ -426,7 +503,14 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-end">
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnteriorAsuntoNuevo()"
+              >
+                Anterior
+              </button>
               <button
                 type="button"
                 class="btn btn-primary"
@@ -1076,85 +1160,189 @@
             </div>
           </div>
         </div>
-
+      </form>
+      <form [formGroup]="recursoExtraordinarioForm">
         <div
           *ngIf="showRecursoExtraordinario"
-          class="border rounded p-3 bg-light"
-        >
+          class="border rounded p-3 bg-light">
+
           <h6 class="mb-3">Recurso extraordinario</h6>
-          <label class="form-label" for="archivoRecurso">Subir documento</label>
-          <input
-            id="archivoRecurso"
-            class="form-control"
-            type="file"
-            (change)="onFileSelected($event)"
-          />
-          <small class="text-muted d-block mt-2" *ngIf="selectedFileName"
-            >Archivo seleccionado: {{ selectedFileName }}</small
-          >
-          <div class="d-flex justify-content-end mt-3">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="guardarAsuntoNuevo()"
-            >
-              Guardar
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="showPenitenciario" class="border rounded p-3 bg-light">
-          <h6 class="mb-3">Ejecución de penas y medidas de seguridad</h6>
           <div class="mb-3">
-            <label class="form-label" for="medidaEjecucion"
-              >Seleccione una opción</label
-            >
-            <select
-              id="medidaEjecucion"
-              class="form-select"
-              formControlName="medidaEjecucion"
-            >
-              <option value="">Seleccione una opción</option>
-              <option
-                *ngFor="let item of medidasEjecucion"
-                [value]="item.value"
-              >
-                {{ item.label }}
-              </option>
-            </select>
-          </div>
+            <label class="form-label">
+              <span class="text-danger me-1">*</span> Expediente :
+            </label>
+            
+            <ng-select 
+              [items]="expedientes$ | async"
+              bindLabel="numeroProceso"
+              bindValue="id"
+              placeholder="Escribe el número de proceso o abogado..."
+              [(ngModel)]="expedienteSeleccionadoId"
+              (search)="onBuscarExpediente($event)"
+              [searchFn]="customSearchFn"
+              [loading]="cargando"
+              loadingText="Buscando expedientes en el servidor..."
+              notFoundText="No se encontraron coincidencias"
+              [searchable]="true"
+              [clearable]="true"
+              clearAllText="Limpiar búsqueda"
+              (clear)="onLimpiarBusqueda()"
+              appendTo="body"
+              class="form-select" 
+              formControlName="procesoIdRec"
+              style="padding-right: 40px;">
+              
+              <ng-template ng-option-tmp let-item="item">
+                <div class="d-flex flex-column py-1">
+                  <span class="fw-bold text-dark">{{ item.numeroProceso }}</span>
+                  <small *ngIf="esAdministrador" class="text-muted" style="font-size: 0.8rem;">{{ item.abogadoResponsableNombre }}</small>
+                </div>
+              </ng-template>
 
-          <label class="form-label" for="archivoPenitenciario"
-            >Subir documento</label
-          >
-          <input
-            id="archivoPenitenciario"
-            class="form-control"
-            type="file"
-            (change)="onFileSelected($event)"
-          />
-          <small class="text-muted d-block mt-2" *ngIf="selectedFileName"
-            >Archivo seleccionado: {{ selectedFileName }}</small
-          >
-          <div class="d-flex justify-content-end mt-3">
+            </ng-select>
+            <div class="text-danger small mt-1"
+                *ngIf=" recursoExtraordinarioForm.get('procesoIdRec')?.touched &&
+                  recursoExtraordinarioForm.get('procesoIdRec')?.invalid ">
+                Debe seleccionar un expediente.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"> <span class="text-danger me-1">*</span> Subir Documento : </label>
+            <input
+              id="archivoRecurso"
+              class="form-control"
+              type="file"
+              formControlName="fileRecursoExtra"
+              (change)="onFileSelectedRecursoExtra($event)"
+            />
+            <small class="text-muted d-block mt-2" *ngIf="selectedFileRecursoExtra"
+              >Archivo seleccionado: {{ selectedFileRecursoExtra }}</small
+            >
+            <div class="text-danger small mt-1"
+                  *ngIf=" recursoExtraordinarioForm.get('fileRecursoExtra')?.touched &&
+                    recursoExtraordinarioForm.get('fileRecursoExtra')?.invalid &&
+                    !selectedFileRecursoExtra">
+                  Debe subir un documento.
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-3">
+            <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnteriorAsuntoNuevo()">
+                Anterior
+            </button>
             <button
               type="button"
               class="btn btn-primary"
-              (click)="guardarAsuntoNuevo()"
-            >
+              (click)=" GuardarRecursoExtraordinario()">
               Guardar
             </button>
           </div>
         </div>
       </form>
+      <form [formGroup]="ejecucionPenaForm" novalidate>
+        <div *ngIf="showPenitenciario" class="border rounded p-3 bg-light">
+          <h6 class="mb-3">Ejecución de penas y medidas de seguridad</h6>
+          <div class="mb-3">
+            <div class="mb-3">
+              <label class="form-label">
+                <span class="text-danger me-1">*</span>
+                Expediente :
+              </label>
+              <ng-select 
+                [items]="expedientes$ | async"
+                bindLabel="numeroProceso"
+                bindValue="id"
+                placeholder="Escribe el número de proceso o abogado..."
+                [(ngModel)]="expedienteSeleccionadoId"
+                (search)="onBuscarExpediente($event)"
+                [searchFn]="customSearchFn"
+                [loading]="cargando"
+                loadingText="Buscando expedientes en el servidor..."
+                notFoundText="No se encontraron coincidencias"
+                [searchable]="true"
+                [clearable]="true"
+                clearAllText="Limpiar búsqueda"
+                (clear)="onLimpiarBusqueda()"
+                appendTo="body"
+                class="form-select" 
+                formControlName="procesoIdEjec"
+                style="padding-right: 40px;">
+                
+                <ng-template ng-option-tmp let-item="item">
+                  <div class="d-flex flex-column py-1">
+                    <span class="fw-bold text-dark">{{ item.numeroProceso }}</span>
+                    <small *ngIf="esAdministrador" class="text-muted" style="font-size: 0.8rem;">{{ item.abogadoResponsableNombre }}</small>
+                  </div>
+                </ng-template>
+              </ng-select>
+              <div class="text-danger small mt-1"
+                *ngIf=" ejecucionPenaForm.get('procesoIdEjec')?.touched &&
+                  ejecucionPenaForm.get('procesoIdEjec')?.invalid ">
+                Debe seleccionar un expediente.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label"> <span class="text-danger me-1">*</span> Tipo de Documento : </label>
+              <select
+                id="tipoDocumentoEjecucionPena"
+                class="form-select"
+                formControlName="tipoDocumentoEjecucionPena"
+              >
+                <option value="">Seleccione una opción</option>
+                <option
+                  *ngFor="let item of medidasEjecucion"
+                  [value]="item.value"
+                >
+                  {{ item.label }}
+                </option>
+              </select>
+              <div class="text-danger small mt-1"
+                *ngIf=" ejecucionPenaForm.get('tipoDocumentoEjecucionPena')?.touched &&
+                  ejecucionPenaForm.get('tipoDocumentoEjecucionPena')?.invalid ">
+                Debe seleccionar un tipo de documento.
+              </div>    
+            </div>
+            <div mb-3>
+              <label class="form-label"> <span class="text-danger me-1">*</span> Subir Documento : </label>
+              <input
+                id="archivoPenitenciario"
+                class="form-control"
+                type="file"
+                (change)="onFileSelectedEjecucionPena($event)"
+              />
+              <small class="text-muted d-block mt-2" *ngIf="selectedFileEjecucionPena">
+                Archivo seleccionado: {{ selectedFileEjecucionPena }}</small>
+              <div class="text-danger small mt-1"
+                    *ngIf=" ejecucionPenaForm.get('fileEjecucionPena')?.touched &&
+                      ejecucionPenaForm.get('fileEjecucionPena')?.invalid &&
+                      !selectedFileEjecucionPena">
+                    Debe subir un documento.
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnteriorAsuntoNuevo()">
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)=" GuardarEjecucionPena()" >
+
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
     </ng-container>
-    <div
-      *ngIf="
-        modalAction === 'EDITAR_ASUNTO' &&
-        asuntoControl?.value === 'ASUNTOS PENALES'
-      "
-      class="alert alert-secondary mb-0"
-    >
+    <div *ngIf="modalAction === 'EDITAR_ASUNTO' && asuntoControl?.value === 'ASUNTOS PENALES'"
+      class="alert alert-secondary mb-0">
+
       <form [formGroup]="RegistrarAsuntoPenalForm" novalidate>
         <div class="mb-3">
           <label class="form-label" for="tipoAsuntoNuevo">Tipo de asunto</label>
@@ -1224,6 +1412,13 @@
             </div>
 
             <div class="d-flex justify-content-end">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="pasoAnteriorAsuntoNuevo()"
+              >
+                Anterior
+              </button>
               <button
                 type="button"
                 class="btn btn-primary"
@@ -1775,13 +1970,9 @@
         </div>
       </form>
     </div>
-    <div
-      *ngIf="
-        modalAction === 'MODIFICAR_ACTUACION' &&
-        asuntoControl?.value === 'ASUNTOS PENALES'
-      "
-      class="alert alert-secondary mb-0"
-    >
+    <div *ngIf=" modalAction === 'MODIFICAR_ACTUACION' && asuntoControl?.value === 'ASUNTOS PENALES'"
+      class="alert alert-secondary mb-0">
+
       <form [formGroup]="RegistrarActuacionForm" novalidate>
         <div class="mb-3">
           <label class="form-label" for="tipoProcedimiento"
@@ -1801,9 +1992,18 @@
             </option>
           </select>
         </div>
+        <!-- Leyenda -->
+          <div class="permissions-legend mt-3" 
+              *ngIf="tipoProcedimientoSeleccionado && procesosDetallesProcedimiento.length === 0">
+            <small class="text-muted">
+              <i class="feather icon-info"></i>
+              No tiene procesos registrados para este tipo de procedimiento.
+            </small>
+          </div>
         <div
           class="border rounded p-3 bg-light"
-          *ngIf="tipoProcedimientoSeleccionado">
+          *ngIf="tipoProcedimientoSeleccionado && procesosDetallesProcedimiento.length > 0">
+          
           <div class="d-flex flex-column gap-3">
             <div class="d-flex justify-content-between align-items-center">
               <h6 class="mb-0">1. Información de la Actuación</h6>
@@ -1846,7 +2046,8 @@
               <select
                 id="tipoActuacion"
                 class="form-select"
-                formControlName="tipoActuacion">
+                formControlName="tipoActuacion"
+              >
                 <option value="">Seleccione la actuacion</option>
                 <option value="5">ACUSACION FORMAL</option>
                 <option value="2">FORMULACION DE IMPUTACION</option>
@@ -1867,7 +2068,7 @@
             </div>
             <div>
               <label class="form-label" for="archivoActuacionSeleccionado"
-                >Subir documento</label
+                >Subir Documento</label
               >
               <input
                 id="archivoPenitenciario"
@@ -1907,10 +2108,8 @@
       </form>
     </div>
 
-    <div
-      *ngIf="modalAction === 'ESTADISTICA_AREA'"
-      class="alert alert-secondary mb-0"
-    >
+    <div *ngIf="modalAction === 'ESTADISTICA_AREA'"
+      class="alert alert-secondary mb-0">
       Estadísticas.
     </div>
   </div>

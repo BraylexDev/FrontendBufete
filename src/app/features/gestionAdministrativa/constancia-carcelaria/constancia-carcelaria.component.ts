@@ -125,7 +125,6 @@ export class ConstanciaCarcelariaComponent implements OnInit {
 
   verDocumento(url: string) {
     this.verDocumentoService.urlDocumentToConsult = url;
-    console.log("urlVErDoc: " + url);
     this.router.navigate(['/admin/ver']);
   }
 }

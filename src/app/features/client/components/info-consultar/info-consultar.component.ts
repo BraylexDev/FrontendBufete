@@ -56,7 +56,6 @@ export class InfoConsultarComponent implements OnInit {
         this.clienteService.getClienteById(this.id).subscribe({
           next: (data) => {
             this.infoCliente = data.data;
-            console.log(this.infoCliente);
             this.cargarSentencias(this.id);
           },
           error: (err) => console.error('Error fetching client data', err)

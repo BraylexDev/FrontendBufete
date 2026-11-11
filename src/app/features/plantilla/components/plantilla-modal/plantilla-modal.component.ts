@@ -102,7 +102,6 @@ export class PlantillaModalComponent {
       this.formDataPlantilla.descripcion
     ).subscribe({
       next: (response) => {
-        console.log(response);
         if (response.success) {
           this.triggerAlert('Plantilla Registrada Exitosamente', 'success');
           this.cargarCategoriasPlantillas();

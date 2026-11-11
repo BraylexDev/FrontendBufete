@@ -34,7 +34,6 @@ export class ConsultarComponent {
       this.authService.getClienteById(cc).subscribe({
         next: (data) => {
           this.router.navigate(['/consulta/']);
-          console.log(data);
           this.infoclienteService.changeId(cc);  // Enviar el dato al servicio
         },
         error: (error) => {

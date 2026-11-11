@@ -70,6 +70,7 @@ export interface FileUploadResponse {
     mimeType: string;
     versionNumber: number;
     message: string;
+    folderParentId: string;
 }
 
 export interface DownloadUrlDTO {

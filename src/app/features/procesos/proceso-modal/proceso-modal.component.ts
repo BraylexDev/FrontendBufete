@@ -63,7 +63,6 @@ export class ProcesoModalComponent {
   ) { }
 
   ngOnInit(): void {
-    console.log('ProcesoModalComponent initialized');
     this.cargarProcesos();
     this.cargarDetalleAsuntoPenal(this.procesoEdicion?.id || 0);
     // Si estamos en modo edición, cargamos los datos
@@ -99,8 +98,6 @@ export class ProcesoModalComponent {
     this.svcAsuntoPenal.obtenerAsuntoPenal(procesoId).subscribe({
       next: (response) => {
         this.detalleAsunto = response.data; 
-        console.log('Mensaje del servidor:', response.message);
-        console.log('Detalle del DTO:', this.detalleAsunto);
       },
       error: (err) => {
         console.error('Error al obtener el detalle penal:', err);
@@ -111,7 +108,7 @@ export class ProcesoModalComponent {
   cargarProcesos() {
     this.svcProcesos.listarProcesosByAbodado().subscribe({
       next: (data) => {
-        (this.procesosDef = data.data), console.log(data.data);
+        (this.procesosDef = data.data);
       },
       error: (err) => console.error('Error fetching items', err),
     });

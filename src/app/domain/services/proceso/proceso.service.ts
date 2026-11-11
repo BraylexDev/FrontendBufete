@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Documento } from '../../models/document';
 import { Observable } from 'rxjs';
 import { CreateProceso, EditProcesoRequest, Proceso, ProcesoDTO } from '../../models/proceso';
@@ -32,15 +32,26 @@ export class ProcesoService {
     return this.http.get<Proceso[]>(`${this.baseUrl}`);
   }
 
+  listarExpedientesByAbogado(termino?: string): Observable<ApiResponse<ProcesoDTO[]>> {
+    let params = new HttpParams();
+    if (termino) {
+      params = params.set('q', termino); // Añade ?q=termino a la URL si existe
+    }
+    return this.http.get<ApiResponse<ProcesoDTO[]>>(`${this.baseUrl}/abogado`, { params });
+  }
+
+  listarExpedientesAdministrador(termino?: string): Observable<ApiResponse<ProcesoDTO[]>> {
+    let params = new HttpParams();
+    if (termino) {
+      params = params.set('q', termino); // Añade ?q=termino a la URL si existe
+    }
+    return this.http.get<ApiResponse<ProcesoDTO[]>>(`${this.baseUrl}/administrador`, { params });
+  }
+
   listarProcesosByAbodado(): Observable<ApiResponse<ProcesoDTO[]>> {
     return this.http.get<ApiResponse<ProcesoDTO[]>>(`${this.baseUrl}/abogado`);
   }
 
-  /**
-   * Lista todos los procesos del sistema (de todos los abogados)
-   * Solo disponible para usuarios con permisos especiales
-   * @returns Observable con todos los procesos del sistema
-   */
   listarTodosProcesos(): Observable<ApiResponse<ProcesoDTO[]>> {
     return this.http.get<ApiResponse<ProcesoDTO[]>>(`${this.baseUrl}/sistema`);
   }

@@ -17,7 +17,6 @@ export class VerDocumentoComponent implements OnInit{
   } 
   ngOnInit() {
     const url: string = this.urlService.urlDocumentToConsult;
-    console.log(url);
     this.documentData = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

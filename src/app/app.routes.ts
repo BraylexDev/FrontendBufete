@@ -85,7 +85,8 @@ export const routes: Routes = [
             },
             {
                 path: 'expedientes/:id/archivos',
-                component: ExpedienteDetailComponent,
+                loadComponent: () => import('./features/reportes/componentes/expedienteDetail/expediente-detail/expediente-detail.component')
+                    .then(m => m.ExpedienteDetailComponent),
                 canActivate: [authGuard]
             },
             {
@@ -105,7 +106,8 @@ export const routes: Routes = [
             },
             {
                 path: 'gestion-procesos',
-                component: GestionProcesoNuevaComponent,
+                loadComponent: () => import('./features/procesos/gestion-proceso-nueva/gestion-proceso-nueva.component')
+                    .then(m => m.GestionProcesoNuevaComponent),
                 canActivate: [authGuard]
             },
             {

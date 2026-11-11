@@ -51,6 +51,7 @@
     }
 
     <!-- Proceso -->
+    <!--
     <div class="mb-3">
       <label class="form-label">
         <span class="text-danger me-1">*</span>
@@ -75,6 +76,44 @@
         No Hay Expedientes Registrados
       </small>
     </div>
+    -->
+    <div class="mb-3">
+      <label class="form-label">
+        <span class="text-danger me-1">*</span>
+        Expediente :
+      </label>
+      
+      <ng-select 
+        [items]="expedientes$ | async"
+        bindLabel="numeroProceso"
+        bindValue="id"
+        placeholder="Escribe el número de proceso o abogado..."
+        [(ngModel)]="expedienteSeleccionadoId"
+        (search)="onBuscarExpediente($event)"
+        [searchFn]="customSearchFn"
+        [loading]="cargando"
+        loadingText="Buscando expedientes en el servidor..."
+        notFoundText="No se encontraron coincidencias"
+        [searchable]="true"
+        [clearable]="true"
+        clearAllText="Limpiar búsqueda"
+        (clear)="onLimpiarBusqueda()"
+        appendTo="body"
+        class="form-select" 
+        formControlName="procesoId"
+        style="padding-right: 40px;">
+        
+        <ng-template ng-option-tmp let-item="item">
+          <div class="d-flex flex-column py-1">
+            <span class="fw-bold text-dark">{{ item.numeroProceso }}</span>
+            <small *ngIf="esAdministrador" class="text-muted" style="font-size: 0.8rem;">{{ item.abogadoResponsableNombre }}</small>
+          </div>
+        </ng-template>
+
+      </ng-select>
+    </div>
+
+
     <!-- Descripción -->
     <div class="mb-3">
       <label class="form-label">Descripción : </label>

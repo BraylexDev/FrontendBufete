@@ -78,9 +78,8 @@ export class ListaReportesComponent {
         {
           next: (data) => {
             this.listaprocesos = data.data,
-            console.log(data.data)
-              this.conversionAux2(this.listaprocesos),
-              this.consultarExpedientes(this.procesos)
+            this.conversionAux2(this.listaprocesos),
+            this.consultarExpedientes(this.procesos)
           },
           error: err => console.error('Error fetching items', err)
         }
@@ -114,9 +113,7 @@ export class ListaReportesComponent {
           {
             next: (data) => {
                 this.expedientesGlobal = data.data,
-                console.log(" exps", this.expedientesGlobal),
                 this.procesos[index].expedientes = this.cargarExpedientes(this.expedientesGlobal),
-                console.log(" expsdasd", this.procesos[index].expedientes),
                 this.procesos[index].abierto = false
             },
             error: err => console.error('Error fetching items', err)
@@ -210,19 +207,16 @@ export class ListaReportesComponent {
 
   verDocumento(url: string) {
     this.verDomuentoService.urlDocumentToConsult = url;
-    console.log(url);
     this.router.navigate(['/admin/ver']);
   }
 
   download(urlDocument: string) {
-    console.log(urlDocument);
     const url = urlDocument;
     this.downloadService.downloadFile(url).subscribe((blob) => {
       const a = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
       a.href = objectUrl;
 
-      console.log(objectUrl);
 
       /* cambiar por el nombre real del archivo */
       /* a.download = url; */
@@ -249,7 +243,6 @@ export class ListaReportesComponent {
       const modalRef = this.modalService.open(ProcesoModalComponent, { size: 'lg' });
       modalRef.componentInstance.modoEdicion = true;
       modalRef.componentInstance.procesoEdicion = { ...proceso };
-      console.log("proceso a editar : ", proceso)
       
       modalRef.result.then(() => {
         this.cargarProcesos();
@@ -282,7 +275,6 @@ export class ListaReportesComponent {
       modalRef.componentInstance.modoEdicion = true;
       modalRef.componentInstance.expedienteEdicion = { ...expediente };
       modalRef.componentInstance.activeTab = 'expediente';
-      console.log("expediente a editar : ", expediente)
       
       modalRef.result.then(() => {
         this.cargarProcesos();

@@ -247,7 +247,7 @@ export class GestionProcesoAdministrativosComponent implements OnInit {
     modalRef.result.then(() => {
       this.cargarProcesos();
     }).catch((reason) => {
-      console.log('Modal cerrado:', reason);
+      
     });
   }
 
@@ -279,7 +279,7 @@ export class GestionProcesoAdministrativosComponent implements OnInit {
     modalRef.result.then(() => {
       this.cargarProcesos();
     }).catch((reason) => {
-      console.log('Modal cerrado:', reason);
+
     });
   }
 

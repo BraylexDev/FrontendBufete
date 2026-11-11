@@ -117,7 +117,6 @@ export class EventModalComponent implements OnInit {
     this.dataEvento.infoCalendar.end = new Date(`${this.defaultDate}T${this.defaultTime}`);
     addDays(this.dataEvento.infoCalendar.end || new Date, this.selectedTermino);
     this.dataEvento.infoCalendar.allDay = this.dataEvento.evento.allDay;
-    console.log("Evento data: ", this.dataEvento)
     this.eventSaved.emit(this.dataEvento);
     this.activeModal.close(this.dataEvento);
   }

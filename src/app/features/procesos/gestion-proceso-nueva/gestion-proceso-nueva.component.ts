@@ -1,4 +1,4 @@
-import { Component, OnDestroy, TemplateRef, ViewChild, inject } from '@angular/core';
+import { Component, Input, OnDestroy, SimpleChanges, TemplateRef, ViewChild, inject, DestroyRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormsModule, FormArray, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,13 +19,13 @@ import { AsuntoPenalService } from '../../../domain/services/asuntoPenal/asunto-
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SharedModule } from '../../shared/shared.module';
 import { CrearActuacionRequest } from '../../../domain/models/actuacion.model';
+import { catchError, concat, debounceTime, distinctUntilChanged, finalize, map, Observable, of, Subject, switchMap, tap } from 'rxjs';
+import { NgSelectModule } from '@ng-select/ng-select';
 
-
-interface ProcesoExpandible extends ProcesoDTO {
-  expanded?: boolean;
-  expedientes?: ExpedienteDTO[];
-  cargandoExpedientes?: boolean;
-}
+import {
+  ProcesoStateService,
+  ProcesoExpandible
+} from '../../../domain/services/proceso/proceso-state.service';
 
 interface UsuarioGrupo {
   usuarioId: number;
@@ -53,12 +53,22 @@ interface ProcesoItem {
 @Component({
   selector: 'app-gestion-proceso-nueva',
   standalone: true,
-  imports: [SharedModule, CommonModule, FormsModule, ReactiveFormsModule, NgbModalModule],
+  imports: [SharedModule, CommonModule, FormsModule, ReactiveFormsModule, NgbModalModule, NgSelectModule],
   providers: [DatePipe],
   templateUrl: './gestion-proceso-nueva.component.html',
   styleUrl: './gestion-proceso-nueva.component.scss'
 })
 export class GestionProcesoNuevaComponent implements OnDestroy {
+
+  @Input() jurisdiccion!: string;
+  @Input() tipoAsunto!: string;
+
+  asuntoSeleccionado: string = '';
+  jurisdiccionSeleccionada: string = '';
+
+  private readonly procesoState = inject(ProcesoStateService);
+
+  private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
   private readonly modalService = inject(NgbModal);
 
@@ -75,34 +85,21 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   readonly buscadorForm: FormGroup;
   readonly RegistrarAsuntoPenalForm: FormGroup;
   readonly RegistrarActuacionForm: FormGroup;
+  readonly recursoExtraordinarioForm: FormGroup;
+  readonly ejecucionPenaForm: FormGroup;
 
   readonly jurisdicciones: JurisdiccionOption[] = [
     {
-      value: 'ORDINARIA',
-      label: 'Ordinaria',
-      asuntos: [
-        'ASUNTOS PENALES',
-        'ASUNTOS CORPORATIVOS',
-        'ASUNTOS CIVILES – COMERCIALES'
-      ]
+      value: 'ORDINARIA', label: 'Ordinaria',
+      asuntos: [ 'ASUNTOS PENALES', 'ASUNTOS CORPORATIVOS', 'ASUNTOS CIVILES – COMERCIALES']
     },
     {
-      value: 'CONTENCIOSA_ADMINISTRATIVA',
-      label: 'Contenciosa Administrativa',
-      asuntos: [
-        'ASUNTOS DE REPARACION DIRECTA',
-        'ASUNTOS DE CONTRATACION ESTATAL',
-        'ASUNTOS DISCIPLINARIOS'
-      ]
+      value: 'CONTENCIOSA_ADMINISTRATIVA', label: 'Contenciosa Administrativa',
+      asuntos: [ 'ASUNTOS DE REPARACION DIRECTA', 'ASUNTOS DE CONTRATACION ESTATAL', 'ASUNTOS DISCIPLINARIOS']
     },
     {
-      value: 'ESPECIALES',
-      label: 'Especiales y Transitoria',
-      asuntos: [
-        'ASUNTOS DE LA JUSTICIA TRANSICIONAL',
-        'ASUNTOS JURISDICCION PENAL MILITAR',
-        'ASUNTOS JURISDICCION ESPECIAL INDIGENA'
-      ]
+      value: 'ESPECIALES', label: 'Especiales y Transitoria',
+      asuntos: [ 'ASUNTOS DE LA JUSTICIA TRANSICIONAL', 'ASUNTOS JURISDICCION PENAL MILITAR', 'ASUNTOS JURISDICCION ESPECIAL INDIGENA' ]
     }
   ];
 
@@ -119,6 +116,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   ];
 
   readonly tiposDetencion = [
+    { value: 'LIBERTAD', label: 'EN LIBERTAD' },
     { value: 'RESIDENCIA', label: 'D. EN LUGAR DE RESIDENCIA' },
     { value: 'PENITENCIARIO', label: 'D. EN ESTABLECIMIENTO PENITENCIARIO' },
   ];
@@ -132,11 +130,11 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   ];
 
   readonly medidasEjecucion = [
-    { value: 'CONSTANCIA_VISITA', label: 'Constancia de visita penitenciaria' },
-    { value: 'SOLICITUD_SALUD', label: 'Solicitudes de salud de PPL' },
-    { value: 'MECANISMOS_LIBERTAD', label: 'Mecanismos de libertad' },
-    { value: 'REDENCION_PENAS', label: 'Redención de penas y aplicación de favorabilidad' },
-    { value: 'TRASLADOS', label: 'Solicitud de traslados de establecimientos penitenciarios' }
+    { value: 'CONSTANCIA DE VISITA PENITENCIARIA', label: 'Constancia de visita penitenciaria' },
+    { value: 'SOLICITUD DE SALUD DE PPL', label: 'Solicitudes de salud de PPL' },
+    { value: 'MECANISMOS DE LIBERTAD', label: 'Mecanismos de libertad' },
+    { value: 'REDENCION DE PENAS Y APLICACION DE FAVORABILIDAD', label: 'Redención de penas y aplicación de favorabilidad' },
+    { value: 'SOLICITUD DE TRASLADOS DE ESTABLECIMIENTOS PENITENCIARIOS', label: 'Solicitud de traslados de establecimientos penitenciarios' }
   ];
 
   readonly competenciasAsunto = [
@@ -145,8 +143,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     { value: 'CIRCUITO_ESPECIALIZADO', label: 'CIRCUITO ESPECIALIZADO' },
   ]
 
-  asuntoSeleccionado: string = '';
-
   procesosext: ProcesoExpandible[] = [];
   usuarioGrupos: UsuarioGrupo[] = [];
   procesosFiltrados: ProcesoExpandible[] = [];
@@ -154,7 +150,9 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   filtroBusqueda: string = '';
   cargando: boolean = false;
   error: string | null = null;
-  mostrarAbogado: boolean = false;
+  esAdministrador: boolean = false;
+
+  mostrarTodasPersonas: boolean = false;
 
   asuntoPenalRequest: AsuntoPenal = null as any;
   /* imputados: Persona[] = []; */
@@ -164,14 +162,9 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   delitos: Delito[] = [];
   bienesJuridicos: BienJuridico[] = [];
   tiposJuzgado = [
-    {
-      value: 'GARANTIAS',
-      label: 'GARANTIAS'
-    },
-    {
-      value: 'CONOCIMIENTO',
-      label: 'CONOCIMIENTO'
-    },
+    { value: 'GARANTIAS', label: 'GARANTIAS' },
+    { value: 'CONOCIMIENTO', label: 'CONOCIMIENTO' },
+    { value: 'EJECUCION', label: 'EJECUCION DE PENAS'  }
   ];
   filtroDelito = '';
   filtroBienJuridico = '';
@@ -180,7 +173,11 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   procesos: ProcesoItem[] = [];
   modalAction: 'ASUNTO_NUEVO' | 'MODIFICAR_ACTUACION' | 'ESTADISTICA_AREA' | 'EDITAR_ASUNTO' | null = null;
   modalTitle = '';
+  selectedFile: File | null = null;
   selectedFileName = '';
+  selectedFileRecursoExtra = '';
+  selectedFileEjecucionPena = '';
+
   currentStep = 1;
 
   detalleAsunto: AsuntoPenalDetalleDTO | null = null;
@@ -196,6 +193,11 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   procesosExpedientes: ProcesoDTO[] = [];
   actuacionesProceso: TerminoDTO[] = [];
 
+  /* nueva implementacion buscador */
+    expedienteSeleccionadoId?: number; // Almacenará el ID seleccionado
+    expedientes$!: Observable<ProcesoDTO[]>; 
+    expedientesInput$ = new Subject<string>();
+
   constructor(
     private alertService: AlertService,
     private asuntoService: AsuntoPenalService,
@@ -206,65 +208,23 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     });
 
     this.RegistrarAsuntoPenalForm = this.fb.group({
-      // =========================
-      // Datos del asunto
-      // =========================
       tipoProcedimiento: ['', Validators.required],
       huboVictimas: [true, Validators.required],
       etapaProceso: ['', Validators.required],
       competenciaAsunto: ['', Validators.required],
       tipoJuzgado: ['', Validators.required],
       tipoAsuntoNuevo: ['', Validators.required],
-
       nunc: ['', Validators.required],
-
-      // =========================
-      // Imputados
-      // =========================
       imputados: this.fb.array([]),
-
-      // =========================
-      // Delitos y bienes jurídicos
-      // =========================
       delitosIds: this.fb.control<number[]>([1]),
       bienesJuridicosIds: this.fb.control<number[]>([], Validators.required),
 
-      // =========================
-      // Imputación
-      // =========================
-      /* imputacion: [''], */
-
-      // =========================
-      // Fiscalia
-      // =========================
       fiscal: this.fb.group({
-
-        nombreFiscal: [
-          '',
-          Validators.required
-        ],
-
-        unidad: [
-          '',
-          Validators.required
-        ],
-
-        correo: [
-          '',
-          [
-            Validators.required,
-            Validators.email
-          ]
-        ],
-
-        telefono: [
-          '',
-          Validators.required
-        ]
-
+        nombreFiscal: ['', Validators.required],
+        unidad: ['', Validators.required],
+        correo: ['', [Validators.required, Validators.email]],
+        telefono: ['', Validators.required]
       }),
-
-      medidaEjecucion: ['']
 
     });
     this.RegistrarActuacionForm = this.fb.group({
@@ -276,33 +236,159 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       archivoActuacionSeleccionado: ['', Validators.required]
     });
 
-    this.configurarDependencias();
+    this.recursoExtraordinarioForm = this.fb.group({
+      procesoIdRec: ['', Validators.required],
+      fileRecursoExtra: ['', Validators.required]
+    });
+
+    this.ejecucionPenaForm = this.fb.group({
+      procesoIdEjec: ['', Validators.required],
+      tipoDocumentoEjecucionPena: ['', Validators.required],
+      fileEjecucionPena: ['', Validators.required]
+    });
   }
 
   ngOnDestroy(): void {
     // Las suscripciones se gestionan con takeUntilDestroyed para evitar fugas de memoria.
   }
 
-  ngOnInit(): void {
+  /* ngOnInit(): void {
+    this.esAdministrador =
+      this.permissionService.canViewAllSystemProcesses();
+
+    const estado = this.procesoState.snapshot;
+
+    this.jurisdiccionSeleccionada = estado.jurisdiccion;
+    this.asuntoSeleccionado = estado.tipoAsunto;
+
+    this.buscadorForm.patchValue({
+      jurisdiccion: estado.jurisdiccion,
+      asunto: estado.tipoAsunto
+    });
+
+    if (estado.procesos.length > 0) {
+      this.procesosext = estado.procesos;
+      this.cargando = false;
+      this.aplicarFiltrosProcesos();
+    } else {
+      this.cargarProcesos();
+    }
+
+    this.buscadorForm.get('jurisdiccion')?.valueChanges.subscribe(valor => {
+      this.jurisdiccionSeleccionada = valor ?? '';
+    });
 
     this.buscadorForm.get('asunto')?.valueChanges.subscribe(valor => {
       this.asuntoSeleccionado = valor ?? '';
     });
 
-    this.RegistrarActuacionForm.get('tipoProcedimiento')?.valueChanges.subscribe(valorSeleccionado => {
-      const idNumerico = Number(valorSeleccionado);
-      this.seleccionarProcesosProcedimiento(idNumerico);
-    });
+    this.RegistrarActuacionForm.get('tipoProcedimiento')
+      ?.valueChanges.subscribe(valor => {
+        this.seleccionarProcesosProcedimiento(Number(valor));
+      });
 
-    // Verificar si el usuario tiene permisos para ver todos los procesos
-    this.mostrarAbogado = this.permissionService.canViewAllSystemProcesses();
-    this.cargarProcesos();
     this.cargarBienesJuridicos();
     this.cargarDelitos();
     this.cargarPocesosProcedimiento();
     this.cargarTerminosActuacion(13);
-    console.log("terminos : ", this.actuacionesProceso)
+    this.inicializarBuscadorAsincrono();
+  } */
 
+  ngOnInit(): void {
+
+    this.esAdministrador =
+      this.permissionService.canViewAllSystemProcesses();
+
+      this.configurarDependencias();
+      
+    const estado = this.procesoState.snapshot;
+
+    // Restaurar filtros
+    this.jurisdiccionSeleccionada = estado.jurisdiccion;
+    this.asuntoSeleccionado = estado.tipoAsunto;
+
+    this.buscadorForm.patchValue({
+      jurisdiccion: estado.jurisdiccion,
+      asunto: estado.tipoAsunto
+    });
+
+    // Si existen procesos en memoria, recuperarlos
+    if (estado.procesos.length > 0) {
+
+      this.procesosext = estado.procesos;
+
+      this.cargando = false;
+
+      this.aplicarFiltrosProcesos();
+
+    } else {
+
+      // Si no existen, consultar el backend
+      this.cargarProcesos();
+
+    }
+
+    this.buscadorForm.get('jurisdiccion')?.valueChanges.subscribe(valor => {
+      this.jurisdiccionSeleccionada = valor ?? '';
+    });
+
+    this.buscadorForm.get('asunto')?.valueChanges.subscribe(valor => {
+      this.asuntoSeleccionado = valor ?? '';
+    });
+
+    this.RegistrarActuacionForm.get('tipoProcedimiento')
+      ?.valueChanges.subscribe(valor => {
+        this.seleccionarProcesosProcedimiento(Number(valor));
+      });
+
+    this.cargarBienesJuridicos();
+    this.cargarDelitos();
+    this.cargarPocesosProcedimiento();
+    this.cargarTerminosActuacion(13);
+    this.inicializarBuscadorAsincrono();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const cambioJurisdiccion = changes['jurisdiccion'];
+    const cambioTipoAsunto = changes['tipoAsunto'];
+
+    if (!cambioJurisdiccion && !cambioTipoAsunto) {
+      return;
+    }
+
+    // Restaurar los filtros recibidos
+    this.restaurarFiltros();
+
+    // Si los procesos ya fueron cargados, aplicar los nuevos filtros
+    if (this.procesosext.length > 0) {
+      this.aplicarFiltrosProcesos();
+    }
+
+  }
+
+  private restaurarFiltros(): void {
+    this.jurisdiccionSeleccionada = this.jurisdiccion ?? '';
+    this.asuntoSeleccionado = this.tipoAsunto ?? '';
+    this.buscadorForm.patchValue({
+      jurisdiccion: this.jurisdiccionSeleccionada,
+      asunto: this.asuntoSeleccionado
+    }, {
+      emitEvent: false
+    });
+    const asuntoControl = this.buscadorForm.get('asunto');
+    if (this.jurisdiccionSeleccionada) {
+      asuntoControl?.enable({ emitEvent: false });
+    } else {
+      asuntoControl?.disable({ emitEvent: false });
+    }
+  }
+
+  aplicarFiltrosProcesos(): void {
+    if (this.esAdministrador) {
+      this.agruparProcesosPorUsuario();
+    } else {
+      this.actualizarFiltro();
+    }
   }
 
   // Método que devuelve la fecha de hace exactamente un mes en formato 'YYYY-MM-DD'
@@ -317,6 +403,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   seleccionarProcesosProcedimiento(idTipoProcedimiento: number) {
+
     if (idTipoProcedimiento) {
       // 1. Buscamos en el array general el objeto que coincida con el id seleccionado
       const encontrado = this.procesosPorProcedimiento.find(
@@ -357,22 +444,69 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   cargarPocesosProcedimiento(): void {
-    this.asuntoService.listarProcesosProcedimiento().subscribe({
-      next: (response: any) => {
-        this.procesosPorProcedimiento = response.data;
-      },
-      error: (err) => {
-        console.error('Error al cargar procesos por procedimiento:', err);
-      }
-    });
+    if(this.esAdministrador) {
+      this.asuntoService.listarProcesosProcedimiento().subscribe({
+        next: (response: any) => {
+          this.procesosPorProcedimiento = response.data;
+        },
+        error: (err) => {
+          console.error('Error al cargar procesos por procedimiento:', err);
+        }
+      });
+    } else {
+      this.asuntoService.listarProcesosProcedimientoAbogado().subscribe({
+        next: (response: any) => {
+          this.procesosPorProcedimiento = response.data;
+        },
+        error: (err) => {
+          console.error('Error al cargar procesos por procedimiento:', err);
+        }
+      });
+    }
   }
+  
+  /* cargarProcesos(): void {
 
-  cargarProcesos(): void {
     this.cargando = true;
     this.error = null;
 
-    // Usar endpoint diferente según permisos
-    const endpoint$ = this.mostrarAbogado
+    const endpoint$ = this.esAdministrador
+      ? this.procesoService.listarTodosProcesos()
+      : this.procesoService.listarProcesosByAbodado();
+
+    endpoint$
+    .pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        this.cargando = false;
+      })
+    ).subscribe({
+      next: (response) => {
+        this.procesosext = (response.data || []).map(p => ({
+          ...p,
+          expanded: false,
+          expedientes: [],
+          cargandoExpedientes: false,
+          expedientesCargados: false,
+          mostrarTodasPersonas: false
+        }));
+
+        this.aplicarFiltrosProcesos();
+      },
+      error: (err) => {
+        this.error = 'Error al cargar procesos. Por favor intente nuevamente.';
+        this.cargando = false;
+      }
+    });
+
+  } */
+
+  cargarProcesos(): void {
+    this.cargando = true;
+    this.procesoState.establecerCarga(true);
+    this.error = null;
+
+    const endpoint$ = this.esAdministrador
       ? this.procesoService.listarTodosProcesos()
       : this.procesoService.listarProcesosByAbodado();
 
@@ -382,22 +516,29 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
           ...p,
           expanded: false,
           expedientes: [],
-          cargandoExpedientes: false
+          cargandoExpedientes: false,
+          expedientesCargados: false,
+          mostrarTodasPersonas: false
         }));
 
-        // Si tiene permisos, agrupar por usuario
-        if (this.mostrarAbogado) {
-          this.agruparProcesosPorUsuario();
-        } else {
-          this.actualizarFiltro();
-        }
+        // Guardar procesos en memoria
+        this.procesoState.guardarProcesos(this.procesosext);
 
+        // Guardar filtros actuales
+        this.procesoState.guardarFiltros(
+          this.jurisdiccionSeleccionada,
+          this.asuntoSeleccionado
+        );
+        this.aplicarFiltrosProcesos();
         this.cargando = false;
+        this.procesoState.establecerCarga(false);
       },
+
       error: (err) => {
         console.error('Error al cargar procesos:', err);
         this.error = 'Error al cargar procesos. Por favor intente nuevamente.';
         this.cargando = false;
+        this.procesoState.establecerCarga(false);
       }
     });
   }
@@ -476,7 +617,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
     const filtro = this.filtroBusqueda.toLowerCase().trim();
 
-    if (!this.mostrarAbogado) {
+    if (!this.esAdministrador) {
       // Filtro para vista sin agrupación por usuario
       if (!filtro) {
         this.procesosFiltrados = this.procesosext.filter(p =>
@@ -515,6 +656,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
             grupo.usuarioNombre.toLowerCase().includes(filtro)
           );
       }
+      
     }
   }
 
@@ -528,21 +670,30 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
   toggleExpanded(proceso: ProcesoExpandible): void {
     proceso.expanded = !proceso.expanded;
-
-    // Cargar expedientes si no están cargados
-    if (proceso.expanded && (!proceso.expedientes || proceso.expedientes.length === 0)) {
-      this.cargarExpedientesDelProceso(proceso);
-    }
+    if (proceso.expanded) {
+    this.cargarExpedientesDelProceso(proceso);
+  }
   }
 
-  cargarExpedientesDelProceso(proceso: ProcesoExpandible): void {
+  /* cargarExpedientesDelProceso(proceso: ProcesoExpandible, forzarRecarga = false): void {
     if (!proceso.id) return;
+
+    if (proceso.cargandoExpedientes) {
+      return;
+    }
+
+    if (proceso.expedientesCargados && !forzarRecarga) {
+      return;
+    }
 
     proceso.cargandoExpedientes = true;
 
-    this.expedienteService.getExpedientesByProceso(proceso.id).subscribe({
+    this.expedienteService.getExpedientesByProceso(proceso.id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
       next: (response: any) => {
         proceso.expedientes = Array.isArray(response) ? response : (response?.data || []);
+        proceso.expedientesCargados = true;
         proceso.cargandoExpedientes = false;
       },
       error: (err) => {
@@ -551,6 +702,49 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
         proceso.cargandoExpedientes = false;
       }
     });
+  } */
+
+
+  cargarExpedientesDelProceso(proceso: ProcesoExpandible): void {
+
+    if (!proceso.id || proceso.cargandoExpedientes ||
+        proceso.expedientesCargados) {
+      return;
+    }
+
+    proceso.cargandoExpedientes = true;
+
+    this.expedienteService
+      .getExpedientesByProceso(proceso.id)
+      .subscribe({
+
+        next: (response: any) => {
+
+          proceso.expedientes = Array.isArray(response)
+            ? response
+            : (response?.data || []);
+
+          proceso.cargandoExpedientes = false;
+          proceso.expedientesCargados = true;
+
+          this.procesoState.actualizarProceso(proceso);
+
+        },
+
+        error: (err) => {
+
+          console.error('Error al cargar expedientes:', err);
+
+          proceso.expedientes = [];
+          proceso.cargandoExpedientes = false;
+          proceso.expedientesCargados = false;
+
+          this.procesoState.actualizarProceso(proceso);
+
+        }
+
+      });
+
   }
 
   editarProceso(proceso: ProcesoExpandible): void {
@@ -575,6 +769,9 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
 
     this.procesoService.eliminarProceso(this.procesoAeliminar.id).subscribe({
       next: () => {
+        this.procesoState.guardarProcesos(
+          this.procesosext.filter(p => p.id !== this.procesoAeliminar.id)
+        );
         this.triggerAlert(
           'Proceso eliminado exitosamente',
           'success'
@@ -626,22 +823,56 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     });
   }
 
-  toFolder(process: ProcesoExpandible): void {
-    const exp: ExpedienteDTO | undefined = process.expedientes?.[0];
-    if (!exp || !exp.id) return;
+  /* toFolder(proceso: ProcesoExpandible): void {
+    const expediente = proceso.expedientes?.[0];
 
-    this.router.navigate(['/admin/expedientes', exp.id, 'archivos'], {
-      state: { rootNodeId: exp.rootNodeId }
-    });
-  }
+    if (!expediente?.id) {
+      return;
+    }
+    const filtros = {
+      jurisdiccion: this.buscadorForm.get('jurisdiccion')?.value,
+      tipoAsunto: this.buscadorForm.get('asunto')?.value
+    };
 
-  /* toFolder(exp: ExpedienteDTO | undefined): void {
-    if (!exp || !exp.id) return;
-
-    this.router.navigate(['/admin/expedientes', exp.id, 'archivos'], {
-      state: { rootNodeId: exp.rootNodeId }
-    });
+    this.router.navigate(
+      ['/admin/expedientes', expediente.id, 'archivos'],
+      {
+        state: {
+          rootNodeId: expediente.rootNodeId
+        },
+        queryParams: filtros
+      }
+    );
   } */
+
+  toFolder(process: ProcesoExpandible): void {
+
+    const exp = process.expedientes?.[0];
+
+    if (!exp?.id) return;
+
+    // Guardar filtros antes de navegar
+    this.procesoState.guardarFiltros(
+      this.jurisdiccionSeleccionada,
+      this.asuntoSeleccionado
+    );
+
+    // Guardar los procesos actuales
+    this.procesoState.guardarProcesos(this.procesosext);
+
+    this.router.navigate(
+      ['/admin/expedientes', exp.id, 'archivos'],
+      {
+        state: {
+          rootNodeId: exp.rootNodeId
+        },
+        queryParams: {
+          jurisdiccion: this.jurisdiccionSeleccionada,
+          tipoAsunto: this.asuntoSeleccionado
+        }
+      }
+    );
+  }
 
 
   mostrarErroresFormulario(form: FormGroup, ruta = ''): void {
@@ -657,31 +888,67 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
 
-  private configurarDependencias(): void {
+  /* private configurarDependencias(): void {
 
-    this.buscadorForm.get('jurisdiccion')?.valueChanges.subscribe(value => {
-      const asuntoControl = this.buscadorForm.get('asunto');
+    const jurisdiccionControl = this.buscadorForm.get('jurisdiccion');
+    const asuntoControl = this.buscadorForm.get('asunto');
 
-      if (value) {
-        asuntoControl?.enable();
-      } else {
-        asuntoControl?.disable();
-        asuntoControl?.reset();
-      }
-    });
+    jurisdiccionControl?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(valor => {
 
-    this.buscadorForm.get('jurisdiccion')?.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this.buscadorForm.patchValue({ asunto: '' }, { emitEvent: false });
-        /* this.procesos = this.cargarProcesosMock(); */
+        this.jurisdiccionSeleccionada = valor ?? '';
+
+        if (valor) {
+          asuntoControl?.enable({ emitEvent: false });
+        } else {
+          asuntoControl?.reset('', { emitEvent: false });
+          asuntoControl?.disable({ emitEvent: false });
+        }
+
+        // Cada cambio de jurisdicción invalida el asunto anterior
+        this.asuntoSeleccionado = '';
+        this.actualizarFiltro();
+
       });
 
-    this.buscadorForm.get('asunto')?.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(value => {
-        /* this.procesos = this.cargarProcesosMock(); */
-        this.cargarProcesos();
+    asuntoControl?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(valor => {
+
+        this.asuntoSeleccionado = valor ?? '';
+
+        this.actualizarFiltro();
+
+      });
+  } */
+  private configurarDependencias(): void {
+    const jurisdiccionControl = this.buscadorForm.get('jurisdiccion');
+    const asuntoControl = this.buscadorForm.get('asunto');
+
+    jurisdiccionControl?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(valor => {
+
+        this.jurisdiccionSeleccionada = valor ?? '';
+
+        // Limpiar el asunto cuando cambia la jurisdicción
+        asuntoControl?.reset('', { emitEvent: false });
+        this.asuntoSeleccionado = '';
+
+        if (valor) {
+          asuntoControl?.enable({ emitEvent: false });
+        } else {
+          asuntoControl?.disable({ emitEvent: false });
+        }
+        this.aplicarFiltrosProcesos();
+      });
+
+    asuntoControl?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(valor => {
+        this.asuntoSeleccionado = valor ?? '';
+        this.aplicarFiltrosProcesos();
       });
   }
 
@@ -706,8 +973,11 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   get showEmptyState(): boolean {
-
-    return (this.hasSelection && !this.showProcesosList);
+    return (
+      !this.cargando &&
+      this.hasSelection &&
+      !this.showProcesosList
+    );
   }
 
   get showProcesosList(): boolean {
@@ -715,15 +985,23 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       return false;
     }
 
-    if (this.mostrarAbogado) {
+    if (this.esAdministrador) {
       return this.usuarioGruposFiltrados.length > 0;
     }
 
     return this.procesosFiltrados.length > 0;
   }
 
-  get asuntosDisponibles(): string[] {
+  /* get asuntosDisponibles(): string[] {
     const seleccion = this.jurisdicciones.find(item => item.value === this.jurisdiccionControl?.value);
+    return seleccion?.asuntos ?? [];
+  } */
+
+  get asuntosDisponibles(): string[] {
+    const jurisdiccion = this.buscadorForm.get('jurisdiccion')?.value;
+    const seleccion = this.jurisdicciones.find(
+      item => item.value === jurisdiccion
+    );
     return seleccion?.asuntos ?? [];
   }
 
@@ -740,10 +1018,11 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
   }
 
   get showtipoAsunto(): boolean {
-    if (this.tipoAsuntoNuevoControl?.value === 'ETAPA_CONOCIMIENTO' || this.tipoAsuntoNuevoControl?.value === 'RECURSO_EXTRAORDINARIO' || this.tipoAsuntoNuevoControl?.value === 'PENITENCIARIO') {
-      return true;
-    }
-    return false;
+    return [
+      'ETAPA_CONOCIMIENTO',
+      'RECURSO_EXTRAORDINARIO',
+      'PENITENCIARIO'
+    ].includes(this.tipoAsuntoNuevoControl?.value);
   }
 
   seleccionarExpedienteAeliminar(proceso: ProcesoExpandible, expediente: ExpedienteDTO) {
@@ -764,6 +1043,8 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     if (action === 'ASUNTO_NUEVO') {
       this.modalTitle = 'Asunto Nuevo';
       this.resetFormRegistrarAsunto();
+      this.resetFormEjecucionPena();
+      this.resetFormRecursoExtraordinario();
       this.currentStep = 1;
     } else if (action === 'MODIFICAR_ACTUACION') {
       this.modalTitle = 'Modificar o Adicionar Actuación';
@@ -910,9 +1191,40 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     }
   }
 
+  pasoAnteriorAsuntoNuevo(): void {
+    if (this.currentStep === 1) {
+      this.tipoAsuntoNuevoControl?.setValue('');
+      this.currentStep = 1;
+      return;
+    }
+
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.selectedFileName = input.files?.[0]?.name ?? '';
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
+  onFileSelectedRecursoExtra(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedFileRecursoExtra = input.files?.[0]?.name ?? '';
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
+  onFileSelectedEjecucionPena(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedFileEjecucionPena = input.files?.[0]?.name ?? '';
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
   }
 
   onFileActuacionSelected(event: any): void {
@@ -925,7 +1237,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       this.mostrarErroresFormulario(this.RegistrarAsuntoPenalForm);
       if (this.RegistrarAsuntoPenalForm.invalid) {
         this.RegistrarAsuntoPenalForm.markAllAsTouched();
-        console.log(this.RegistrarAsuntoPenalForm)
         this.triggerAlert(
           'Complete los campos obligatorios',
           'warning'
@@ -996,7 +1307,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       if (this.RegistrarAsuntoPenalForm.get('medidaEjecucion')?.invalid || !this.selectedFileName) {
         this.RegistrarAsuntoPenalForm.get('medidaEjecucion')?.markAsTouched();
 
-        console.log("error registrando medida de ejecucion")
 
         return;
       }
@@ -1010,7 +1320,7 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.mostrarErroresFormulario(this.RegistrarActuacionForm);
     if (this.RegistrarActuacionForm.invalid) {
       this.RegistrarActuacionForm.markAllAsTouched();
-      console.log(this.RegistrarActuacionForm)
+      
       this.triggerAlert(
         'Complete los campos obligatorios',
         'warning'
@@ -1022,18 +1332,14 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     const request: CrearActuacionRequest =
       this.construirRequestActuacion();
 
-    console.log(this.RegistrarActuacionForm.get('procesoId')?.value)
 
     const procesoId: number = Number(this.RegistrarActuacionForm.get('procesoId')?.value);
-    console.log("proc id : ", procesoId)
-    console.log("request actuacion : ", request);
 
     this.asuntoService.crearAsuntoPenalActuacion(procesoId, request, this.archivoActuacionSeleccionado).subscribe({
       next: (response) => {
         this.modalService.dismissAll();
 
         this.RegistrarActuacionForm.reset();
-        console.log("actuacion: ", response)
         this.triggerAlert(
           'Actuación Registrada.',
           'success'
@@ -1141,14 +1447,31 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
       archivo: null,
       delitosIds: [],
       bienesJuridicosIds: [2],
-      huboVictimas: false,
-
-      medidaEjecucion: ''
+      huboVictimas: false
     });
     this.selectedFileName = '';
     this.filtroDelito = '';
     this.filtroBienJuridico = '';
     this.currentStep = 1;
+  }
+
+  private resetFormRecursoExtraordinario(): void {
+    this.recursoExtraordinarioForm.reset({
+      procesoIdRec: '',
+      fileRecursoExtra: ''
+    });
+    this.selectedFileRecursoExtra = '';
+    this.selectedFile = null;
+  }
+
+  private resetFormEjecucionPena(): void {
+    this.ejecucionPenaForm.reset({
+      procesoIdEjec: '',
+      tipoDocumentoEjecucionPena: '',
+      fileEjecucionPena: ''
+    });
+    this.selectedFileEjecucionPena = '';
+    this.selectedFile = null;
   }
 
   private resetFormRegistrarActuacion(): void {
@@ -1457,7 +1780,6 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     this.procesoService.obtenerTerminos(idProceso).subscribe({
       next: (response) => {
         this.actuacionesProceso = response.data;
-        console.log(response.data);
       },
       error: (err) => {
         console.error('Error al cargar delitos:', err);
@@ -1470,7 +1792,252 @@ export class GestionProcesoNuevaComponent implements OnDestroy {
     const tipoActiacionId = this.RegistrarActuacionForm.get('tipoActuacion')?.value;
 
     this.cargarTerminosActuacion(procesoId);
-    console.log("terinos proceso: => ", this.actuacionesProceso.filter(actuacion => actuacion.tipoActuacionId === tipoActiacionId))
     return this.actuacionesProceso.filter(actuacion => actuacion.tipoActuacionId === tipoActiacionId);
+  }
+
+  private inicializarBuscadorAsincrono() {
+    if(this.esAdministrador) {
+      // 1. Carga inicial por defecto
+      const procesosIniciales$ = this.procesoService.listarExpedientesAdministrador().pipe(
+        map(response => response.data),
+        catchError(() => of([]))
+      );
+
+      // 2. Escucha activa de lo que el usuario digita en el buscador
+      const procesosFiltrados$ = this.expedientesInput$.pipe(
+        debounceTime(400),
+        distinctUntilChanged(),
+        tap(() => this.cargando = true),
+        switchMap(term => {
+          // Si el usuario borra el texto, pasamos "" para que el backend mande los 10 recientes otra vez
+          return this.procesoService.listarExpedientesAdministrador(term).pipe(
+            map(response => response.data),
+            catchError(() => of([])),
+            tap(() => this.cargando = false)
+          );
+        })
+      );
+
+      // Conectamos ambos flujos al HTML
+      this.expedientes$ = concat(procesosIniciales$, procesosFiltrados$);
+
+    } else {
+
+      const procesosIniciales$ = this.procesoService.listarExpedientesByAbogado().pipe(
+        map(response => response.data),
+        catchError(() => of([]))
+      );
+
+      const procesosFiltrados$ = this.expedientesInput$.pipe(
+        debounceTime(400),
+        distinctUntilChanged(),
+        tap(() => this.cargando = true),
+        switchMap(term => {
+          return this.procesoService.listarExpedientesByAbogado(term).pipe(
+            map(response => response.data),
+            catchError(() => of([])),
+            tap(() => this.cargando = false)
+          );
+        })
+      );
+
+      // Conectamos ambos flujos al HTML
+      this.expedientes$ = concat(procesosIniciales$, procesosFiltrados$);
+    }
+
+    
+  }
+  
+  onBuscarExpediente(event: { term: string; items: any[] }) {
+    this.expedientesInput$.next(event.term);
+  }
+
+  onLimpiarBusqueda() {
+    // Limpiar el término de búsqueda
+    this.expedientesInput$.next('');
+
+    // Restablecer el expediente seleccionado
+    this.expedienteSeleccionadoId = undefined;
+
+    // Quitar el estado de carga
+    this.cargando = false;
+  }
+
+  customSearchFn(term: string, item: any) {
+    term = term.toLowerCase();
+    
+    // Permite que coincida por número de proceso o por el nombre del abogado
+    const coincideCodigo = item.numeroProceso ? item.numeroProceso.toLowerCase().includes(term) : false;
+    const coincideAbogado = item.abogadoResponsableNombre ? item.abogadoResponsableNombre.toLowerCase().includes(term) : false;
+    
+    // Si manejas el nombre del proceso también puedes sumarlo aquí:
+    const coincideNombreProceso = item.nombre ? item.nombre.toLowerCase().includes(term) : false;
+
+    return coincideCodigo || coincideAbogado || coincideNombreProceso;
+  }
+
+  GuardarEjecucionPena(): void {
+    if (this.ejecucionPenaForm.get('procesoIdEjec')?.invalid || this.ejecucionPenaForm.get('tipoDocumentoEjecucionPena')?.invalid || !this.selectedFileEjecucionPena) {
+      this.ejecucionPenaForm.markAllAsTouched();
+
+      return;
+    }
+
+    if (!this.selectedFile) {
+      this.triggerAlert(
+        'Debe seleccionar un archivo para subir',
+        'warning'
+      );
+      return;
+    }
+
+    const procesoId = this.ejecucionPenaForm.get('procesoIdEjec')?.value;
+    const tipoDocumento = this.ejecucionPenaForm.get('tipoDocumentoEjecucionPena')?.value;
+
+    this.asuntoService.subirDocumentoEjecucionPena(procesoId, this.selectedFile, 'EJECUCION DE PENA', tipoDocumento).subscribe({
+        next: (response) => {
+          this.modalService.dismissAll();
+          this.ejecucionPenaForm.reset();
+          
+          this.triggerAlert(
+            'Registro exitoso.',
+            'success'
+          );
+
+          const proceso = this.procesosext.find(
+            p => p.id === procesoId
+          );
+
+          if (!proceso) {
+            console.error('No se encontró el proceso:', procesoId);
+            return;
+          }
+
+          const exp = proceso.expedientes?.[0];
+
+          if (!exp?.id) {
+            console.error('No se encontró el expediente');
+            return;
+          }
+
+          const folderParentId = response.data.folderParentId;
+
+          if (!folderParentId) {
+            console.error('No se recibió el ID de la carpeta');
+            return;
+          }
+
+          this.procesoState.guardarFiltros(
+            this.jurisdiccionSeleccionada,
+            this.asuntoSeleccionado
+          );
+          
+          this.procesoState.guardarProcesos(
+            this.procesosext
+          );
+
+          this.router.navigate(
+            ['/admin/expedientes', exp.id, 'archivos'],
+            {
+              state: {
+                folderNodeId: folderParentId
+              },
+              queryParams: {
+                jurisdiccion: this.jurisdiccionSeleccionada,
+                tipoAsunto: this.asuntoSeleccionado,
+                folderNodeId: folderParentId
+              }
+            }
+          );
+        },
+        error: (error) => {
+          this.triggerAlert(
+            'No fue posible crear el asunto penal',
+            'warning'
+          );
+        }
+      });
+
+  }
+
+  GuardarRecursoExtraordinario(): void {
+    if (this.recursoExtraordinarioForm.get('procesoIdRec')?.invalid || !this.selectedFileRecursoExtra) {
+      this.recursoExtraordinarioForm.markAllAsTouched();
+      return;
+    }
+
+    if (!this.selectedFile) {
+      this.triggerAlert(
+        'Debe seleccionar un archivo para subir',
+        'warning'
+      );
+      return;
+    }
+
+    const procesoId = this.recursoExtraordinarioForm.get('procesoIdRec')?.value;
+
+    this.asuntoService.subirDocumentoRecursoExtra(procesoId, this.selectedFile, 'RECURSO EXTRAORDINARIO').subscribe({
+      next: (response) => {
+        this.modalService.dismissAll();
+        this.recursoExtraordinarioForm.reset();
+        this.triggerAlert(
+          'Registro exitoso.',
+          'success'
+        );
+
+        const proceso = this.procesosext.find(
+          p => p.id === procesoId
+        );
+
+        if (!proceso) {
+          console.error('No se encontró el proceso:', procesoId);
+          return;
+        }
+
+        const exp = proceso.expedientes?.[0];
+
+        if (!exp?.id) {
+          console.error('No se encontró el expediente');
+          return;
+        }
+
+        const folderParentId = response.data.folderParentId;
+
+        if (!folderParentId) {
+          console.error('No se recibió el ID de la carpeta');
+          return;
+        }
+
+        this.procesoState.guardarFiltros(
+          this.jurisdiccionSeleccionada,
+          this.asuntoSeleccionado
+        );
+        
+        this.procesoState.guardarProcesos(
+          this.procesosext
+        );
+
+        this.router.navigate(
+          ['/admin/expedientes', exp.id, 'archivos'],
+          {
+            state: {
+              folderNodeId: folderParentId
+            },
+            queryParams: {
+              jurisdiccion: this.jurisdiccionSeleccionada,
+              tipoAsunto: this.asuntoSeleccionado,
+              folderNodeId: folderParentId
+            }
+          }
+        );
+      },
+      error: (error) => {
+        this.triggerAlert(
+          'No fue posible crear el asunto penal',
+          'warning'
+        );
+      }
+    }); 
+      
   }
 }

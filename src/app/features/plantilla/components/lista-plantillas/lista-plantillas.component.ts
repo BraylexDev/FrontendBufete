@@ -57,7 +57,6 @@ export class ListaPlantillasComponent {
       .subscribe({
         next: (data) => {
           this.plantillas = data;
-          console.log(data);
         },
         error: err => console.error('Error fetching items', err)
       });

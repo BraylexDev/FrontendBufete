@@ -242,7 +242,7 @@ export class GestionProcesoComponent implements OnInit {
     modalRef.result.then(() => {
       this.cargarProcesos();
     }).catch((reason) => {
-      console.log('Modal cerrado:', reason);
+      
     });
   }
 

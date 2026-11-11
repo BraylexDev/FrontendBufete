@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { RecursoExtraordinarioDTO, RecursoExtraordinarioRequest } from '../../models/asuntoPenal/recursoExtraordinario.model';
 import { CrearActuacionRequest } from '../../models/actuacion.model';
 import { DatePipe } from '@angular/common';
+import { FileUploadResponse } from '../../models/node2.model';
 
 @Injectable({
   providedIn: 'root'
@@ -49,5 +50,26 @@ export class AsuntoPenalService {
 
   listarProcesosProcedimiento(): Observable<ApiResponse<AsuntosPenalesPorProcedimientoDTO[]>> {
     return this.http.get<ApiResponse<AsuntosPenalesPorProcedimientoDTO[]>>(`${this.baseUrl}`+"/penal/procedimientos");
+  }
+
+  listarProcesosProcedimientoAbogado(): Observable<ApiResponse<AsuntosPenalesPorProcedimientoDTO[]>> {
+    return this.http.get<ApiResponse<AsuntosPenalesPorProcedimientoDTO[]>>(`${this.baseUrl}`+"/penal/abogado/procedimientos");
+  }
+
+  subirDocumentoRecursoExtra(procesoId: number, documento: File, carpeta: string): Observable<ApiResponse<FileUploadResponse>> {
+    const formData = new FormData();    
+    formData.append('carpeta', carpeta);
+    formData.append('file', documento);
+
+    return this.http.post<ApiResponse<FileUploadResponse>>(`${this.baseUrl}/asuntopenal/${procesoId}/documento`, formData);
+  }
+
+  subirDocumentoEjecucionPena(procesoId: number, documento: File, carpeta: string, subcarpeta: string): Observable<ApiResponse<FileUploadResponse>> {
+    const formData = new FormData();    
+    formData.append('carpeta', carpeta);
+    formData.append('file', documento);
+    formData.append('subcarpeta', subcarpeta);
+
+    return this.http.post<ApiResponse<FileUploadResponse>>(`${this.baseUrl}/asuntopenal/${procesoId}/documento`, formData);
   }
 }

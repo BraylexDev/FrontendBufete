@@ -44,12 +44,49 @@
 // Estilos globales
 html,
 body {
+
     height: 100%;
     margin: 0;
     /* font-family: Roboto, "Helvetica Neue", sans-serif; */
     font-family: Verdana, sans-serif;
     -ms-overflow-style: none;
     scrollbar-width: none;
+
+  // Forzamos al panel flotante a situarse por encima del modal de Bootstrap (z-index del modal es 1055)
+  .ng-dropdown-panel.ng-select-bottom {
+    z-index: 9999 !important; 
+    background-color: #ffffff !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    margin-top: 2px !important;
+  }
+
+  // Estilos internos de las opciones para garantizar visibilidad e interacción
+  .ng-dropdown-panel {
+    .ng-dropdown-panel-items {
+      max-height: 200px !important;
+
+      .ng-option {
+        font-size: 0.8rem !important;
+        padding: 0.1rem 0.5rem !important;
+        border-bottom: 1px solid #f8f9fa !important;
+        background-color: #ffffff !important;
+        color: #212529 !important;
+
+        &.ng-option-marked {
+          background-color: #e6f1fb !important;
+          color: #000000 !important;
+        }
+
+        &.ng-option-selected {
+          background-color: #b6d3ff !important;
+          color: #0d6efd !important;
+          font-weight: 100;
+        }
+      }
+    }
+  }
 }
 
 html::-webkit-scrollbar, 

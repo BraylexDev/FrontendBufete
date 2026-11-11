@@ -31,7 +31,13 @@
         </span>
       </button>
 
-      <button class="btn btn-primary" (click)="openCreateFolderModal()">
+      <button
+        class="btn btn-primary"
+        (click)="openCreateFolderModal()"
+        [disabled]="!canCreateFolder"
+        [title]="!canCreateFolder
+          ? 'No se pueden crear carpetas mientras exista un archivo en esta carpeta'
+          : 'Nueva Carpeta'">
         <span class="material-icons">create_new_folder</span>
         Nueva Carpeta
       </button>
@@ -39,8 +45,11 @@
       <button
         class="btn btn-success"
         (click)="openUploadFileModal()"
-        style="background: #033857 !important"
-      >
+        [disabled]="!canUploadFile"
+        [title]="!canUploadFile
+          ? 'No se pueden subir más archivos a esta carpeta'
+          : 'Subir Archivo'"
+        style="background: #033857 !important">
         <span class="material-icons">upload_file</span>
         Subir Archivo
       </button>
@@ -107,6 +116,7 @@
               class="btn-icon btn-success"
               (click)="downloadFile(node)"
               *ngIf="node.type === 'FILE'"
+              title="Descargar"
             >
               <span class="material-icons" style="color: green">download</span>
             </button>

@@ -122,9 +122,6 @@ export class NodeService {
     description?: string,
   ): Observable<ApiResponse<FileUploadResponse>> {
 
-    console.log("datos : ")
-    console.log(procesoId, description, nombre, tipoSentencia, tipoDocumento)
-    console.log("------------")
     const formData = new FormData();
     formData.append('file', file);
     formData.append('procesoId', procesoId);
@@ -137,7 +134,6 @@ export class NodeService {
     }
   formData.append('tipoDocumento', tipoDocumento);
   formData.append('tipoSentencia',tipoSentencia)
-  console.log("dta uoloadSentencia : ", formData);
   
     return this.http.post<ApiResponse<FileUploadResponse>>(`${this.apiUrl}/uploadSentencia`, formData);
   }
